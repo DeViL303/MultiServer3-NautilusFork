@@ -286,12 +286,15 @@ namespace HomeTools.UnBAR
                     TOCTasks = null;
                     archive = null;
 
-                    if (File.Exists(filePath + ".map"))
-                        File.Move(filePath + ".map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
-                    else if (filePath.Length > 4 && File.Exists(filePath[..^4] + ".sharc.map"))
-                        File.Move(filePath[..^4] + ".sharc.map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
-                    else if (filePath.Length > 4 && File.Exists(filePath[..^4] + ".bar.map"))
-                        File.Move(filePath[..^4] + ".bar.map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
+                    File.Delete(filePath + ".map");
+                    if (filePath.Length > 4)
+                    {
+                        File.Delete(filePath[..^4] + ".sharc.map");
+                        File.Delete(filePath[..^4] + ".bar.map");
+                    }
+
+                    // Directly delete the original .dat file
+                    File.Delete(filePath);
                 }
                 catch (Exception ex)
                 {

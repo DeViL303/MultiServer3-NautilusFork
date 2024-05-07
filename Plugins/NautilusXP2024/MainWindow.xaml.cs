@@ -998,7 +998,7 @@ namespace NautilusXP2024
 
                     // Get the name of the directory
                     string directoryName = new DirectoryInfo(folderPath).Name;
-                    LogDebugInfo($"Archive Creation: Processing item { i + 1}: Processing directory into archive: {directoryName}");
+                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Processing directory into archive: {directoryName}");
 
                     // Create a text file to write the paths to
                     StreamWriter writer = new(folderPath + @"/files.txt");
@@ -1052,7 +1052,7 @@ namespace NautilusXP2024
             // Log the completion and result of the archive creation process
             LogDebugInfo("Archive Creation: Process Success");
 
-            return Task.FromResult(true); 
+            return Task.FromResult(true);
         }
 
 
