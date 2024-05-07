@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<DockerfileRunArguments>-p 8080:8080 -p 10443:10443</DockerfileRunArguments>
+	<ApplicationIcon>SSFW.ico</ApplicationIcon>
+	<ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="SSFW.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetCoreServer" Version="6.7.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="static\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\BackendServices\AuxiliaryServices\WebAPIService\WebAPIService.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<DockerfileRunArguments>-p 10058:10058 -p 10060:10060 -p 10061:10061 -p 10062:10062</DockerfileRunArguments>
+	<ApplicationIcon>SVO.ico</ApplicationIcon>
+	<ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="SVO.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HttpMultipartParser" Version="8.4.0" />
+    <PackageReference Include="Watson.Lite" Version="6.1.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BackendServices\AuxiliaryServices\HorizonService\HorizonService.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="static\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+  </ItemGroup>
+
+</Project>

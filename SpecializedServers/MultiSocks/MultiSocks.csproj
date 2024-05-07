@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<DockerfileRunArguments>-p 11000-11000 -p 11050-11050 -p 11051-11051 -p 11100-11100 -p 11101-11101 -p 11140-11140 -p 21850-21850 -p 21851-21851 -p 21870-21870 -p 21871-21871</DockerfileRunArguments>
+	<ApplicationIcon>MultiSocks.ico</ApplicationIcon>
+	<ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="MultiSocks.ico" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="static\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\BackendServices\CyberBackendLibrary\CyberBackendLibrary.csproj" />
+  </ItemGroup>
+
+</Project>
