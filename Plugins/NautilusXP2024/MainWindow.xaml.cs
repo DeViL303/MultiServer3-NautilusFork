@@ -1726,7 +1726,7 @@ namespace NautilusXP2024
                 int hashOfPath = 0;
                 foreach (char ch in text)
                     hashOfPath = hashOfPath * 37 + ch;
-               LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
+              // LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
 
                 return hashOfPath;
             }
