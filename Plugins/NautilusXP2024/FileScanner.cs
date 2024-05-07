@@ -59,7 +59,7 @@ namespace NautilusXP2024
                 // List of filenames that are allowed to be zero bytes
                 HashSet<string> allowedZeroByteFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
-    "BAGS.XML", "GAME_FLOW.LUA", "INITIALIZE.LUA", "MAGICCIRCLE.LUA", "BULLET.LUA", "PHASEGAME.LUA"
+    "BAGS.XML", "GAME_FLOW.LUA", "INITIALIZE.LUA", "EXPORTEDINST.LUA", "MAGICCIRCLE.LUA", "BULLET.LUA", "PHASEGAME.LUA"
 };
 
                 // Check for zero-byte files
