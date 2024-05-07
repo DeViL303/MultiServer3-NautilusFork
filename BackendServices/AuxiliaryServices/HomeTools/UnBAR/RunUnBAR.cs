@@ -236,14 +236,13 @@ namespace HomeTools.UnBAR
             {
                 try
                 {
-                    BARArchive? archive = null;
-                    archive = new(filePath, outDir);
+                    BARArchive archive = new BARArchive(filePath, outDir);
                     archive.Load();
                     archive.WriteMap(filePath);
                     File.WriteAllText(Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath)) + "/timestamp.txt", archive.BARHeader.UserData.ToString("X"));
 
                     // Create a list to hold the tasks
-                    List<Task>? TOCTasks = new();
+                    List<Task>? TOCTasks = new List<Task>();
 
                     foreach (TOCEntry tableOfContent in archive.TableOfContents)
                     {
@@ -260,7 +259,7 @@ namespace HomeTools.UnBAR
                                         ExtractToFileBarVersion2(archive.GetHeader().Key, archive, tableOfContent.FileName, Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath)));
                                     else
                                     {
-                                        using MemoryStream memoryStream = new(FileData);
+                                        using MemoryStream memoryStream = new MemoryStream(FileData);
                                         ExtractToFileBarVersion1(RawBarData, archive, tableOfContent.FileName, Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath)),
                                             FileTypeAnalyser.Instance.GetRegisteredExtension(FileTypeAnalyser.Instance.Analyse(memoryStream)));
                                         memoryStream.Flush();
@@ -287,15 +286,12 @@ namespace HomeTools.UnBAR
                     TOCTasks = null;
                     archive = null;
 
-                    File.Delete(filePath + ".map");
-                    if (filePath.Length > 4)
-                    {
-                        File.Delete(filePath[..^4] + ".sharc.map");
-                        File.Delete(filePath[..^4] + ".bar.map");
-                    }
-
-                    // Directly delete the original .dat file
-                    File.Delete(filePath);
+                    if (File.Exists(filePath + ".map"))
+                        File.Move(filePath + ".map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
+                    else if (filePath.Length > 4 && File.Exists(filePath[..^4] + ".sharc.map"))
+                        File.Move(filePath[..^4] + ".sharc.map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
+                    else if (filePath.Length > 4 && File.Exists(filePath[..^4] + ".bar.map"))
+                        File.Move(filePath[..^4] + ".bar.map", Path.Combine(outDir, Path.GetFileNameWithoutExtension(filePath) + $"/{Path.GetFileName(filePath)}.map"));
                 }
                 catch (Exception ex)
                 {
@@ -359,9 +355,15 @@ namespace HomeTools.UnBAR
                                 // Copy the content after the first 28 bytes to the new array
                                 Array.Copy(data, 28, FileBytes, 0, FileBytes.Length);
 
-                                StringBuilder sb = new();
+                                StringBuilder sb = new StringBuilder();
 
-                                foreach (byte b in SHA1.HashData(FileBytes))
+                                byte[] SHA1Data = new byte[0];
+                                using (SHA1 sha1 = SHA1.Create())
+                                {
+                                    SHA1Data = sha1.ComputeHash(FileBytes);
+                                }
+
+                                foreach (byte b in SHA1Data)
                                 {
                                     sb.Append(b.ToString("x2")); // Convert each byte to a hexadecimal string
                                 }
@@ -487,7 +489,7 @@ namespace HomeTools.UnBAR
                     }
                 }
 
-                using MemoryStream memoryStream = new(FileBytes);
+                using MemoryStream memoryStream = new MemoryStream(FileBytes);
                 string registeredExtension = string.Empty;
 
                 try
@@ -516,7 +518,7 @@ namespace HomeTools.UnBAR
             }
             else
             {
-                using MemoryStream memoryStream = new(data);
+                using MemoryStream memoryStream = new MemoryStream(data);
                 string registeredExtension = string.Empty;
 
                 try
