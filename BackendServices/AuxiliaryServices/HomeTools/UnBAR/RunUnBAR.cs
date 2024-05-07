@@ -56,7 +56,7 @@ namespace HomeTools.UnBAR
 
                 using Process? process = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = converterPath + "/make_npdata",
+                    FileName = converterPath + "/dependencies/make_npdata",
                     Arguments = $"-d \"{sdatfilePath}\" \"{datfilePath}\" 0",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
