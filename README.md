@@ -8,8 +8,8 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 
  
-# BAR/SDAT/SHARC
-## Tab 1 Tool 1: Home Archive Creator:
+# Tab 1: BAR/SDAT/SHARC TOOL
+## Tool 1: Home Archive Creator:
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
 
@@ -61,8 +61,8 @@ Archive Types:
 
 
 
-# BAR/SDAT/SHARC
-## Tab 1 Tool 2: Home Archive Unpacker
+# TAB 1: BAR/SDAT/SHARC TOOL
+## Tool 2: Home Archive Unpacker
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
