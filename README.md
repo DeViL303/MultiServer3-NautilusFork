@@ -17,7 +17,7 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 ### Usage: 
 - Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
-- Optinally Enter 8 byte timestamp to match SDC if needed. If there is a valid timestamp.txt found in the input folder it will ignore the timsetamp in GUI use that timestamp in the txt instead.
+- Enter a 8 byte timestamp to match timestamp field in your SDC if needed.
 - Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings but will reset to default on next session
 
 
@@ -34,7 +34,7 @@ Archive Types:
     - On later 1.82+ clients BAR archives can be blocked from mounting in online mode by including the disablebar flag in the TSS
     - Due to no extra security layers on these, just simple zlib compression. These are the fastest to read/mount/create/dump.
     - I recommended using this setting for scenes in general. Objects need to be sdat (NPD encrypted) on later retail versions.
-    - Interestingly even on 1.86 retail you can use this type of archice to replace COREDATA.SHARC and even disablebar flag in TSS can not block that.
+    - Interestingly even on 1.86 retail you can use this type of archive to replace COREDATA.SHARC and even disablebar flag in TSS can not block that.
   
 - BAR Secure:
    - Encrypted BAR Used in conjunction with SHA1 in TSS in some earlier pre sharc versions of home.
