@@ -162,6 +162,15 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
    Tool 5: Home LUAC Decompiler
 </h2>
 
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
+
+</div>
+
+<h2 align="center">
+   Tab 4: SDC / ODC Tool
+</h2>
 
 <div align="center">
 
@@ -170,11 +179,42 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 </div>
 
 <h2 align="center">
-   Tab 4: SDC / ODC TOOL
+   Tab 5: Path2Hash Tool
+</h2>
+
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1eb8ed66-001b-41ed-901b-ebd4dfd27011)
+
+</div>
+
+<h2 align="center">
+   Tab 6: Home EBOOT Patcher
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/ceb3bbc8-5174-492e-9835-8a2b893f9668)
+
+</div>
+
+<h2 align="center">
+   Tab 7: SHA1 Checker
 </h2>
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/5d73316f-cf00-45e7-8147-ef37ff0c3b74)
+
+</div>
+
+<h2 align="center">
+   Tab 8: Settings
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f1b23a25-25ff-4a02-b7a8-5331fbd2a4b9)
 
 </div>
