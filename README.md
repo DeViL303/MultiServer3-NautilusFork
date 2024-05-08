@@ -111,29 +111,31 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
 
-Note: Scene IDs aka Channel IDs are very important to instancing in playstation home. If 2 scenes share a Scene ID in SceneList.xml then players will be put into same instance.  This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs
+Note: Scene IDs aka Channel IDs are very important to instancing in playstation home. If 2 scenes share a Scene ID in SceneList.xml then players will be put into same instance.  
+This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs.
 
 
 ## Usage
 - Enter a number between 1 and 65535, Click Encrypt
-- Also accepts hyphen separated ranges for bulk genration
+- Also accepts hyphen separated ranges for bulk generation
 
 ## Options
-- Legacy Mode when enabled allow for generation of early type IDs to suit early home builds. Leave this option disabled for 1.8x
+- Legacy Mode when enabled allows for generation of early type IDs to suit earlier home builds. Leave this option disabled for 1.8x
 
 
-# Tool 1: Scene ID Decrypter
+# Tool 2: Scene ID Decrypter
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4e5679fa-3fe0-4cf4-b393-651b15a7384c)
 
 Note: Scene IDs aka Channel IDs are very important to instancing in playstation home. If 2 scenes share a Scene ID in SceneList.xml then players will be put into same instance.  
-This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs
+This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs.
 
 
 ## Usage
 - Enter one or more Scene IDs (space, comma line separated)
-- You can also drag a plaintext SceneList.xml into the right hand side of the tab (not on the input or output textbox) and it will decrypt all.
+- You can also *drag a plaintext SceneList.xml into the right hand side of the tab and it will parse it and decrypt all IDs.
+  * Dont drag it onto the input or output textbox 
 
  
 ## Options
-- Legacy Mode when enabled allow for decryption of early type IDs to suit early home builds. Leave this option disabled for 1.8x 
+- Legacy Mode when enabled allows for decryption of early type IDs to suit earlier home builds. Leave this option disabled for 1.8x 
