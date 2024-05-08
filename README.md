@@ -8,7 +8,7 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 
 
  
-## Tab 1 - Tool 1: BAR/SDAT/SHARC - Home Archive Creator
+## Tab 1 BAR/SDAT/SHARC - Tool 1 Home Archive Creator:
 
 Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
@@ -23,10 +23,10 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 - BAR:
     Simplest form of Home Archive used in early retail home and later only used for developer versions of Home.
     Although superceded by sharc this format is supported in retail clients up to 1.86.
-    On later 1.82+ clients BAR archives can be blocked from mounting in online mode by including the flag <disablebar/> in the TSS
+    On later 1.82+ clients BAR archives can be blocked from mounting in online mode by including the disablebar flag in the TSS
     Due to no extra security layers on these, just simple zlib compression. These are the fastest to read/mount/create/dump.
     I recommended using this setting for scenes in general. Objects need to be sdat (NPD encrypted) on later retail versions.
-    Interestingly even on 1.86 retail you can use this type of archice to replace COREDATA.SHARC and even <disablebar/> flag in tss can not block that.
+    Interestingly even on 1.86 retail you can use this type of archice to replace COREDATA.SHARC and even disablebar flag in TSS can not block that.
   
 - BAR Secure:
    Encrypted BAR Used in conjunction with SHA1 in TSS in some earlier pre sharc versions of home.
@@ -55,7 +55,7 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 
   
    
-## Tab 1 - Tool 2: BAR/SDAT/SHARC - Home Archive Unpacker
+## Tab 1 BAR/SDAT/SHARC - Tool 2 Home Archive Unpacker:
 
 Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursivelt for any compatible files and add each one. 
 
