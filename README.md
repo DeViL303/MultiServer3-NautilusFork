@@ -5,7 +5,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 ### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
 <div align="center">
-   ## Tab 1: BAR/SDAT/SHARC TOOL
+   # Tab 1: BAR/SDAT/SHARC TOOL
 </div>
 
 <div align="center">
@@ -15,7 +15,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 </div>
 
 <div align="center">
-   ## Tool 1: Home Archive Creator
+   # Tool 1: Home Archive Creator
 </div>
 
 <div align="center">
@@ -47,7 +47,7 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection.
 
 <div align="center">
-   ## Tool 2: Home Archive Unpacker
+   # Tool 2: Home Archive Unpacker
 </div>
 
 <div align="center">
@@ -86,7 +86,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - Given the revival of Online, this is no longer the default folder structure required, thus it is not set as the default. It is important to note that unlike other settings, this one does not persist between sessions.
 
 <div align="center">
-   ## Tab 2: SceneID Generator / Decrypter
+   # Tab 2: SceneID Generator / Decrypter
 </div>
 
 <div align="center">
@@ -96,7 +96,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 </div>
 
 <div align="center">
-   ## Tool 1: Scene ID Generator
+   # Tool 1: Scene ID Generator
 </div>
 
 <div align="center">
@@ -117,7 +117,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - When enabled, Legacy Mode allows for the generation of early type IDs suitable for older Home builds.
 
 <div align="center">
-   ## Tool 2: Scene ID Decrypter
+   # Tool 2: Scene ID Decrypter
 </div>
 
 <div align="center">
