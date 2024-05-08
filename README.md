@@ -2,26 +2,22 @@
 
 This repository is a fork of AgentDarks447's celebrated project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
 
-### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
-
 <h2 align="center">
    Tab 1: BAR/SDAT/SHARC TOOL
 </h2>
 
 <div align="center">
-
 ![BAR/SDAT/SHARC Tool](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a378bb7-382a-4ff6-b328-a7fff8cb836c)
-
 </div>
+
+### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
 <h2 align="center">
    Tool 1: Home Archive Creator
 </h2>
 
 <div align="center">
-
 ![Home Archive Creator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
-
 </div>
 
 ### Important Note:
@@ -51,9 +47,7 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 </h2>
 
 <div align="center">
-
 ![Home Archive Unpacker](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
-
 </div>
 
 ### Important Note:
@@ -90,9 +84,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 </h2>
 
 <div align="center">
-
 ![SceneID Generator / Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4204a35c-9dea-40d5-afed-5367d5e8fb75)
-
 </div>
 
 <h2 align="center">
@@ -100,9 +92,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 </h2>
 
 <div align="center">
-
 ![Scene ID Generator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
-
 </div>
 
 ### Note:
@@ -121,9 +111,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 </h2>
 
 <div align="center">
-
 ![Scene ID Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4e5679fa-3fe0-4cf4-b393-651b15a7384c)
-
 </div>
 
 ### Note:
