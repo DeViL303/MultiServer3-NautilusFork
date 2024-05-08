@@ -16,13 +16,13 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 ### Note: For Archive Creator input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
-## Usage: 
+## Archive Creator Usage: 
 - Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
 - Enter a 8 byte timestamp to match timestamp field in your SDC if needed.
 - Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings but will reset to default on next session
 
 
-## Options
+## Archive Creator Options
 
 # Timestamp:
     - Add timestamp here. Default is FFFFFFFF. If less than 8 bytes are entered it will be padded to 8 bytes with prefix 0.
@@ -71,7 +71,7 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 ### Note: For Archive Unpacker input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursively for any compatible archives and add all. 
 
-## Usage: 
+## Archive Unpacker Usage: 
 - Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
 - It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
 - Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
@@ -79,7 +79,7 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 
 
-## Options:
+## Archive Unpacker Options:
 
 # UUID/Path Prefix:
  - You can enter a UUID, OR a full path prefix here that will be added onto any paths found during the mapping process.
