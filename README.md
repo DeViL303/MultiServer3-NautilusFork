@@ -66,26 +66,26 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 - Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
 - It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
 - Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
-- When unpacking objects, if the input archive has the string "object" in it, then the ouptu folder will be renamed with the UUID (eg. 00000000-00000000-00000000-0000000B/object_t037.sdat will extract to 00000000-00000000-00000000-0000000B_T037 folder)
+- When unpacking objects, if the input archive has the string "object" in it, then the output folder will have it replaced with the UUID (eg. 00000000-00000000-00000000-0000000B/object_T037.sdat will extract to 00000000-00000000-00000000-0000000B_T037 folder)
 
 
 
 ### Options:
 
-- UUID/Path Prefix:
-  You can enter a UUID, OR a full path prefix here that will be added onto any paths found during the mapping process.
-  Note: It will also scan for any UUIDs ANYWHERE in input file path and attempt to use those for mapping too.  
+UUID/Path Prefix:
+ - You can enter a UUID, OR a full path prefix here that will be added onto any paths found during the mapping process.
+ - Note: It will also scan for any UUIDs ANYWHERE in input file path and attempt to use those for mapping too.  
 
-- Validate files:
-  Enabled by default. Not recommended to disable this option but the mapper will be faster on bulk tasks if you do.
-  If enabled this option will make an attempt to validate that all files have dumped correctly. it uses combination of header/string byte level checks and dedicated libaries for checking media files such as mp3/wav/png/jpg
-  It will also parse xml/json/scene/sdc/odc etc looking for bytes indicating corruption/encryption/compression.
-  It uses HomeLuac.exe to parse lua files for syntax errors. This can lead to some false flags as home devs did sometimes write non valid lua but overall its useful. 
-  It will also log any 0 byte files for further checking, again this does lead to some false flags due to the fact Home devs did sometimes use 0 byte files but overall its useful ot have them flagged for further checking
-  Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffis to output folder name.
-  If any warnings (validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
+Validate files:
+  - Enabled by default. Not recommended to disable this option but the mapper will be faster on bulk tasks if you do.
+  - If enabled this option will make an attempt to validate that all files have dumped correctly. it uses combination of header/string byte level checks and dedicated libaries for checking media files such as mp3/wav/png/jpg
+  - It will also parse xml/json/scene/sdc/odc etc looking for bytes indicating corruption/encryption/compression.
+  - It uses HomeLuac.exe to parse lua files for syntax errors. This can lead to some false flags as home devs did sometimes write non valid lua but overall its useful. 
+  - It will also log any 0 byte files for further checking, again this does lead to some false flags due to the fact Home devs did sometimes use 0 byte files but overall its useful ot have them flagged for further checking
+  - Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffis to output folder name.
+  - If any warnings (validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
 
-- Offline Structure:
-  This setting only effects object extraction, when enabled it extract objects into the "offline" style with all files and folders in root. This is perfect for running in extracted form on HDK builds.
-  This was the norm up until recently and if you ever extract objects with older tools such as gazs HomeTool you will be familiar with it.
-  Now that Online is revived this is no longer the default format so must be selected. Note unlike other settings, This setting does not get remembered between sessions.
+Offline Structure:
+  - This setting only effects object extraction, when enabled it extract objects into the "offline" style with all files and folders in root. This is perfect for running in extracted form on HDK builds.
+  - This was the norm up until recently and if you ever extract objects with older tools such as gazs HomeTool you will be familiar with it.
+  - Now that Online is revived this is no longer the default format so must be selected. Note unlike other settings, This setting does not get remembered between sessions.
