@@ -118,7 +118,8 @@ This means generally each scene must have a unique Scene ID but in some cases wh
 - Also accepts hyphen separated ranges for bulk generation
 
 ## Options
-- Legacy Mode when enabled allows for generation of early type IDs to suit earlier home builds. Leave this option disabled for 1.8x
+- Generally you dont need to touch this setting, leave it on default (Disabled) for newer Home.
+- Legacy Mode when enabled allows for generation of early type IDs to suit earlier home builds.
 
 
 # Tool 2: Scene ID Decrypter
@@ -132,8 +133,9 @@ This means generally each scene must have a unique Scene ID but in some cases wh
 ## Usage
 - Enter one or more Scene IDs (space, comma line separated)
 - You can also *drag a plaintext SceneList.xml into the right hand side of the tab and it will parse it and decrypt all IDs.
-  * Dont drag it onto the input or output textbox 
+   Dont drag the xml exactly onto the textbox
 
  
 ## Options
-- Legacy Mode when enabled allows for decryption of early type IDs to suit earlier home builds. Leave this option disabled for 1.8x 
+- Generally you dont need to touch this setting, leave it on default (Disabled) for newer Home.
+- Legacy Mode when enabled allows for decryption of early type IDs to suit earlier home builds.
