@@ -108,15 +108,15 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 </div>
 
 ### Note:
-Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are sufficiently similar, sharing IDs may be feasible.
+Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
 
 #### Usage:
 - Enter a number between 1 and 65535 and click 'Encrypt'.
 - The tool also accepts hyphen-separated ranges for bulk generation.
 
 #### Options:
-- Typically, there is no need to adjust this setting; leave it on default (Disabled) for newer versions of Home.
-- When enabled, Legacy Mode allows for the generation of early type IDs suitable for older Home builds.
+- Legacy Mode, when activated, facilitates the decryption of early type IDs suitable for earlier Home builds.
+- Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 <h2 align="center">
    Tool 2: Scene ID Decrypter
@@ -128,13 +128,10 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 </div>
 
-### Note:
-As previously mentioned, Scene IDs are essential for correct instancing in PlayStation Home. It is possible to share IDs between similar scenes, but this should be approached with caution.
-
 #### Usage:
 - Enter one or more Scene IDs (separated by spaces, commas, or lines).
 - You can also drag a plaintext SceneList.xml into the right-hand side of the tab, and it will parse and decrypt all IDs. Ensure not to drag the XML directly onto the textbox.
 
 #### Options:
-- Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 - Legacy Mode, when activated, facilitates the decryption of early type IDs suitable for earlier Home builds.
+- Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
