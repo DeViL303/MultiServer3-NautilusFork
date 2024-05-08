@@ -13,7 +13,8 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 
 Usage: 
 - Drag in one or more folders and choose archive type before clicking Create. It should eb able to handle large tasks such as 10k objects in one operation
-- Default output path for archvie creator is next to the exe/Output/Archives/. This can be changed in settings
+- Enter 8 byte timestamp to match SDC if needed. If there is a valid timestamp.txt found in the input folder it will use that timestamp instead.
+- Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings
 
 Archive Types:
 - BAR:
@@ -56,4 +57,7 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
 
-
+Usage: 
+- Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
+- It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
+- Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings.
