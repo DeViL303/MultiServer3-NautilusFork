@@ -28,6 +28,7 @@ using System.IO.Compression;
 using HomeTools.ChannelID;
 using CustomLogger;
 using HomeTools.AFS;
+using Ookii.Dialogs.Wpf;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Xml;
@@ -739,11 +740,14 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseArchiveCreatorHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseArchiveCreatorHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("Archive Creation: Browsing for files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "ZIP files (*.zip)|*.zip",
                 Multiselect = true
@@ -752,7 +756,15 @@ namespace NautilusXP2024
             string message = "No items selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 500 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedItems = openFileDialog.FileNames;
 
@@ -767,8 +779,8 @@ namespace NautilusXP2024
                         ArchiveCreatorTextBox.Text = string.Join(Environment.NewLine, existingItemsSet);
 
                         message = $"{selectedItems.Length} items added to the list";
+                        displayTime = 1000; // Change display time since items were added
                     });
-                    displayTime = 1000; // Change display time since items were added
                 }
                 else
                 {
@@ -781,8 +793,10 @@ namespace NautilusXP2024
                 LogDebugInfo("Archive Creation: File Browser - Dialog Cancelled.");
             }
 
-            TemporaryMessageHelper.ShowTemporaryMessage(ArchiveCreatorDragAreaText, message, 2000);
+            TemporaryMessageHelper.ShowTemporaryMessage(ArchiveCreatorDragAreaText, message, displayTime);
         }
+
+
 
         private void CheckBoxArchiveMapperFAST_Checked(object sender, RoutedEventArgs e)
         {
@@ -1160,11 +1174,14 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseArchiveUnpackerHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseArchiveUnpackerHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("Archive Unpacker: Browsing for files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "Supported files (*.bar;*.sdat;*.sharc;*.dat)|*.bar;*.sdat;*.sharc;*.dat",
                 Multiselect = true
@@ -1173,7 +1190,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 500 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -1192,10 +1217,10 @@ namespace NautilusXP2024
                         ArchiveUnpackerTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
                         string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} files added" : "No new files added";
-                        string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                         message = addedFilesMessage + duplicatesMessage;
 
-                        TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, 2000);
+                        TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, displayTime);
                     });
                 }
                 else
@@ -1209,8 +1234,9 @@ namespace NautilusXP2024
                 LogDebugInfo("Archive Unpacker: File Browser - Dialog Cancelled.");
             }
 
-            TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, 2000);
+            TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, displayTime);
         }
+
 
 
         private string currentFilePath;
@@ -1922,23 +1948,35 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseCDSEncryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseCDSEncryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("CDS Encryption: Browsing for files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "Supported files (*.sdc;*.odc;*.xml;*.bar)|*.sdc;*.odc;*.xml;*.bar",
                 Multiselect = true
             };
 
             string message = "No files selected.";
-            int displayTime = 2000;
+            int displayTime = 2000;  // Keep your original display time setting
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // Corrected delay to 10 ms
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
-                var validExtensions = new[] { ".sdc", ".odc", ".xml", ".bar" };
+                var validExtensions = new[] { ".sdc", ".odc", ".xml", ".bar" }
+                    .Select(ext => ext.ToLowerInvariant()).ToArray();
 
                 List<string> validFiles = selectedFiles
                     .Where(file => validExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
@@ -1957,26 +1995,27 @@ namespace NautilusXP2024
 
                         CDSEncrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} file(s) added, {duplicatesCount} duplicate(s) filtered";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicate(s) filtered" : "";
+                        message = $"{newFilesCount} file(s) added" + duplicatesMessage;
                         TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, message, 2000);
 
-                        LogDebugInfo($"CDS Encryption: {newFilesCount} files added, {duplicatesCount} duplicates filtered via File Browser.");
+                        LogDebugInfo($"CDS Encryption: {newFilesCount} files added{duplicatesMessage} via File Browser.");
                     });
                 }
                 else
                 {
-                    LogDebugInfo("CDS Encryption: File Browser - No compatible files were selected.");
                     message = "No compatible files selected.";
+                    LogDebugInfo("CDS Encryption: File Browser - No compatible files were selected.");
                 }
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("CDS Encryption: File Browser - Dialog Cancelled.");
             }
 
             TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, message, 2000);
         }
-
 
 
         // Placeholder method for the encryption process
@@ -2098,11 +2137,14 @@ namespace NautilusXP2024
         }
 
 
-        private void ClickToBrowseCDSDecryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseCDSDecryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("CDS Decryption: Browsing for files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "Supported files (*.sdc;*.odc;*.xml;*.bar)|*.sdc;*.odc;*.xml;*.bar",
                 Multiselect = true
@@ -2111,10 +2153,19 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
-                var validExtensions = new[] { ".sdc", ".odc", ".xml", ".bar" }.Select(ext => ext.ToLowerInvariant()).ToArray();
+                var validExtensions = new[] { ".sdc", ".odc", ".xml", ".bar" }
+                    .Select(ext => ext.ToLowerInvariant()).ToArray();
 
                 List<string> validFiles = selectedFiles
                     .Where(file => validExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
@@ -2126,26 +2177,28 @@ namespace NautilusXP2024
                     {
                         var existingFilesSet = new HashSet<string>(CDSDecrypterTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
                         int initialCount = existingFilesSet.Count;
-                        existingFilesSet.UnionWith(validFiles); // This will automatically remove duplicates
+                        existingFilesSet.UnionWith(validFiles);
                         int newFilesCount = existingFilesSet.Count - initialCount;
                         int duplicatesCount = validFiles.Count - newFilesCount;
 
                         CDSDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} file(s) added, {duplicatesCount} duplicate(s) filtered";
-                        TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
+                        string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} file(s) added" : "No new files added";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicate(s) filtered" : "";
+                        message = addedFilesMessage + duplicatesMessage;
 
-                        LogDebugInfo($"CDS Decryption: {newFilesCount} files added, {duplicatesCount} duplicates filtered via File Browser.");
+                        LogDebugInfo($"CDS Decryption: {message} via File Browser");
                     });
                 }
                 else
                 {
-                    LogDebugInfo("CDS Decryption: File Browser - No compatible files were selected.");
                     message = "No compatible files selected.";
+                    LogDebugInfo("CDS Decryption: File Browser - No compatible files were selected.");
                 }
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("CDS Decryption: File Browser - Dialog Cancelled.");
             }
 
@@ -2272,12 +2325,14 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseHCDBEncryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseHCDBEncryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("HCDB Conversion: Browsing for SQL files Initiated");
 
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "SQL files (*.sql)|*.sql",
                 Multiselect = true
@@ -2286,7 +2341,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -2303,7 +2366,7 @@ namespace NautilusXP2024
                         HCDBEncrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
                         string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} SQL files added" : "No new SQL files added";
-                        string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                         message = addedFilesMessage + duplicatesMessage;
 
                         LogDebugInfo($"HCDB Conversion: {newFilesCount} SQL files added, {duplicatesCount} duplicates filtered via File Browser");
@@ -2315,8 +2378,6 @@ namespace NautilusXP2024
                     message = "No SQL files selected.";
                     LogDebugInfo("HCDB Conversion: No SQL files selected in File Browser.");
                 }
-
-                TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, message, 2000);
             }
             else
             {
@@ -2451,11 +2512,14 @@ namespace NautilusXP2024
         }
 
 
-        private void ClickToBrowseHCDBDecryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseHCDBDecryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("HCDB to SQL Conversion: Browsing for HCDB files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "HCDB files (*.hcdb)|*.hcdb",
                 Multiselect = true
@@ -2464,7 +2528,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a short delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // Using a 10 ms delay 
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -2474,17 +2546,17 @@ namespace NautilusXP2024
                     {
                         var existingFilesSet = new HashSet<string>(HCDBDecrypterTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
                         int initialCount = existingFilesSet.Count;
-                        existingFilesSet.UnionWith(selectedFiles);
+                        existingFilesSet.UnionWith(selectedFiles); // Automatically removes duplicates
                         int newFilesCount = existingFilesSet.Count - initialCount;
                         int duplicatesCount = selectedFiles.Length - newFilesCount;
 
                         HCDBDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
                         string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} HCDB files added" : "No new HCDB files added";
-                        string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                         message = addedFilesMessage + duplicatesMessage;
 
-                        LogDebugInfo($"HCDB to SQL Conversion: {newFilesCount} HCDB files added, {duplicatesCount} duplicates filtered via File Browser");
+                        LogDebugInfo($"HCDB to SQL Conversion: {newFilesCount} HCDB files added{duplicatesMessage} via File Browser");
                     });
                     displayTime = 1000; // Change display time since files were added
                 }
@@ -2493,19 +2565,15 @@ namespace NautilusXP2024
                     message = "No HCDB files selected.";
                     LogDebugInfo("HCDB to SQL Conversion: No HCDB files selected in File Browser.");
                 }
-
-                TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, message, 2000);
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("HCDB to SQL Conversion: File Browser - Dialog Cancelled.");
             }
 
             TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, message, 2000);
         }
-
-
-
         private Task<bool> ConvertHcdbToSqlAsync(string[] filePaths)
         {
             LogDebugInfo($"HCDB to SQL Conversion: Starting conversion for {filePaths.Length} HCDB file(s)");
@@ -2611,11 +2679,14 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseTicketLSTEncryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseTicketLSTEncryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("Ticket LST Decryption: Browsing for LST files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "LST files (*.lst)|*.lst",
                 Multiselect = true
@@ -2624,7 +2695,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -2641,10 +2720,10 @@ namespace NautilusXP2024
                         TicketLSTEncrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
                         string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LST files added" : "No new LST files added";
-                        string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                         message = addedFilesMessage + duplicatesMessage;
 
-                        LogDebugInfo($"Ticket LST Decryption: {newFilesCount} LST files added, {duplicatesCount} duplicates filtered via File Browser");
+                        LogDebugInfo($"Ticket LST Decryption: {newFilesCount} LST files added{duplicatesMessage} via File Browser");
                     });
                     displayTime = 1000; // Change display time since files were added
                 }
@@ -2653,11 +2732,10 @@ namespace NautilusXP2024
                     message = "No LST files selected.";
                     LogDebugInfo("Ticket LST Decryption: No LST files selected in File Browser.");
                 }
-
-                TemporaryMessageHelper.ShowTemporaryMessage(TicketLSTEncrypterDragAreaText, message, 2000);
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("Ticket LST Decryption: File Browser - Dialog Cancelled.");
             }
 
@@ -2775,11 +2853,14 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseTicketLSTDecryptHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseTicketLSTDecryptHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("Ticket LST Encryption: Browsing for LST files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "LST files (*.lst)|*.lst",
                 Multiselect = true
@@ -2788,7 +2869,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -2805,10 +2894,10 @@ namespace NautilusXP2024
                         TicketLSTDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
                         string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LST files added" : "No new LST files added";
-                        string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                         message = addedFilesMessage + duplicatesMessage;
 
-                        LogDebugInfo($"Ticket LST Encryption: {newFilesCount} LST files added, {duplicatesCount} duplicates filtered via File Browser");
+                        LogDebugInfo($"Ticket LST Encryption: {newFilesCount} LST files added{duplicatesMessage} via File Browser");
                     });
                     displayTime = 1000; // Change display time since files were added
                 }
@@ -2817,11 +2906,10 @@ namespace NautilusXP2024
                     message = "No LST files selected.";
                     LogDebugInfo("Ticket LST Encryption: No LST files selected in File Browser.");
                 }
-
-                TemporaryMessageHelper.ShowTemporaryMessage(TicketLSTDecrypterDragAreaText, message, 2000);
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("Ticket LST Encryption: File Browser - Dialog Cancelled.");
             }
 
@@ -3378,7 +3466,7 @@ namespace NautilusXP2024
 
                 // Construct the message after Dispatcher.Invoke has executed
                 string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LUA files added" : "No new LUA files added";
-                string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                 message = addedFilesMessage + duplicatesMessage;
                 string logPrefix = "LUA Compilation to LUAC: Drag and Drop - ";
                 LogDebugInfo(logPrefix + addedFilesMessage); // This will log "Drag and Drop Info: X LUA files added" or "Drag and Drop Info: No new LUA files added"
@@ -3394,17 +3482,31 @@ namespace NautilusXP2024
         }
 
 
-        private void ClickToBrowseHandlerLUACompiler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseHandlerLUACompiler(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            LogDebugInfo("LUA Compilation: Browsing for LUA files Initiated");
+
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "LUA files (*.lua)|*.lua",
                 Multiselect = true
             };
+
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -3426,24 +3528,27 @@ namespace NautilusXP2024
 
                     // Construct the message outside of the Dispatcher.Invoke block using the counts
                     string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LUA files added" : "No new LUA files added";
-                    string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                    string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                     message = addedFilesMessage + duplicatesMessage;
 
-                    displayTime = 2000; // Change display time since files were added
+                    displayTime = 1000; // Change display time since files were added
                     string logPrefix = "LUA Compilation to LUAC: Click to Browse - ";
-                    LogDebugInfo(logPrefix + addedFilesMessage); // This will log "Drag and Drop Info: X LUA files added" or "Drag and Drop Info: No new LUA files added"
+                    LogDebugInfo(logPrefix + addedFilesMessage); // Logs added files
                     if (duplicatesCount > 0)
                     {
-                        // Ensure we clean up the message by trimming any leading comma and space
-                        string cleanDuplicatesMessage = duplicatesMessage.TrimStart(',', ' ').Trim();
-                        LogDebugInfo(logPrefix + cleanDuplicatesMessage); // This will log "Drag and Drop Info: X duplicates filtered" if there are any duplicates
+                        LogDebugInfo(logPrefix + $"{duplicatesCount} duplicates filtered"); // Logs duplicates if any
                     }
                 }
                 else
                 {
-                    LogDebugInfo("LUA Compilation to LUAC: Click to Browse -  No LUA files were selected.");
+                    LogDebugInfo("LUA Compilation to LUAC: Click to Browse - No LUA files were selected.");
                     message = "No LUA files selected.";
                 }
+            }
+            else
+            {
+                LogDebugInfo("LUA Compilation to LUAC: File Browser - Dialog Cancelled.");
+                message = "Dialog cancelled.";
             }
 
             TemporaryMessageHelper.ShowTemporaryMessage(LUACompilerDragAreaText, message, 2000);
@@ -3862,7 +3967,7 @@ namespace NautilusXP2024
 
                 // Construct the message after Dispatcher.Invoke has executed
                 string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LUAC files added" : "No new LUAC files added";
-                string duplicatesMessage = duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "";
+                string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
                 message = addedFilesMessage + duplicatesMessage;
 
                 // Log final message
@@ -3873,9 +3978,14 @@ namespace NautilusXP2024
         }
 
 
-        private void ClickToBrowseHandlerLUACDecompiler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseHandlerLUACDecompiler(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            LogDebugInfo("LUAC Decompilation to LUA: Browsing for LUAC files Initiated");
+
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "LUAC files (*.luac)|*.luac",
                 Multiselect = true
@@ -3884,7 +3994,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -3904,10 +4022,13 @@ namespace NautilusXP2024
                         LUACDecompilerTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
                     });
 
-                    message = $"{newFilesCount} LUAC files added" + (duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "");
+                    string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} LUAC files added" : "No new LUAC files added";
+                    string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
+                    message = addedFilesMessage + duplicatesMessage;
                     displayTime = 1000; // Change display time since files were added
+
                     string logPrefix = "LUAC Decompilation to LUA: Click to Browse - ";
-                    LogDebugInfo(logPrefix + $"{newFilesCount} LUAC files added");
+                    LogDebugInfo(logPrefix + addedFilesMessage);
                     if (duplicatesCount > 0)
                     {
                         LogDebugInfo(logPrefix + $"{duplicatesCount} duplicates filtered");
@@ -3918,6 +4039,11 @@ namespace NautilusXP2024
                     LogDebugInfo("LUAC Decompilation to LUA: Click to Browse - No LUAC files were selected.");
                     message = "No LUAC files selected.";
                 }
+            }
+            else
+            {
+                message = "Dialog cancelled.";
+                LogDebugInfo("LUAC Decompilation to LUA: File Browser - Dialog Cancelled.");
             }
 
             TemporaryMessageHelper.ShowTemporaryMessage(LUACDecompilerDragAreaText, message, 2000);
@@ -4189,7 +4315,7 @@ namespace NautilusXP2024
 
                         INFDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} INF files added" + (duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "");
+                        message = $"{newFilesCount} INF files added" + (duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "");
 
                         LogDebugInfo($"INF Decryption: {newFilesCount} INF files added, {duplicatesCount} duplicates filtered");
                     });
@@ -4211,11 +4337,14 @@ namespace NautilusXP2024
         }
 
 
-        private void ClickToBrowseINFDecrypterHandler(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseINFDecrypterHandler(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("INF Decryption: Browsing for INF files Initiated");
 
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "INF files (*_INF)|*_INF",
                 Multiselect = true,
@@ -4225,7 +4354,15 @@ namespace NautilusXP2024
             string message = "No files selected.";
             int displayTime = 2000; // Default to 2 seconds for the message display.
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true)
             {
                 var selectedFiles = openFileDialog.FileNames;
 
@@ -4241,9 +4378,11 @@ namespace NautilusXP2024
 
                         INFDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} INF files added" + (duplicatesCount > 0 ? $", {duplicatesCount} duplicates filtered" : "");
+                        string addedFilesMessage = newFilesCount > 0 ? $"{newFilesCount} INF files added" : "No new INF files added";
+                        string duplicatesMessage = duplicatesCount > 1 ? $", {duplicatesCount} duplicates filtered" : "";
+                        message = addedFilesMessage + duplicatesMessage;
 
-                        LogDebugInfo($"INF Decryption: {newFilesCount} INF files added, {duplicatesCount} duplicates filtered via File Browser");
+                        LogDebugInfo($"INF Decryption: {newFilesCount} INF files added{duplicatesMessage} via File Browser");
                     });
                     displayTime = 1000; // Change display time since files were added
                 }
@@ -4252,17 +4391,15 @@ namespace NautilusXP2024
                     message = "No INF files selected.";
                     LogDebugInfo("INF Decryption: No INF files selected in File Browser.");
                 }
-
-                TemporaryMessageHelper.ShowTemporaryMessage(INFDecrypterDragAreaText, message, 2000);
             }
             else
             {
+                message = "Dialog cancelled.";
                 LogDebugInfo("INF Decryption: File Browser - Dialog Cancelled.");
             }
 
             TemporaryMessageHelper.ShowTemporaryMessage(INFDecrypterDragAreaText, message, 2000);
         }
-
 
 
 
@@ -4567,6 +4704,7 @@ namespace NautilusXP2024
                 TemporaryMessageHelper.ShowTemporaryMessage(CACHEMapperDragAreaText, "Folder selection was cancelled.", 2000);
             }
         }
+
 
 
         // TAB 8: Logic for SDC Creation
@@ -6180,17 +6318,26 @@ namespace NautilusXP2024
 
 
 
-        private void ClickToBrowseHandlerEbootPatcher(object sender, RoutedEventArgs e)
+        private async void ClickToBrowseHandlerEbootPatcher(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("EBOOT Patcher: Click to Browse EBOOT File selected - Checking...");
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            this.IsEnabled = false;  // Disable the main window to prevent interactions
+
+            var openFileDialog = new VistaOpenFileDialog
             {
                 Filter = "Eboot files (*.bin;*.elf;*.self)|*.bin;*.elf;*.self",
                 Multiselect = false
             };
             string message = "No file selected.";
 
-            if (openFileDialog.ShowDialog() == true)
+            bool? result = openFileDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            this.IsEnabled = true;  // Re-enable the main window after the delay
+
+            if (result == true)
             {
                 var selectedFile = openFileDialog.FileName;
                 LoadEBOOT(selectedFile);
@@ -6206,20 +6353,16 @@ namespace NautilusXP2024
                 {
                     message = "No Eboot file selected.";
                 }
-
-                Dispatcher.Invoke(() =>
-                {
-                    EbootPatcherDragAreaText.Text = message;
-                });
             }
             else
             {
                 message = "File selection was canceled.";
-                Dispatcher.Invoke(() =>
-                {
-                    EbootPatcherDragAreaText.Text = message;
-                });
             }
+
+            Dispatcher.Invoke(() =>
+            {
+                EbootPatcherDragAreaText.Text = message;
+            });
         }
 
 

@@ -674,7 +674,7 @@
                                     <CheckBox x:Name="CheckBoxArchiveMapperEXP" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0" Unchecked="CheckBoxArchiveMapperEXP_Unchecked" Checked="CheckBoxArchiveMapperEXP_Checked"/>
                                     <TextBlock Text="Validate Files:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
-                                    <TextBlock Text="Offline Mode:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Offline Structure:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
                                    
                                 </StackPanel>
@@ -1305,6 +1305,36 @@
 
                         <!-- File List Box -->
                         <TextBox x:Name="Sha1TextBox" Height="350" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- Tab SHA1 Checker -->
+                <TabItem Header="Video" Tag="Video" >
+                    <StackPanel Background="#333333" AllowDrop="True" Drop="Sha1DragArea_Drop">
+
+                        <!-- Title TextBlock -->
+                        <TextBlock Text="Video Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+
+                        <!-- Drag-and-Drop Area -->
+                        <Border x:Name="VideoDragArea" Height="100" Width="800" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="SHA1BrowseButton_Click">
+                            <TextBlock x:Name="VideoDragAreaText" Text="Drag Videos here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+                        </Border>
+
+                        <!-- Toggle Switch -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Show SHA1 for Decrypted file where applicable:  " Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="VideoCheckerDecryptCheckBox" Style="{StaticResource ModernToggleSwitchStyle}" />
+                        </StackPanel>
+
+                        <!-- Buttons Row -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="videoCopyButton" Content="Copy" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CopySHA1Button_Click"/>
+                            <Button x:Name="videoClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearSHA1Button_Click"/>
+                            <Button Content="Verify Content" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerVerifyTestButtonClick"/>
+                        </StackPanel>
+
+                        <!-- File List Box -->
+                        <TextBox x:Name="VideoTextBox" Height="350" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </TabItem>
 
