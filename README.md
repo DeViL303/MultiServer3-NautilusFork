@@ -91,16 +91,14 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
   - It will also parse xml/json/scene/sdc/odc etc looking for bytes indicating corruption/encryption/compression.
   - It uses HomeLuac.exe to parse lua files for syntax errors. This can lead to some false flags as home devs did sometimes write non valid lua but overall its useful. 
   - It will also log any 0 byte files for further checking, again this does lead to some false flags due to the fact Home devs did sometimes use 0 byte files but overall its useful ot have them flagged for further checking
-  - Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffis to output folder name.
-  - If any warnings (validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
+  - Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffix to output folder name.
+  - If any warnings (file validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
 
 
 ## Offline Structure:
-  - This setting only effects object extraction, when enabled it extract objects into the "offline" style with all files and folders in root. This is perfect for running in extracted form on HDK builds.
-  - This was the norm up until recently and if you ever extract objects with older tools such as gazs HomeTool you will be familiar with it.
-  - Now that Online is revived this is no longer the default format so must be selected. Note unlike other settings, This setting does not get remembered between sessions.
-
-
+  - This setting only effects object extraction, when enabled it extracts objects into the "offline" folder structure with all files and folders in root. This is perfect for running in extracted form on HDK builds.
+  - This was the norm up until recently and if you ever extracted objects with older tools such as gazs HomeTool you will be familiar with it, but its not the true folder structure needed for rebuilding archives so use with caution.
+  - Now that Online is revived this is no longer the default folder structure needed so its not the default setting. Note unlike other settings, This setting does not get remembered between sessions.
 
 
 # Tab 2: SceneID Generator / Decrypter
