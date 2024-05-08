@@ -1,8 +1,8 @@
 # Multiserver 3 - Nautilus Fork
 
-This is a fork of AgentDarks447's awesome server project Multiserver3. This fork is specifically aimed at tweaking the Nautilus plugin and testing experimental changes which might not be 100% stable or could cause issues with the web tool portion of Multiserver. If you want to use Multiserver as a game server, I recommend the official version that can be found [here](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDarks447's celebrated project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
 
-### USING NAUTILUS IS ALWAYS AT YOUR OWN RISK! RECOMMENDED TO BACKUP YOUR DATA FIRST!
+### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
 ## Tab 1: BAR/SDAT/SHARC TOOL
 
@@ -20,27 +20,27 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 
 </div>
 
-### Note
-For Archive Creator input, it's currently recommended to use drag and drop from Windows File Explorer as that can handle folders or zip files. The "click to browse" function currently only supports zip files.
+### Important Note:
+For inputs into the Archive Creator, it is recommended to utilize the drag-and-drop functionality from Windows File Explorer, as it can manage both folders and zip files. The "click to browse" function currently only supports zip files.
 
-#### Archive Creator Usage:
-- Drag in one or more folders and choose the archive type before clicking "Create." It should be able to handle large tasks such as 60k objects in one operation.
-- Enter an 8-byte timestamp to match the timestamp field in your SDC if needed.
-- Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings but will reset to default on the next session.
+#### Usage Instructions for Archive Creator:
+- Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as managing up to 60,000 objects in a single session.
+- Insert an 8-byte timestamp to align with the timestamp field in your SDC, if applicable.
+- The default output path for the Archive Creator tool is located adjacent to the exe/Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
 
-#### Archive Creator Options:
+#### Options for Archive Creator:
 
 ##### Timestamp:
-   - Add timestamp here. Default is FFFFFFFF. If less than 8 bytes are entered, it will be padded to 8 bytes with a prefix of 0.
-   - If a timestamp.txt exists in your input folder, this GUI field will be ignored.
+   - Enter a timestamp here. The default is FFFFFFFF. If less than 8 bytes are entered, they will be padded to 8 bytes with a prefix of 0.
+   - If a timestamp.txt file is present in your input folder, this GUI field will be disregarded.
 
-##### Archive Types:
-- **BAR:** Simplest form of Home Archive used in early retail home and later only used for developer versions of Home. These are the fastest to read/mount/create/dump due to no extra security layers, just simple zlib compression.
-- **BAR Secure:** Encrypted BAR used in conjunction with SHA1 in TSS in some earlier pre-sharc versions of home.
-- **SDAT:** Similar to BAR but with an NPD encryption layer applied on top.
-- **SDAT SHARC:** Secure archive format introduced with version 1.82 to prevent hacking and piracy.
-- **CORE SHARC:** Introduced with v1.82+ to secure local COREDATA sharc files in the client pkg.
-- **Config SHARC:** Used for online mode configuration files pushed to the client during initial connection.
+##### Types of Archives:
+- **BAR:** The most basic form of Home Archive, historically used in early retail home editions and later restricted to developer versions. These archives are the quickest to read, mount, create, and dump due to their simple zlib compression and lack of additional security layers.
+- **BAR Secure:** An encrypted version of BAR used in conjunction with SHA1 in the TSS in some of the earlier pre-sharc versions of Home.
+- **SDAT:** Similar to BAR but augmented with an NPD encryption layer.
+- **SDAT SHARC:** A secure archive format introduced in version 1.82 to combat hacking and piracy.
+- **CORE SHARC:** First introduced in version 1.82+, this format secures local COREDATA sharc files within the client package.
+- **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection.
 
 ## Tool 2: Home Archive Unpacker
 
@@ -50,34 +50,34 @@ For Archive Creator input, it's currently recommended to use drag and drop from 
 
 </div>
 
-### Note:
-For Archive Unpacker input, it's currently recommended to use drag and drop from Windows File Explorer as it can handle folders. When you drag a folder into the Unpacker, it will scan it recursively for any compatible archives and add all.
+### Important Note:
+For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows File Explorer is recommended as it can effectively manage folders. Upon dragging a folder into the Unpacker, it will recursively scan for any compatible archives and automatically add them.
 
-#### Archive Unpacker Usage:
-- Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 60k objects in one operation.
-- It will create a timestamp.txt in the output folder with the original timestamp of the archive; leave this in place, and it will be used during future repacking of that same folder.
-- Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
-- When unpacking objects, if the input archive has the string "object" in it, then the output folder will have it replaced with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will extract to 00000000-00000000-00000000-0000000B_T037 folder).
+#### Usage Instructions for Archive Unpacker:
+- Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking up to 60,000 objects in a single operation.
+- The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder.
+- The default output path for the Archive Unpacker tool is next to the exe/Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
+- When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
 
-#### Archive Unpacker Options:
+#### Options for Archive Unpacker:
 
 ##### UUID/Path Prefix:
-- You can enter a UUID or a full path prefix here that will be added onto any paths found during the mapping process.
-- Note: It will also scan for any UUIDs ANYWHERE in the input file path and attempt to use those for mapping.
+- A UUID or a complete path prefix can be entered here, which will be appended to any paths identified during the mapping process.
+- Additionally, it will scan for any UUIDs present anywhere in the input file path and attempt to utilize them for mapping.
 
 ##### Validate Files:
-- Enabled by default. It is not recommended to disable this option, but the mapper will be faster on bulk tasks if you do.
-- If enabled, this option will make an attempt to validate that all files have dumped correctly. It uses a combination of header/string byte-level checks and dedicated libraries for checking media files such as mp3/wav/png/jpg.
-- It will also parse xml/json/scene/sdc/odc, etc., looking for bytes indicating corruption/encryption/compression.
-- It uses HomeLuac.exe to parse Lua files for syntax errors. This can lead to some false flags as home devs did sometimes write non-valid Lua, but overall it's useful.
-- It will also log any 0-byte files for further checking; again, this does lead to some false flags due to the fact Home devs did sometimes use 0-byte files, but overall it's useful to have them flagged for further checking.
-- Finally, it will log any items with unmapped files—this check is slightly different as it always happens regardless of whether validate files are enabled or not. If any unmapped files are detected, it will add a _CHECK suffix to the output folder name.
-- If any warnings (file validation failures) are detected at all during validation, you will find a JobReport.txt in your output folder.
+- This feature is enabled by default. Disabling this option can speed up the mapping process for bulk tasks, although it is not recommended.
+- If enabled, this feature will attempt to ensure that all files have been correctly dumped. It employs a combination of header/string byte-level checks and specific libraries to check media files such as mp3, wav, png, jpg.
+- It also analyzes xml, json, scene, sdc, odc, etc., searching for indications of corruption, encryption, or compression.
+- HomeLuac.exe is used to verify Lua files for syntax errors, which may occasionally result in false flags, as developers sometimes wrote non-standard Lua. However, this check is generally beneficial.
+- The tool will also record any 0-byte files for additional inspection. Although this sometimes results in false flags, as developers occasionally used 0-byte files, it is advantageous to flag these for further review.
+- Lastly, any items with unmapped files will be logged. This check occurs regardless of whether the validate files feature is enabled. If unmapped files are detected, a _CHECK suffix will be added to the output folder name.
+- Should any warnings or file validation failures occur during the validation process, a JobReport.txt will be generated in your output folder.
 
 ##### Offline Structure:
-- This setting only affects object extraction; when enabled, it extracts objects into the "offline" folder structure with all files and folders in the root. This is perfect for running in extracted form on HDK builds.
-- This was the norm up until recently, and if you ever extracted objects with older tools such as Gaz's HomeTool, you will be familiar with it, but it's not the true folder structure needed for rebuilding archives, so use with caution.
-- Now that Online is revived, this is no longer the default folder structure needed, so it's not the default setting. Note, unlike other settings, this setting does not get remembered between sessions.
+- This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
+- This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised.
+- Given the revival of Online, this is no longer the default folder structure required, thus it is not set as the default. It is important to note that unlike other settings, this one does not persist between sessions.
 
 ## Tab 2: SceneID Generator / Decrypter
 
@@ -96,15 +96,15 @@ For Archive Unpacker input, it's currently recommended to use drag and drop from
 </div>
 
 ### Note:
-Scene IDs, also known as Channel IDs, are very important for instancing in PlayStation Home. If two scenes share a Scene ID in SceneList.xml, then players will be put into the same instance. This means generally each scene must have a unique Scene ID, but in some cases where scenes are similar enough, it might be possible to share IDs.
+Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are sufficiently similar, sharing IDs may be feasible.
 
-#### Usage
-- Enter a number between 1 and 65535, click Encrypt.
-- Also accepts hyphen-separated ranges for bulk generation.
+#### Usage:
+- Enter a number between 1 and 65535 and click 'Encrypt'.
+- The tool also accepts hyphen-separated ranges for bulk generation.
 
-#### Options
-- Generally, you don't need to touch this setting; leave it on default (Disabled) for newer Home.
-- Legacy Mode, when enabled, allows for the generation of early type IDs to suit earlier home builds.
+#### Options:
+- Typically, there is no need to adjust this setting; leave it on default (Disabled) for newer versions of Home.
+- When enabled, Legacy Mode allows for the generation of early type IDs suitable for older Home builds.
 
 ## Tool 2: Scene ID Decrypter
 
@@ -115,12 +115,12 @@ Scene IDs, also known as Channel IDs, are very important for instancing in PlayS
 </div>
 
 ### Note:
-As mentioned earlier, Scene IDs are crucial for instancing in PlayStation Home. Sharing IDs between similar scenes is possible but should be handled with care.
+As previously mentioned, Scene IDs are essential for correct instancing in PlayStation Home. It is possible to share IDs between similar scenes, but this should be approached with caution.
 
-#### Usage
-- Enter one or more Scene IDs (space, comma, line-separated).
-- You can also drag a plaintext SceneList.xml into the right-hand side of the tab, and it will parse and decrypt all IDs. Don't drag the xml exactly onto the textbox.
+#### Usage:
+- Enter one or more Scene IDs (separated by spaces, commas, or lines).
+- You can also drag a plaintext SceneList.xml into the right-hand side of the tab, and it will parse and decrypt all IDs. Ensure not to drag the XML directly onto the textbox.
 
-#### Options
-- Generally, you don't need to touch this setting; leave it on default (Disabled) for newer Home.
-- Legacy Mode, when enabled, allows for decryption of early type IDs to suit earlier home builds.
+#### Options:
+- Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
+- Legacy Mode, when activated, facilitates the decryption of early type IDs suitable for earlier Home builds.
