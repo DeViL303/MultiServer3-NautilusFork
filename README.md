@@ -4,7 +4,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 
 ### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
-## Tab 1: BAR/SDAT/SHARC TOOL
+<div align="center">## Tab 1: BAR/SDAT/SHARC TOOL</div>
 
 <div align="center">
 
@@ -12,7 +12,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 
 </div>
 
-## Tool 1: Home Archive Creator
+<div align="center">## Tool 1: Home Archive Creator</div>
 
 <div align="center">
 
@@ -24,7 +24,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 For inputs into the Archive Creator, it is recommended to utilize the drag-and-drop functionality from Windows File Explorer, as it can manage both folders and zip files. The "click to browse" function currently only supports zip files.
 
 #### Usage Instructions for Archive Creator:
-- Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as managing up to 60,000 objects in a single session.
+- Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as creating 70,000+ objects in a single operation.
 - Insert an 8-byte timestamp to align with the timestamp field in your SDC, if applicable.
 - The default output path for the Archive Creator tool is located adjacent to the exe/Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
 
@@ -42,7 +42,7 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 - **CORE SHARC:** First introduced in version 1.82+, this format secures local COREDATA sharc files within the client package.
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection.
 
-## Tool 2: Home Archive Unpacker
+<div align="center">## Tool 2: Home Archive Unpacker</div>
 
 <div align="center">
 
@@ -54,7 +54,7 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows File Explorer is recommended as it can effectively manage folders. Upon dragging a folder into the Unpacker, it will recursively scan for any compatible archives and automatically add them.
 
 #### Usage Instructions for Archive Unpacker:
-- Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking up to 60,000 objects in a single operation.
+- Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
 - The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder.
 - The default output path for the Archive Unpacker tool is next to the exe/Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
 - When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
@@ -79,7 +79,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised.
 - Given the revival of Online, this is no longer the default folder structure required, thus it is not set as the default. It is important to note that unlike other settings, this one does not persist between sessions.
 
-## Tab 2: SceneID Generator / Decrypter
+<div align="center">## Tab 2: SceneID Generator / Decrypter</div>
 
 <div align="center">
 
@@ -87,7 +87,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
-## Tool 1: Scene ID Generator
+<div align="center">## Tool 1: Scene ID Generator</div>
 
 <div align="center">
 
@@ -106,7 +106,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Typically, there is no need to adjust this setting; leave it on default (Disabled) for newer versions of Home.
 - When enabled, Legacy Mode allows for the generation of early type IDs suitable for older Home builds.
 
-## Tool 2: Scene ID Decrypter
+<div align="center">## Tool 2: Scene ID Decrypter</div>
 
 <div align="center">
 
