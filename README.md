@@ -10,14 +10,14 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
  
 ## Tab 1 BAR/SDAT/SHARC - Tool 1 Home Archive Creator:
 
-Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
+### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
 
 ### Usage: 
 - Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
-- Enter 8 byte timestamp to match SDC if needed. If there is a valid timestamp.txt found in the input folder it will use that timestamp instead.
-- Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings
+- Enter 8 byte timestamp to match SDC if needed. If there is a valid timestamp.txt found in the input folder it will ignore the timsetamp in GUI use that timestamp in the txt instead.
+- Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings but will reset to default on next session
 
 ### Archive Types:
 - BAR:
@@ -57,7 +57,7 @@ Note: For input it's currently recommended to use drag and drop from windows fil
    
 ## Tab 1 BAR/SDAT/SHARC - Tool 2 Home Archive Unpacker:
 
-Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursivelt for any compatible files and add each one. 
+### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursivelt for any compatible files and add each one. 
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
@@ -65,7 +65,8 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 ### Usage: 
 - Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
 - It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
-- Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings.
+- Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
+
 
 
 ### Options:
