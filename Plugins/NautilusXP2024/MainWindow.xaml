@@ -667,7 +667,7 @@
                                 </StackPanel>
 
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="455">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="360">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
                                     <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
@@ -676,8 +676,7 @@
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
                                     <TextBlock Text="Offline Mode:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
-                                    <TextBlock Text="Repack:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center" />
-                                    <CheckBox x:Name="CheckBoxArchiveMapperBARrepack" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                   
                                 </StackPanel>
 
                                 <!-- Buttons -->

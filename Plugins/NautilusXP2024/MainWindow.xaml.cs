@@ -1527,7 +1527,7 @@ namespace NautilusXP2024
             {
                 LogDebugInfo($"resources.xml found at: {resourcesXmlPath}");
                 // Move files listed in resources.xml
-                await MoveResourceFiles(resourcesXmlPath, directoryPath);
+                await MoveAllExceptSpecificFiles(resourcesXmlPath, directoryPath);
             }
             else
             {
@@ -1535,66 +1535,57 @@ namespace NautilusXP2024
             }
         }
 
-        private async Task MoveResourceFiles(string resourcesXmlPath, string targetDirectoryPath)
+        private async Task MoveAllExceptSpecificFiles(string resourcesXmlPath, string targetDirectoryPath)
         {
-            string resourcesDir = Path.GetDirectoryName(resourcesXmlPath);
-            XmlDocument doc = new XmlDocument();
-            doc.Load(resourcesXmlPath);
+            // Determine the source directory from the resources.xml file path
+            string sourceDirectoryPath = Path.GetDirectoryName(resourcesXmlPath);
 
-            // Handling XML namespaces
-            XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
-            namespaceManager.AddNamespace("def", "http://home.scedev.net/schema/object");
+            // List of files to exclude from moving, using a case-insensitive comparison
+            var excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "resources.xml",
+        "object.xml",
+        "localisation.xml",
+        "editor.oxml",
+        "object.odc",
+        "catalogueentry.xml",
+        "validation.xml",
+        "main.lua",
+        "large.png",
+        "small.png"
+    };
 
-            HashSet<string> directoriesToCheck = new HashSet<string>();
-
-            XmlNodeList resourceNodes = doc.SelectNodes("//def:local/*[@file]", namespaceManager);
-            foreach (XmlNode node in resourceNodes)
+            // Move all files from source directory to target directory, except the excluded ones
+            var files = Directory.EnumerateFiles(sourceDirectoryPath);
+            foreach (var file in files)
             {
-                string relativePath = node.Attributes["file"].Value;
-                string sourcePath = Path.Combine(resourcesDir, relativePath);
-                string destinationPath = Path.Combine(targetDirectoryPath, relativePath).ToUpper();  // Convert path to uppercase
-
-                LogDebugInfo($"Preparing to move from '{sourcePath}' to '{destinationPath}'.");
-
-                if (File.Exists(sourcePath))
+                string fileName = Path.GetFileName(file);
+                if (!excludeFiles.Contains(fileName))
                 {
-                    string sourceDir = Path.GetDirectoryName(sourcePath);
-                    string destinationDir = Path.GetDirectoryName(destinationPath);
-                    Directory.CreateDirectory(destinationDir);  // Ensure the destination directory exists
-                    File.Move(sourcePath, destinationPath, true); // Move file, overwrite if it exists
-                    LogDebugInfo($"Successfully moved '{sourcePath}' to '{destinationPath}'.");
-
-                    // Add the directory of the moved file to the set to check for emptiness later
-                    directoriesToCheck.Add(sourceDir);
-                }
-                else
-                {
-                    LogDebugInfo($"File not found: {sourcePath}, unable to move.");
+                    string destFile = Path.Combine(targetDirectoryPath, fileName);
+                    File.Move(file, destFile);
                 }
             }
 
-            // Attempt to delete any directories that are now empty
-            foreach (string directory in directoriesToCheck)
+            // Move all directories from source directory to target directory
+            var directories = Directory.EnumerateDirectories(sourceDirectoryPath);
+            foreach (var dir in directories)
             {
-                // Directly check if the directory is empty here
-                if (!Directory.EnumerateFileSystemEntries(directory).Any())
-                {
-                    try
-                    {
-                        Directory.Delete(directory, false);
-                        LogDebugInfo($"Deleted empty directory: {directory}");
-                    }
-                    catch (Exception ex)
-                    {
-                        LogDebugInfo($"Failed to delete directory '{directory}': {ex.Message}");
-                    }
-                }
+                string dirName = Path.GetFileName(dir);
+                string destDir = Path.Combine(targetDirectoryPath, dirName);
+                Directory.Move(dir, destDir);
             }
+
+            // Delete the timestamp.txt file in targetDirectoryPath if it exists
+            string timestampFilePath = Path.Combine(targetDirectoryPath, "timestamp.txt");
+            if (File.Exists(timestampFilePath))
+            {
+                File.Delete(timestampFilePath);
+            }
+
+            // Ensure that the operation does not block the main thread
+            await Task.CompletedTask;
         }
-
-
-
-
 
         private async Task<ConcurrentDictionary<string, string>> InitialScanForPaths(IEnumerable<string> filePaths)
         {
