@@ -8,7 +8,8 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 
 
  
-## Tab 1 BAR/SDAT/SHARC - Tool 1 Home Archive Creator:
+# BAR/SDAT/SHARC
+## Tab 1 Tool 1: Home Archive Creator:
 
 ### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
@@ -53,9 +54,8 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 
 
 
-  
-   
-## Tab 1 BAR/SDAT/SHARC - Tool 2 Home Archive Unpacker:
+# BAR/SDAT/SHARC
+## Tab 1 Tool 2: Home Archive Unpacker
 
 ### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursivelt for any compatible files and add each one. 
 
@@ -66,6 +66,7 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 - Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
 - It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
 - Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
+- When unpacking objects, if the input archive has the string "object" in it, then the ouptu folder will be renamed with the UUID (eg. 00000000-00000000-00000000-0000000B/object_t037.sdat will extract to 00000000-00000000-00000000-0000000B_T037 folder)
 
 
 
