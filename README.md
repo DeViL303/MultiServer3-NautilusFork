@@ -17,7 +17,7 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 ### Note: For Archive Creator input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
 ## Archive Creator Usage: 
-- Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
+- Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 60k objects in one operation.
 - Enter a 8 byte timestamp to match timestamp field in your SDC if needed.
 - Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings but will reset to default on next session
 
@@ -72,7 +72,7 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 ### Note: For Archive Unpacker input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursively for any compatible archives and add all. 
 
 ## Archive Unpacker Usage: 
-- Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
+- Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 60k objects in one operation.
 - It will create a timestamp.txt in the output folder with the original timestamp of the archive, leave this in place and it will be used during future repacking of that same folder.
 - Default output path for the archive Unpacker tool is next to the exe/Output/Mapped/. This can be changed in settings but will reset to default on next session.
 - When unpacking objects, if the input archive has the string "object" in it, then the output folder will have it replaced with the UUID (eg. 00000000-00000000-00000000-0000000B/object_T037.sdat will extract to 00000000-00000000-00000000-0000000B_T037 folder)
