@@ -4,9 +4,9 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 
 ### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
-<div align="center">
-   # Tab 1: BAR/SDAT/SHARC TOOL
-</div>
+<h2 align="center">
+   Tab 1: BAR/SDAT/SHARC TOOL
+</h2>
 
 <div align="center">
 
@@ -14,9 +14,9 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 
 </div>
 
-<div align="center">
-   # Tool 1: Home Archive Creator
-</div>
+<h2 align="center">
+   Tool 1: Home Archive Creator
+</h2>
 
 <div align="center">
 
@@ -46,9 +46,9 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 - **CORE SHARC:** First introduced in version 1.82+, this format secures local COREDATA sharc files within the client package.
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection.
 
-<div align="center">
-   # Tool 2: Home Archive Unpacker
-</div>
+<h2 align="center">
+   Tool 2: Home Archive Unpacker
+</h2>
 
 <div align="center">
 
@@ -85,9 +85,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised.
 - Given the revival of Online, this is no longer the default folder structure required, thus it is not set as the default. It is important to note that unlike other settings, this one does not persist between sessions.
 
-<div align="center">
-   # Tab 2: SceneID Generator / Decrypter
-</div>
+<h2 align="center">
+   Tab 2: SceneID Generator / Decrypter
+</h2>
 
 <div align="center">
 
@@ -95,9 +95,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
-<div align="center">
-   # Tool 1: Scene ID Generator
-</div>
+<h2 align="center">
+   Tool 1: Scene ID Generator
+</h2>
 
 <div align="center">
 
@@ -116,9 +116,9 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Typically, there is no need to adjust this setting; leave it on default (Disabled) for newer versions of Home.
 - When enabled, Legacy Mode allows for the generation of early type IDs suitable for older Home builds.
 
-<div align="center">
-   # Tool 2: Scene ID Decrypter
-</div>
+<h2 align="center">
+   Tool 2: Scene ID Decrypter
+</h2>
 
 <div align="center">
 
