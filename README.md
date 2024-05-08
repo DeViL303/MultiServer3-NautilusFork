@@ -11,9 +11,9 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 # BAR/SDAT/SHARC
 ## Tab 1 Tool 1: Home Archive Creator:
 
-### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
-
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
+
+### Note: For Archive Creator input it's currently recommended to use drag and drop from windows file explorer as that can handle folders or zip files. Click to browse function only supports zips currently.
 
 ### Usage: 
 - Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
@@ -57,10 +57,10 @@ This is a fork of AgentDarks447's awesome project Multiserver3. This fork is aim
 # BAR/SDAT/SHARC
 ## Tab 1 Tool 2: Home Archive Unpacker
 
-### Note: For input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursivelt for any compatible files and add each one. 
-
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
+
+### Note: For Archive Unpacker input it's currently recommended to use drag and drop from windows file explorer as that can handle folders. When you drag a folder into Unpacker it will scan it recursively for any compatible archives and add all. 
 
 ### Usage: 
 - Drag in one or more compatible archives or folders. It should be able to handle large tasks such as unpacking 10k objects in one operation.
