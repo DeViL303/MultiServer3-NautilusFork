@@ -51,13 +51,14 @@ Archive Types:
     - Not really much point using this format anymore since AgentDark447 cracked it and released tools.
 
 - CORE SHARC:
-    - Format used for local COREDATA sharc files in the client pkg.
+    - Format introduced with v1.82+. Used to secure local COREDATA sharc files in the client pkg.
     - Not really much point using this format anymore since AgentDark447 cracked it and released tools.
 
 - Config SHARC:
     - These are used for online mode configuration files pushed to client during initial connection.
     - Retail 1.82+ needs these to be encrypted with this setting.
-    - These are the only type of sharc that is still needed in 2024
+    - These are different than other sharc files in that these are secured with content server key. 
+    - These are the only type of sharc that is still needed for Retail online in 2024. 
 
 
 
