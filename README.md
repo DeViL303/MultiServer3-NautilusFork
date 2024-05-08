@@ -1,4 +1,3 @@
-# Multiserver 3
-A Unified Server Software.
+# Multiserver 3 - Nautilus Fork
 
-![MutiServer3](https://github.com/GitHubProUser67/MultiServer2/assets/127040195/0282df7d-f5f2-444d-9982-ea11cac5d8b5)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a378bb7-382a-4ff6-b328-a7fff8cb836c)
