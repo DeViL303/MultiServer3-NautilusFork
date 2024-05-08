@@ -30,6 +30,7 @@ using CustomLogger;
 using HomeTools.AFS;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Xml;
 
 
 namespace NautilusXP2024
@@ -1492,10 +1493,102 @@ namespace NautilusXP2024
             string sourceFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "JobReport.txt");
             string destinationFile = Path.Combine(checkedFolder, "JobReport.txt");
 
+            if (CheckBoxArchiveMapperOfflineMode.IsChecked ?? false)
+            {
+                await CreateHDKFolderStructure(finalDirectoryPath);
+            }
+
             if (File.Exists(sourceFile))
             {
                 File.Copy(sourceFile, destinationFile, overwrite: true);
                 LogDebugInfo($"JobReport.txt was copied to '{destinationFile}'.");
+            }
+        }
+
+        private async Task CreateHDKFolderStructure(string directoryPath)
+        {
+            // Define a local function to recursively search for resources.xml
+            string FindResourcesXml(string path)
+            {
+                foreach (var directory in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories))
+                {
+                    string filePath = Path.Combine(directory, "resources.xml");
+                    if (File.Exists(filePath))
+                    {
+                        return filePath;
+                    }
+                }
+                return null; // Return null if not found
+            }
+
+            // Use the local function to find resources.xml
+            string resourcesXmlPath = FindResourcesXml(directoryPath);
+            if (!string.IsNullOrEmpty(resourcesXmlPath))
+            {
+                LogDebugInfo($"resources.xml found at: {resourcesXmlPath}");
+                // Move files listed in resources.xml
+                await MoveResourceFiles(resourcesXmlPath, directoryPath);
+            }
+            else
+            {
+                LogDebugInfo("resources.xml not found in the directory structure.");
+            }
+        }
+
+        private async Task MoveResourceFiles(string resourcesXmlPath, string targetDirectoryPath)
+        {
+            string resourcesDir = Path.GetDirectoryName(resourcesXmlPath);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(resourcesXmlPath);
+
+            // Handling XML namespaces
+            XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+            namespaceManager.AddNamespace("def", "http://home.scedev.net/schema/object");
+
+            HashSet<string> directoriesToCheck = new HashSet<string>();
+
+            XmlNodeList resourceNodes = doc.SelectNodes("//def:local/*[@file]", namespaceManager);
+            foreach (XmlNode node in resourceNodes)
+            {
+                string relativePath = node.Attributes["file"].Value;
+                string sourcePath = Path.Combine(resourcesDir, relativePath);
+                string destinationPath = Path.Combine(targetDirectoryPath, relativePath).ToUpper();  // Convert path to uppercase
+
+                LogDebugInfo($"Preparing to move from '{sourcePath}' to '{destinationPath}'.");
+
+                if (File.Exists(sourcePath))
+                {
+                    string sourceDir = Path.GetDirectoryName(sourcePath);
+                    string destinationDir = Path.GetDirectoryName(destinationPath);
+                    Directory.CreateDirectory(destinationDir);  // Ensure the destination directory exists
+                    File.Move(sourcePath, destinationPath, true); // Move file, overwrite if it exists
+                    LogDebugInfo($"Successfully moved '{sourcePath}' to '{destinationPath}'.");
+
+                    // Add the directory of the moved file to the set to check for emptiness later
+                    directoriesToCheck.Add(sourceDir);
+                }
+                else
+                {
+                    LogDebugInfo($"File not found: {sourcePath}, unable to move.");
+                }
+            }
+
+            // Attempt to delete any directories that are now empty
+            foreach (string directory in directoriesToCheck)
+            {
+                // Directly check if the directory is empty here
+                if (!Directory.EnumerateFileSystemEntries(directory).Any())
+                {
+                    try
+                    {
+                        Directory.Delete(directory, false);
+                        LogDebugInfo($"Deleted empty directory: {directory}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogDebugInfo($"Failed to delete directory '{directory}': {ex.Message}");
+                    }
+                }
             }
         }
 

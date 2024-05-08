@@ -663,17 +663,21 @@
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="UUID or Path Prefix (Optional):" Style="{StaticResource Sha1TextBlockStyle}"/>
-                                    <TextBox x:Name="ArchiveUnpackerPathTextBox" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="500" Width="350"/>
+                                    <TextBox x:Name="ArchiveUnpackerPathTextBox" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="500" Width="311"/>
                                 </StackPanel>
 
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="187">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="455">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
                                     <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperEXP" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0" Unchecked="CheckBoxArchiveMapperEXP_Unchecked" Checked="CheckBoxArchiveMapperEXP_Checked"/>
                                     <TextBlock Text="Validate Files:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
+                                    <TextBlock Text="Offline Mode:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                    <TextBlock Text="Repack:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center" />
+                                    <CheckBox x:Name="CheckBoxArchiveMapperBARrepack" Style="{StaticResource ModernToggleSwitchStyle}" />
                                 </StackPanel>
 
                                 <!-- Buttons -->
@@ -1418,7 +1422,7 @@
                                 <Button Content="▶" Style="{StaticResource DarkModeButtonSmallStyle}" Width="20" Click="IncreaseCpuPercentage_Click"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
-                                <TextBlock Text="Parallel Threads (Mapping):" Foreground="White" VerticalAlignment="Center" Width="160" />
+                                <TextBlock Text="Parallel Threads:" Foreground="White" VerticalAlignment="Center" Width="160" />
                                 <Button Content="◀" Style="{StaticResource DarkModeButtonSmallStyle}" Width="20" Click="DecreaseMappingThreads_Click"/>
                                 <TextBox x:Name="MappingThreadsTextbox" Width="24" Style="{StaticResource SettingsTextBoxStyle}"
          Text="12" Height="22" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" TextChanged="MappingThreadsTextBox_TextChanged"/>
@@ -1468,7 +1472,7 @@
                                     </ComboBox.Template>
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock  FontSize="14" Foreground="White" Margin="0,100,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
+                            <TextBlock  FontSize="14" Foreground="White" Margin="0,70,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
