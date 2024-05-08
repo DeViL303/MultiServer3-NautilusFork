@@ -94,7 +94,46 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
   - Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffis to output folder name.
   - If any warnings (validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
 
+
 ### Offline Structure:
   - This setting only effects object extraction, when enabled it extract objects into the "offline" style with all files and folders in root. This is perfect for running in extracted form on HDK builds.
   - This was the norm up until recently and if you ever extract objects with older tools such as gazs HomeTool you will be familiar with it.
   - Now that Online is revived this is no longer the default format so must be selected. Note unlike other settings, This setting does not get remembered between sessions.
+
+
+
+
+# Tab 2: SceneID Generator / Decrypter
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4204a35c-9dea-40d5-afed-5367d5e8fb75)
+
+# Tool 1: Scene ID Generator
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
+
+Note: Scene IDs aka Channel IDs are very important to instancing in playstation home. If 2 scenes share a Scene ID in SceneList.xml then players will be put into same instance.  This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs
+
+
+## Usage
+- Enter a number between 1 and 65535, Click Encrypt
+- Also accepts hyphen separated ranges for bulk genration
+
+## Options
+- Legacy Mode when enabled allow for generation of early type IDs to suit early home builds. Leave this option disabled for 1.8x
+
+
+# Tool 1: Scene ID Decrypter
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4e5679fa-3fe0-4cf4-b393-651b15a7384c)
+
+Note: Scene IDs aka Channel IDs are very important to instancing in playstation home. If 2 scenes share a Scene ID in SceneList.xml then players will be put into same instance.  
+This means generally each scene must have a unique Scene ID but in some cases where scenes are similar enough it might be possible to share IDs
+
+
+## Usage
+- Enter one or more Scene IDs (space, comma line separated)
+- You can also drag a plaintext SceneList.xml into the right hand side of the tab (not on the input or output textbox) and it will decrypt all.
+
+ 
+## Options
+- Legacy Mode when enabled allow for decryption of early type IDs to suit early home builds. Leave this option disabled for 1.8x 
