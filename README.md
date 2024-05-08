@@ -25,8 +25,8 @@ This is a fork of AgentDarks447's awesome server project Multiserver3. This fork
 ### Archive Creator Options
 
 ### Timestamp:
-    - Add timestamp here. Default is FFFFFFFF. If less than 8 bytes are entered it will be padded to 8 bytes with prefix 0.
-    - If timestamp.txt exists in your input folder this GUI field will be ignored.
+   - Add timestamp here. Default is FFFFFFFF. If less than 8 bytes are entered it will be padded to 8 bytes with prefix 0.
+   - If timestamp.txt exists in your input folder this GUI field will be ignored.
 
 ### Archive Types:
 - BAR:
