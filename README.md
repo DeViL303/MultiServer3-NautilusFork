@@ -98,7 +98,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 </div>
 
 <h2 align="center">
-   Tool 1: Scene ID Generator
+   Tool 3: Scene ID Generator
 </h2>
 
 <div align="center">
@@ -119,7 +119,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 <h2 align="center">
-   Tool 2: Scene ID Decrypter
+   Tool 4: Scene ID Decrypter
 </h2>
 
 <div align="center">
@@ -135,3 +135,35 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 #### Options:
 - Legacy Mode, when activated, facilitates the decryption of early type IDs suitable for earlier Home builds.
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
+
+
+<h2 align="center">
+   Tab 3: LUA / LUAC TOOL
+</h2>
+
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/580dc901-efda-417c-937e-b9926a80203e)
+
+</div>
+
+<h2 align="center">
+   Tool 5: Home LUA Compiler
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1bd9326b-06e2-4395-aada-9adc0cc3494c)
+
+</div>
+
+
+<h2 align="center">
+   Tool 5: Home LUAC Decompiler
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
+
+</div>
