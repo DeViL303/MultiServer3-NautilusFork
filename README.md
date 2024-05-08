@@ -15,7 +15,7 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
 
 ### Usage: 
-- Drag in one or more folders and choose archive type before clicking Create. It should eb able to handle large tasks such as 10k objects in one operation
+- Drag in one or more folders and choose archive type before clicking Create. It should be able to handle large tasks such as 10k objects in one operation.
 - Enter 8 byte timestamp to match SDC if needed. If there is a valid timestamp.txt found in the input folder it will use that timestamp instead.
 - Default output path for the archive creator tool is next to the exe/Output/Archives/. This can be changed in settings
 
@@ -33,20 +33,20 @@ Note: For input it's currently recommended to use drag and drop from windows fil
    Only used for the older style xml based object catalogue and possibly for config bar too.
    Generally not really needed or used on 1.8x clients but there is still has support afaik
 
-- SDAT
+- SDAT:
    These are the same as BAR but with NPD encryption layer applied on top.
    Very fast to read too - Not much different to BAR as NPD layer is handled by the firmware on the fly
    This was the format generally used by retail Home from version 1.00 up to 1.81
 
-- SDAT SHARC
+- SDAT SHARC:
     Secure archive format brought in with version 1.82 to prevent hacking and piracy.
     Not really much point using this format anymore since AgentDark447 cracked it and released tools.
 
-- CORE SHARC
+- CORE SHARC:
     Format used for local COREDATA sharc files in the client pkg.
     Not really much point using this format anymore since AgentDark447 cracked it and released tools.
 
-- Config SHARC
+- Config SHARC:
     These are used for online mode configuration files pushed to client during initial connection.
     Retail 1.82+ needs these to be encrypted with this setting.
     These are the only type of sharc that is still needed in 2024
@@ -70,7 +70,12 @@ Note: For input it's currently recommended to use drag and drop from windows fil
 
 ### Options:
 
-- Validate files
+- UUID/Path Prefix:
+  You can enter a UUID, OR a full path prefix here that will be added onto any paths found during the mapping process.
+  Note: It will also scan for any UUIDs ANYWHERE in input file path and attempt to use those for mapping too.  
+
+- Validate files:
+  Enabled by default. Not recommended to disable this option but the mapper will be faster on bulk tasks if you do.
   If enabled this option will make an attempt to validate that all files have dumped correctly. it uses combination of header/string byte level checks and dedicated libaries for checking media files such as mp3/wav/png/jpg
   It will also parse xml/json/scene/sdc/odc etc looking for bytes indicating corruption/encryption/compression.
   It uses HomeLuac.exe to parse lua files for syntax errors. This can lead to some false flags as home devs did sometimes write non valid lua but overall its useful. 
@@ -78,7 +83,7 @@ Note: For input it's currently recommended to use drag and drop from windows fil
   Finally it will log any items with unmapped files - this check is slightly different as it always happens regardless if validate files is enabled or not. If any unmapped files are detected it will add _CHECK suffis to output folder name.
   If any warnings (validation failures) are detected at all during validation you will find a JobReport.txt in your output folder.
 
-- Offline Structure
+- Offline Structure:
   This setting only effects object extraction, when enabled it extract objects into the "offline" style with all files and folders in root. This is perfect for running in extracted form on HDK builds.
   This was the norm up until recently and if you ever extract objects with older tools such as gazs HomeTool you will be familiar with it.
   Now that Online is revived this is no longer the default format so must be selected. Note unlike other settings, This setting does not get remembered between sessions.
