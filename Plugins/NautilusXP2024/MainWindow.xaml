@@ -1308,8 +1308,8 @@
                     </StackPanel>
                 </TabItem>
 
-                <!-- Tab SHA1 Checker -->
-                <TabItem Header="Video" Tag="Video" >
+                <!-- Tab Video Tool -->
+                <TabItem Header="Video" Tag="Video" Visibility="Collapsed">
                     <StackPanel Background="#333333" AllowDrop="True" Drop="Sha1DragArea_Drop">
 
                         <!-- Title TextBlock -->
@@ -1322,7 +1322,7 @@
 
                         <!-- Toggle Switch -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Show SHA1 for Decrypted file where applicable:  " Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="480p:  " Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <CheckBox x:Name="VideoCheckerDecryptCheckBox" Style="{StaticResource ModernToggleSwitchStyle}" />
                         </StackPanel>
 

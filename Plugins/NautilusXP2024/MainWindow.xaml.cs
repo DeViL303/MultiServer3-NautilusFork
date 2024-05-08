@@ -1345,7 +1345,6 @@ namespace NautilusXP2024
 
 
 
-
         public async Task ExperimentalMapperAsync(string directoryPath, string ogfilename)
         {
             CurrentUUID = string.Empty;
@@ -1360,11 +1359,7 @@ namespace NautilusXP2024
                 .Where(path =>
                     !path.EndsWith(".dds") &&
                     !path.EndsWith(".mp3") &&
-                    !path.EndsWith(".mp4") &&
-                    !path.EndsWith(".probe") &&
-                    !path.EndsWith(".skn") &&
-                    !path.EndsWith(".hkx") &&
-                    !path.EndsWith(".ani"))
+                    !path.EndsWith(".mp4"))
                 .ToArray();
 
             var hashesToPaths = await InitialScanForPaths(filePaths);
