@@ -168,7 +168,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 ### Options:
 - Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found in the text area.
-- Strip Debug Info: When compiling LUA to LUAC this option will remove information that could make it eaiser to decompile later - potentially making modification more difficult. 
+- Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove debug information that could make it eaiser to decompile later - potentially making modification more difficult and adding a small bit of security. 
 
 <h2 align="center">
    Tool 5: Home LUAC Decompiler
