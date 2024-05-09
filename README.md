@@ -157,18 +157,18 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 </div>
 
-This Tool uses HomeLuaC.exe to parse and or compile LUA. Generally not much point in compiling LUA to LUAC for home but parsing it to check for syntax errors can be useful.
+This Tool uses HomeLuaC.exe to parse and/or compile LUA to LUAC for Playstation Home. Generally not much point in compiling LUA to LUAC for home but parsing it to check for syntax errors can be useful.
 
 ### Note: 
-If you have the "Validate Files" option enabled in TAB 1 mapper tool it will automatically use HomeLuaC.exe to check all LUA files mapped for errors.
+If you have the "Validate Files" option enabled in TAB 1 mapper tool it will automatically use HomeLuaC.exe to check all mapped LUA files for errors.
 
 ### Usage:
 - Drag LUA files or folders containing LUA files into the tools drag area.
 - It will scan all all sub folders recursively for LUA files and add all to the current task
 
 ### Options:
-- Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found to the gui text area.
-- Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information that could make it eaiser to decompile later - stripping this potentially makes future modification more difficult and adds a small bit of security. 
+- Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found in the gui text area.
+- Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information - stripping this information potentially makes future modification more difficult and adds a small bit of security. 
 
 <h2 align="center">
    Tool 5: Home LUAC Decompiler
@@ -181,7 +181,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 </div>
 
 ### Warning: 
-Decompiling LUAC is hit and miss. In some cases you might be able to use the decompiled output in place of the original LUAC but most often not. 
+Decompiling LUAC back to LUA is hit and miss so dont expect too much. In some cases you might be able to use the decompiled output in place of the original LUAC but most often not. 
 This tool is meant more to be used as an aid to try gain insight into how some LUAC is working. In some cases it might even be preferable to hex edit the LUAC file directly
 for example if changing https to http.
 
