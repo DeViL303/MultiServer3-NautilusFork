@@ -233,7 +233,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 Use this tab for debugging mapping issues. It allows you to attempt to discover the paths to unmapped files.
 
-If you know the path to file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is every encountered again it wil map automatically.
+If you know the path to file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is ever encountered again it will map automatically.
 
 
 <h2 align="center">
@@ -260,13 +260,13 @@ Patch various fields in Home EBBOTS
 
 </div>
 
-Used for checking SHA1s and buulding lists for comparison
+Used for checking SHA1s and building lists for comparison
 
 ### Work in Progress
 
 Currently decryption mode is not linked up to the backend
 
-Verify Content: This is a standalone function that allows you to choose a folder of mapped content through the file validator function. 
+Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
    Tab 8: Settings
@@ -280,6 +280,6 @@ Verify Content: This is a standalone function that allows you to choose a folder
 
 Set your output paths and various other options here. 
 
-At first boot, a settings.xml is created next to the exe. This also sets all output paths next to the exe. 
+At first boot, a settings.xml is created next to the exe. This also sets all output paths next to the default location next to the exe. 
 
 Debug Logs: If this is enabled you will find detailed logs of all operations performed in logs/debug.log next to the exe. 
