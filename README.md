@@ -159,7 +159,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 This Tool uses HomeLuaC.exe to parse and or compile LUA. Generally not much point in compiling LUA to LUAC for home but parsing it to check for syntax errors can be useful.
 
-Note: If you have Validate Files enabled in the mapper it will automatically use HomeLuaC.exe to check all LUA files mapped for errors
+Note: If you have the "Validate Files" option enabled in TAB1s mapper it will automatically use HomeLuaC.exe to check all LUA files mapped for errors.
 
 Usage:
 - Drag LUA files or folders containing LUA files into the tool.
