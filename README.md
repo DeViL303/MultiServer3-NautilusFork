@@ -209,7 +209,7 @@ You could also switch out the JAR files for others if you find better solutions.
 </div>
 
 SDC Files: Small XML based files used for storing scene information
-ODC Files: Small XNL based files used for storing object information
+ODC Files: Small XML based files used for storing object information
 
 Usage: 
 - Fill out the input fields and click create
