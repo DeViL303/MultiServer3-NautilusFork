@@ -97,6 +97,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
+### Note:
+Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
+
 <h2 align="center">
    Tool 3: Scene ID Generator
 </h2>
@@ -106,9 +109,6 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 ![Scene ID Generator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
 
 </div>
-
-### Note:
-Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
 
 #### Usage:
 - Enter a number between 1 and 65535 and click 'Encrypt'.
