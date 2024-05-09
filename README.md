@@ -244,6 +244,10 @@ If you know the path to file and it refuses to map normally, you can add the pat
 
 </div>
 
+Patch various fields in Home EBBOTS
+
+Work in Progress
+
 <h2 align="center">
    Tab 7: SHA1 Checker
 </h2>
@@ -254,6 +258,12 @@ If you know the path to file and it refuses to map normally, you can add the pat
 
 </div>
 
+Use to get SHA1s
+
+Currently decrpytion mode is not linked up the backend - Work in Prpogress
+
+Verify Content: This allows you to choose a folder to run through the mappers file validator function. 
+
 <h2 align="center">
    Tab 8: Settings
 </h2>
@@ -263,3 +273,5 @@ If you know the path to file and it refuses to map normally, you can add the pat
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f1b23a25-25ff-4a02-b7a8-5331fbd2a4b9)
 
 </div>
+
+Set your output paths and various other options here. 
