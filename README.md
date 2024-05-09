@@ -27,7 +27,7 @@ This repository is a fork of AgentDarks447's celebrated project, Multiserver3. I
 </div>
 
 ### Important Note:
-For inputs into the Archive Creator, it is recommended to utilize the drag-and-drop functionality from Windows File Explorer, as it can manage both folders and zip files. The "click to browse" function currently only supports zip files.
+For inputs into the Archive Creator, it is recommended to use the drag-and-drop functionality from Windows File Explorer, as it has support for both folders and zip files. The "click to browse" function currently only supports choosing zip files.
 
 #### Usage Instructions for Archive Creator:
 - Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as creating 70,000+ objects in a single operation.
@@ -59,7 +59,7 @@ For inputs into the Archive Creator, it is recommended to utilize the drag-and-d
 </div>
 
 ### Important Note:
-For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows File Explorer is recommended as it can effectively manage folders. Upon dragging a folder into the Unpacker, it will recursively scan for any compatible archives and automatically add them.
+For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows File Explorer is recommended as it has support for adding folders. Upon dragging a folder into the Unpacker drag area, it will recursively scan for any compatible archives and automatically add all of them. 
 
 #### Usage Instructions for Archive Unpacker:
 - Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
