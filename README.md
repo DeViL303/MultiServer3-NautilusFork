@@ -260,13 +260,13 @@ Patch various fields in Home EBBOTS
 
 </div>
 
-Use to get SHA1s
-
-Currently decrpytion mode is not linked up the backend
+Used for checking SHA1s and buulding lists for comparison
 
 ### Work in Progress
 
-Verify Content: This allows you to choose a folder to run through the mappers file validator function. 
+Currently decryption mode is not linked up to the backend
+
+Verify Content: This is a standalone function that allows you to choose a folder of mapped content through the file validator function. 
 
 <h2 align="center">
    Tab 8: Settings
@@ -280,6 +280,6 @@ Verify Content: This allows you to choose a folder to run through the mappers fi
 
 Set your output paths and various other options here. 
 
-At first boot, a settings.xml is created next to the exe. 
+At first boot, a settings.xml is created next to the exe. This also sets all output paths next to the exe. 
 
 Debug Logs: If this is enabled you will find detailed logs of all operations performed in logs/debug.log next to the exe. 
