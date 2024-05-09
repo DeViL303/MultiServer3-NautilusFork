@@ -208,14 +208,16 @@ You could also switch out the JAR files for others if you find better solutions.
 
 </div>
 
-SDC Files: Small XML based files used for storing scene information
-ODC Files: Small XML based files used for storing object information
+### SDC Files:
+- Small XML based files used for storing scene information
+### ODC Files:
+- Small XML based files used for storing object information
 
-Usage: 
+### Usage: 
 - Fill out the input fields and click create
 - For objects you can generate random UUIDs here too.
 
-Options:
+### Options:
 - SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
 
 
@@ -246,7 +248,7 @@ If you know the path to file and it refuses to map normally, you can add the pat
 
 Patch various fields in Home EBBOTS
 
-Work in Progress
+### Work in Progress
 
 <h2 align="center">
    Tab 7: SHA1 Checker
@@ -260,7 +262,9 @@ Work in Progress
 
 Use to get SHA1s
 
-Currently decrpytion mode is not linked up the backend - Work in Prpogress
+Currently decrpytion mode is not linked up the backend
+
+### Work in Prpogress
 
 Verify Content: This allows you to choose a folder to run through the mappers file validator function. 
 
