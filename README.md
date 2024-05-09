@@ -279,3 +279,7 @@ Verify Content: This allows you to choose a folder to run through the mappers fi
 </div>
 
 Set your output paths and various other options here. 
+
+At first boot, a settings.xml is created next to the exe. 
+
+Debug Logs: If this is enabled you will find detailed logs of all operations performed in logs/debug.log next to the exe. 
