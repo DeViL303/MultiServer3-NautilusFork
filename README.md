@@ -264,7 +264,7 @@ Use to get SHA1s
 
 Currently decrpytion mode is not linked up the backend
 
-### Work in Prpogress
+### Work in Progress
 
 Verify Content: This allows you to choose a folder to run through the mappers file validator function. 
 
