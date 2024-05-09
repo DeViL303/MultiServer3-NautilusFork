@@ -85,7 +85,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 ##### Offline Structure:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option is you dont intend to repack the objects into archives.
-- Given the revival of Online, this is no longer the default folder structure required, thus it is not set as the default. It is important to note that unlike other settings, this one does not persist between sessions.
+- Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
 <h2 align="center">
    Tab 2: SceneID Generator / Decrypter
@@ -167,8 +167,8 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 - It will scan all all sub folders recursively for LUA files and add all to the current task
 
 ### Options:
-- Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found in the text area.
-- Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information that could make it eaiser to decompile later - stripping this potentially makies modification more difficult and adds a small bit of security. 
+- Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found to the gui text area.
+- Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information that could make it eaiser to decompile later - stripping this potentially makes future modification more difficult and adds a small bit of security. 
 
 <h2 align="center">
    Tool 5: Home LUAC Decompiler
