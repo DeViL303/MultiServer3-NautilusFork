@@ -32,7 +32,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 #### Usage Instructions for Archive Creator:
 - Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as creating 70,000+ objects in a single operation.
 - Insert an 8-byte timestamp to align with the timestamp field in your SDC, if applicable.
-- The default output path for the Archive Creator tool is located adjacent to the exe/Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
+- The default output path for the Archive Creator tool is located adjacent to the exe in Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
 
 #### Options for Archive Creator:
 
@@ -64,7 +64,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 #### Usage Instructions for Archive Unpacker:
 - Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
 - The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder.
-- The default output path for the Archive Unpacker tool is next to the exe/Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
+- The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
 - When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
 
 #### Options for Archive Unpacker:
