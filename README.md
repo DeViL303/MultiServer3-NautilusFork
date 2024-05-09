@@ -63,7 +63,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 #### Usage Instructions for Archive Unpacker:
 - Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
-- The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder.
+- The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder if you dont want to have to edit timestamps field in SDC.
 - The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
 - When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
 
