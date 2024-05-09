@@ -163,7 +163,7 @@ This Tool uses HomeLuaC.exe to parse and or compile LUA. Generally not much poin
 If you have the "Validate Files" option enabled in TAB 1 mapper tool it will automatically use HomeLuaC.exe to check all LUA files mapped for errors.
 
 ### Usage:
-- Drag LUA files or folders containing LUA files into the tool.
+- Drag LUA files or folders containing LUA files into the tools drag area.
 - It will scan all all sub folders recursively for LUA files and add all to the current task
 
 ### Options:
@@ -186,7 +186,8 @@ This tool is meant more to be used as an aid to try gain insight into how some L
 for example if changing https to http.
 
 ### Usage:
-- Drag in LUAC files, or folders containing LUAC files.
+- Drag LUAC files or folders containing LUAC files into the tools drag area.
+- It will scan all sub folders recursively for LUAC files and add all to the current task
 
 ### Options:
 - UnLuac.NET: Default option - This seems to be best decompilation we have. 
@@ -207,16 +208,31 @@ You could also switch out the JAR files for others if you find better solutions.
 
 </div>
 
+SDC Files: Small XML based files used for storing scene information
+ODC Files: Small XNL based files used for storing object information
+
+Usage: 
+- Fill out the input fields and click create
+- For objects you can generate random UUIDs here too.
+
+Options:
+- SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
+
+
 <h2 align="center">
    Tab 5: Path2Hash Tool
 </h2>
-
 
 <div align="center">
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1eb8ed66-001b-41ed-901b-ebd4dfd27011)
 
 </div>
+
+Use this tab for debugging mapping issues. It allows you to attempt to discover the paths to unmapped files.
+
+If you know the path to file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is every encountered again it wil map automatically.
+
 
 <h2 align="center">
    Tab 6: Home EBOOT Patcher
