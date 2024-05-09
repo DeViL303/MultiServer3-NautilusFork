@@ -173,26 +173,28 @@ Options:
    Tool 5: Home LUAC Decompiler
 </h2>
 
-Warning: Decompiling LUAC is hit and miss. In some cases you might be able to use the decompiled output in place of the original LUAC but most often not. 
-This tool is meant more to be used as an aid to try gain insight into how some LUAC is working. In some cases it might be preferable to hex edit the LUAC file directly
-for example changing http to https.
-
-Usage:
-- Drag in LUAC files, or folders containing LUAC files.
-
-Options:
-- UnLuac.NET: Default option - This seems to be best decompilation we have. 
-- UnLuac JAR v1.22: Added this before I knew about the .NET version. Limited use now, might remove them at some point. 
-- UnLuac JAR Dec 2023: Added this before I knew about the .NET version. Limited use now, might remove them at some point.
-
-Note: In rare cases Java based UnLuac might give better results but its unlikely.Leaving these options in for now as theyre not doing any harm really. 
-You could also switch out the JAR files for others if you find better. See Dependencies folder.
-
 <div align="center">
    
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
 
 </div>
+
+#### Warning: 
+Decompiling LUAC is hit and miss. In some cases you might be able to use the decompiled output in place of the original LUAC but most often not. 
+This tool is meant more to be used as an aid to try gain insight into how some LUAC is working. In some cases it might be preferable to hex edit the LUAC file directly
+for example changing http to https.
+
+## Usage:
+- Drag in LUAC files, or folders containing LUAC files.
+
+## Options:
+- UnLuac.NET: Default option - This seems to be best decompilation we have. 
+- UnLuac JAR v1.22: Added this before I knew about the .NET version. Limited use now, might remove them at some point. 
+- UnLuac JAR Dec 2023: Added this before I knew about the .NET version. Limited use now, might remove them at some point.
+
+## Note: 
+In rare cases Java based UnLuac might give better results but its unlikely.Leaving these options in for now as theyre not doing any harm really. 
+You could also switch out the JAR files for others if you find better. See Dependencies folder.
 
 <h2 align="center">
    Tab 4: SDC / ODC Tool
