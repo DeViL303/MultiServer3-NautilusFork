@@ -98,6 +98,8 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
+This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
+
 
 <h2 align="center">
    Tab 3: SceneID Generator / Decrypter
@@ -108,8 +110,6 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 ![SceneID Generator / Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4204a35c-9dea-40d5-afed-5367d5e8fb75)
 
 </div>
-
-This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1. 
 
 ### Note:
 Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
