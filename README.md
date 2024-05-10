@@ -100,6 +100,30 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
 
+<h2 align="center">
+   Tool 3: CDS Encrypter Tool
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/33e48df1-ee99-4871-b789-bce4a71bc7ec)
+
+</div>
+
+### Note:
+- The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
+- Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
+- Encrypter by default will output to Output/CDS/ net to the exe.
+
+<h2 align="center">
+   Tool 3: CDS Decrypter Tool
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/50c46f3d-246c-4c44-8a98-ae98295aa1a5)
+
+</div>
 
 <h2 align="center">
    Tab 3: SceneID Generator / Decrypter
