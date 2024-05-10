@@ -116,7 +116,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Encrypter by default will output to Output/CDS/ net to the exe.
 
 <h2 align="center">
-   Tool 3: CDS Decrypter Tool
+   Tool 4: CDS Decrypter Tool
 </h2>
 
 <div align="center">
@@ -126,7 +126,17 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 </div>
 
 <h2 align="center">
-   Tab 3: SceneID Generator / Decrypter
+   Tab 3: HCDB Encrypter / Decrypter
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0fa29f04-ee86-4a40-92de-0b228e2a681a)
+
+</div>
+
+<h2 align="center">
+   Tab 4: SceneID Generator / Decrypter
 </h2>
 
 <div align="center">
