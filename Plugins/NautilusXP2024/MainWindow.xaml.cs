@@ -2036,43 +2036,36 @@ namespace NautilusXP2024
                     byte[] fileContent = await File.ReadAllBytesAsync(filePath);
                     byte[]? encryptedContent = null;
                     string inputSHA1 = "";
-                    string encryptedSHA1 = "";
 
-                    // Generate SHA1 hash from file content
+                    // Generate SHA1 hash from file content before encryption
                     using (SHA1 sha1 = SHA1.Create())
                     {
                         byte[] SHA1Data = sha1.ComputeHash(fileContent);
                         inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", ""); // Full SHA1 of input content
                         LogDebugInfo($"Input SHA1 for {filename}: {inputSHA1}");
 
-                        string computedSha1 = inputSHA1.Substring(0, 16); // First 16 characters for some process
+                        // Encrypt the file content
+                        string computedSha1 = inputSHA1.Substring(0, 16); // Use first 16 characters for some process, if needed
                         encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
+                    }
 
-                        // Recompute SHA1 for encrypted content for logging purposes
-                        if (encryptedContent != null)
-                        {
-                            SHA1Data = sha1.ComputeHash(encryptedContent);
-                            encryptedSHA1 = BitConverter.ToString(SHA1Data).Replace("-", "");
-                            LogDebugInfo($"Encrypted SHA1 for {filename}: {encryptedSHA1}");
-                        }
-
-                        if (addSha1ToFilename)
-                        {
-                            string extension = Path.GetExtension(filename);
-                            string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
-                            filename = $"{filenameWithoutExtension}_{encryptedSHA1}{extension}";
-                        }
+                    // Append SHA1 of the original content to filename if requested
+                    if (addSha1ToFilename && encryptedContent != null)
+                    {
+                        string extension = Path.GetExtension(filename);
+                        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+                        filename = $"{filenameWithoutExtension}_{inputSHA1}{extension}"; // Using inputSHA1 for naming
                     }
 
                     if (encryptedContent != null)
                     {
-                        string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath))); // Parent folder
+                        string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath)));
                         if (!Directory.Exists(outputDirectory))
                         {
                             Directory.CreateDirectory(outputDirectory);
                             LogDebugInfo($"Output directory {outputDirectory} created.");
                         }
-                        string outputPath = Path.Combine(outputDirectory, filename); // Maintain filename or modified with SHA1
+                        string outputPath = Path.Combine(outputDirectory, filename);
                         await File.WriteAllBytesAsync(outputPath, encryptedContent);
                         LogDebugInfo($"File {filename} encrypted and written to {outputPath}.");
                     }
@@ -2095,6 +2088,7 @@ namespace NautilusXP2024
 
 
 
+
         // TAB 2: Logic for CDS Decryption
 
         private async void CDSDecrypterExecuteButtonClick(object sender, RoutedEventArgs e)
@@ -2110,30 +2104,38 @@ namespace NautilusXP2024
             }
 
             string filesToDecrypt = CDSDecrypterTextBox.Text;
+            string manualSha1 = CDSDecrypterSha1TextBox.Text.Trim();
+            bool manualSha1IsValid = !string.IsNullOrWhiteSpace(manualSha1) && manualSha1.Length == 40;
+
             if (!string.IsNullOrWhiteSpace(filesToDecrypt))
             {
                 string[] filePaths = filesToDecrypt.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                bool decryptionSuccess = false;
+                bool decryptionSuccess = true;
 
-                // Analyze each file path for an embedded SHA1
                 foreach (string filePath in filePaths)
                 {
-                    string sha1Hash = CDSDecrypterSha1TextBox.Text.Trim();
                     string filename = Path.GetFileName(filePath);
-                    string detectedSha1 = Regex.Match(filename, @"\b[0-9a-fA-F]{40}\b").Value;
-                    if (!string.IsNullOrWhiteSpace(detectedSha1) || !string.IsNullOrWhiteSpace(sha1Hash))
+                    string detectedSha1 = Regex.Match(filename, @"[a-fA-F0-9]{40}").Value;
+                    string effectiveSha1 = manualSha1IsValid ? manualSha1 : detectedSha1;
+
+                    if (manualSha1IsValid)
                     {
-                        LogDebugInfo($"CDS Decryption: Starting SHA1-assisted decryption using SHA1 from {(!string.IsNullOrWhiteSpace(detectedSha1) ? "filename" : "input field")} for {filename}");
-                        decryptionSuccess = await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, string.IsNullOrWhiteSpace(detectedSha1) ? sha1Hash : detectedSha1);
+                        LogDebugInfo($"Using manually provided SHA1 for {filename}: {manualSha1}. Overriding any detected SHA1.");
+                        decryptionSuccess &= await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, manualSha1);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(detectedSha1))
+                    {
+                        LogDebugInfo($"SHA1 detected in filename for {filename}: {detectedSha1}. Using SHA1-assisted decryption.");
+                        decryptionSuccess &= await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, detectedSha1);
                     }
                     else
                     {
-                        LogDebugInfo($"CDS Decryption: Starting standard decryption for {filename}");
-                        decryptionSuccess = await DecryptFilesAsync(new string[] { filePath }, baseOutputDirectory);
+                        LogDebugInfo($"No valid SHA1 detected or provided for {filename}. Using standard decryption.");
+                        decryptionSuccess &= await DecryptFilesAsync(new string[] { filePath }, baseOutputDirectory);
                     }
                 }
 
-                string message = decryptionSuccess ? "Success: Files Decrypted" : "Decryption Failed";
+                string message = decryptionSuccess ? "Success: All files decrypted" : "Decryption Failed for one or more files";
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
                 LogDebugInfo($"CDS Decryption: Result - {message}");
             }
@@ -2151,7 +2153,8 @@ namespace NautilusXP2024
             bool allFilesProcessed = true;
             foreach (var filePath in filePaths)
             {
-                string filename = Path.GetFileName(filePath); // It's good to capture the filename early for consistent use in logging
+                string filename = Path.GetFileName(filePath);
+                string extension = Path.GetExtension(filename);
                 try
                 {
                     string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
@@ -2160,9 +2163,8 @@ namespace NautilusXP2024
                     byte[] fileContent = await File.ReadAllBytesAsync(filePath);
                     LogDebugInfo($"File content read successfully for {filename}, starting decryption.");
 
-                    // Assuming decryption process returns the decrypted content as byte[]
                     BruteforceProcess? proc = new BruteforceProcess(fileContent);
-                    byte[]? decryptedContent = proc.StartBruteForce();  // Simplify assuming this method does the decryption
+                    byte[]? decryptedContent = proc.StartBruteForce();
 
                     if (decryptedContent != null)
                     {
@@ -2170,11 +2172,20 @@ namespace NautilusXP2024
                         if (!Directory.Exists(outputDirectory))
                         {
                             Directory.CreateDirectory(outputDirectory);
-                            LogDebugInfo($"Output directory created at {outputDirectory}.");
                         }
                         string outputPath = Path.Combine(outputDirectory, filename);
                         await File.WriteAllBytesAsync(outputPath, decryptedContent);
-                        LogDebugInfo($"Decryption successful for {filename}, file written to {outputPath}.");
+
+                        if (!IsValidDecryptedFile(outputPath, extension))
+                        {
+                            File.Delete(outputPath);
+                            LogDebugInfo($"Validation failed for {filename}. File deleted.");
+                            allFilesProcessed = false;
+                        }
+                        else
+                        {
+                            LogDebugInfo($"Validation passed for {filename}. Decryption successful and file is valid.");
+                        }
                     }
                     else
                     {
@@ -2206,6 +2217,7 @@ namespace NautilusXP2024
             foreach (var filePath in filePaths)
             {
                 string filename = Path.GetFileName(filePath);
+                string extension = Path.GetExtension(filename);
                 try
                 {
                     string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
@@ -2245,6 +2257,18 @@ namespace NautilusXP2024
                         string outputPath = Path.Combine(outputDirectory, filename);
                         await File.WriteAllBytesAsync(outputPath, processedContent);
                         LogDebugInfo($"Decryption successful for {filename}. Output written to {outputPath}.");
+
+                        // Validate the decrypted file content
+                        if (!IsValidDecryptedFile(outputPath, extension))
+                        {
+                            File.Delete(outputPath);
+                            LogDebugInfo($"Validation failed for {filename}. File deleted.");
+                            allFilesProcessed = false;
+                        }
+                        else
+                        {
+                            LogDebugInfo($"Validation passed for {filename}. Decryption successful and file content is valid.");
+                        }
                     }
                     else
                     {
@@ -2259,6 +2283,47 @@ namespace NautilusXP2024
                 }
             }
             return allFilesProcessed;
+        }
+
+
+        private bool IsValidDecryptedFile(string filePath, string extension)
+        {
+            // Automatically pass validation for HCDB files
+            if (extension == ".hcdb")
+            {
+                LogDebugInfo($"HCDB file validation passed automatically for {Path.GetFileName(filePath)}.");
+                return true;
+            }
+
+            try
+            {
+                var doc = XDocument.Load(filePath);
+                if (extension == ".sdc" && doc.Descendants("NAME").Any())
+                {
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <NAME> element.");
+                    return true;
+                }
+                else if (extension == ".odc" && doc.Descendants("uuid").Any())
+                {
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <uuid> element.");
+                    return true;
+                }
+                else if (extension == ".xml" && doc.Descendants("SCENELIST").Any())
+                {
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <SCENELIST> element.");
+                    return true;
+                }
+                else
+                {
+                    LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required element not found.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Failed to validate file {Path.GetFileName(filePath)}: {ex.Message}");
+                return false;
+            }
         }
 
 
@@ -2427,7 +2492,6 @@ namespace NautilusXP2024
             LogDebugInfo("HCDB Conversion: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, "Processing....", 1000000);
 
-            // Assuming _settings.HCDBEncrypterOutputDirectory is the relevant setting
             if (!Directory.Exists(_settings.HcdbOutputDirectory))
             {
                 Directory.CreateDirectory(_settings.HcdbOutputDirectory);
@@ -2438,14 +2502,24 @@ namespace NautilusXP2024
             if (!string.IsNullOrWhiteSpace(filesToConvert))
             {
                 string[] filePaths = filesToConvert.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                string[] segsPaths = filePaths.Select(fp => fp + ".segs").ToArray(); // Assuming LZMA outputs files with .segs extension
 
                 LogDebugInfo($"HCDB Conversion: Starting conversion for {filePaths.Length} files");
                 bool conversionSuccess = await ConvertSqlToHcdbAsync(filePaths);
 
-                string message = conversionSuccess ? $"Success: {filePaths.Length} Files Converted to HCDB" : "Conversion Failed";
-                TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, message, 2000);
-
-                LogDebugInfo($"HCDB Conversion: Result - {message}");
+                if (conversionSuccess)
+                {
+                    bool encryptionSuccess = await EncryptHCDBFilesAsync(segsPaths, _settings.HcdbOutputDirectory); // Encrypt the .segs files
+                    string message = encryptionSuccess ? $"Success: {filePaths.Length} Files Converted and Encrypted" : "Encryption Failed";
+                    TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, message, 2000);
+                    LogDebugInfo($"HCDB Conversion: Result - {message}");
+                }
+                else
+                {
+                    string message = "Conversion Failed";
+                    TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, message, 2000);
+                    LogDebugInfo($"HCDB Conversion: Result - {message}");
+                }
             }
             else
             {
@@ -2453,6 +2527,141 @@ namespace NautilusXP2024
                 TemporaryMessageHelper.ShowTemporaryMessage(HCDBEncrypterDragAreaText, "No SQL files listed for conversion.", 2000);
             }
         }
+
+
+        private async Task<bool> ConvertSqlToHcdbAsync(string[] filePaths)
+        {
+            bool allFilesProcessed = true;
+            string lzmaPath = @"dependencies\lzma_segs.exe";
+
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                string expectedOutputPath = filePath + ".segs";  // Expecting LZMA to append ".segs" to the input file's name
+
+                try
+                {
+                    // Process the file with LZMA without explicitly specifying the output path
+                    if (!ExecuteLzmaProcess(lzmaPath, filePath))
+                    {
+                        LogDebugInfo($"Conversion failed for {filename}.");
+                        allFilesProcessed = false;
+                    }
+                    else
+                    {
+                        LogDebugInfo($"Conversion successful for {filename}, output likely written to {expectedOutputPath}.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+
+            return allFilesProcessed;
+        }
+
+        private bool ExecuteLzmaProcess(string lzmaPath, string inputFilePath)
+        {
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = lzmaPath;
+                    process.StartInfo.Arguments = $"\"{inputFilePath}\"";  
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+
+                    // To log output or errors (optional but useful for debugging)
+                    string output = process.StandardOutput.ReadToEnd();
+                    string errors = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    // Check if the process exited successfully and the expected output file was created
+                    if (process.ExitCode == 0 && File.Exists(inputFilePath + ".segs"))
+                    {
+                        LogDebugInfo($"LZMA compression successful for {Path.GetFileName(inputFilePath)}");
+                        return true;
+                    }
+                    else
+                    {
+                        LogDebugInfo($"LZMA compression failed for {Path.GetFileName(inputFilePath)}: {errors}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error during LZMA compression: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> EncryptHCDBFilesAsync(string[] filePaths, string baseOutputDirectory)
+        {
+            bool addSha1ToFilename = HCDBAddSHA1CheckBox.IsChecked ?? false;
+            bool allFilesProcessed = true;
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                // Remove ".sql" and ".segs" if present, then append ".hcdb"
+                string cleanFilename = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filename)) + ".hcdb";
+
+                try
+                {
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    byte[]? encryptedContent = null;
+                    string inputSHA1 = "";
+
+                    using (SHA1 sha1 = SHA1.Create())
+                    {
+                        byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                        inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", ""); // Full SHA1 of input content
+                        LogDebugInfo($"Input SHA1 for {cleanFilename}: {inputSHA1}");
+
+                        string computedSha1 = inputSHA1.Substring(0, 16);
+                        encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
+                    }
+
+                    // Append SHA1 to the filename without extensions if requested
+                    if (addSha1ToFilename && encryptedContent != null)
+                    {
+                        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(cleanFilename);
+                        cleanFilename = $"{filenameWithoutExtension}_{inputSHA1}.hcdb";  // Append SHA1 and new extension
+                    }
+
+                    if (encryptedContent != null)
+                    {
+                        string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath)));
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                        }
+                        string outputPath = Path.Combine(outputDirectory, cleanFilename);
+                        await File.WriteAllBytesAsync(outputPath, encryptedContent);
+                        LogDebugInfo($"File {cleanFilename} encrypted and written to {outputPath}.");
+                    }
+                    else
+                    {
+                        allFilesProcessed = false;
+                        LogDebugInfo($"Encryption failed for {cleanFilename}, no data written.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error encrypting {cleanFilename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+            return allFilesProcessed;
+        }
+
+
 
 
         private void HCDBEncrypterDragDropHandler(object sender, DragEventArgs e)
@@ -2581,63 +2790,245 @@ namespace NautilusXP2024
 
 
 
-        // Placeholder method for SQL to HCDB conversion
-        private Task<bool> ConvertSqlToHcdbAsync(string[] filePaths)
-        {
-            LogDebugInfo($"HCDB Conversion: Starting conversion for {filePaths.Length} SQL file(s)");
-
-            // TODO: Implement the actual conversion logic here
-            bool conversionResult = true; // Simulate success for now
-
-            if (conversionResult)
-            {
-                LogDebugInfo("HCDB Conversion: Conversion process completed successfully");
-            }
-            else
-            {
-                LogDebugInfo("HCDB Conversion: Conversion process failed");
-            }
-
-            return Task.FromResult(conversionResult);
-        }
-
-
-
-
-
         // TAB 3: Logic for packing HCDB to SQL
 
         // HCDB Decrypter execute button click
         private async void HCDBDecrypterExecuteButtonClick(object sender, RoutedEventArgs e)
         {
-            LogDebugInfo("HCDB to SQL Conversion: Process Initiated");
-            TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "Processing....", 1000000);
+            LogDebugInfo("HCDB Decryption: Process Initiated");
+            TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "Processing...", 2000);
 
-            // Assuming _settings.HCDBDecrypterOutputDirectory is the relevant setting
-            if (!Directory.Exists(_settings.SqlOutputDirectory))
+            string outputDirectory = HcdbOutputDirectoryTextBox.Text;
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(_settings.SqlOutputDirectory);
-                LogDebugInfo($"HCDB to SQL Conversion: Output directory created at {_settings.SqlOutputDirectory}");
+                Directory.CreateDirectory(outputDirectory);
+                LogDebugInfo($"HCDB Decryption: Output directory created at {outputDirectory}");
             }
 
-            string filesToConvert = HCDBDecrypterTextBox.Text;
-            if (!string.IsNullOrWhiteSpace(filesToConvert))
+            string filesToDecrypt = HCDBDecrypterTextBox.Text;
+            string manualSha1 = HCDBDecrypterSha1TextBox.Text.Trim();
+            bool manualSha1IsValid = !string.IsNullOrWhiteSpace(manualSha1) && manualSha1.Length == 40;
+
+            if (!string.IsNullOrWhiteSpace(filesToDecrypt))
             {
-                string[] filePaths = filesToConvert.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                string[] filePaths = filesToDecrypt.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                bool decryptionSuccess = true;
 
-                LogDebugInfo($"HCDB to SQL Conversion: Starting conversion for {filePaths.Length} files");
-                bool conversionSuccess = await ConvertHcdbToSqlAsync(filePaths);
+                foreach (string filePath in filePaths)
+                {
+                    string filename = Path.GetFileName(filePath);
+                    string detectedSha1 = Regex.Match(filename, @"[a-fA-F0-9]{40}").Value;
+                    string effectiveSha1 = manualSha1IsValid ? manualSha1 : detectedSha1;
+                    string cleanFilename = manualSha1IsValid ? filename.Replace(effectiveSha1, "") : filename;  // Remove SHA1 from filename if used
 
-                string message = conversionSuccess ? $"Success: {filePaths.Length} Files Converted to SQL (Simulated)" : "Conversion Failed";
+                    byte[]? decryptedData = null;
+                    if (!string.IsNullOrWhiteSpace(effectiveSha1) && effectiveSha1.Length == 40)
+                    {
+                        LogDebugInfo($"Using SHA1 for {filename}: {effectiveSha1}. Starting decryption.");
+                        decryptedData = await DecryptHCDBFilesSHA1Async(filePath, outputDirectory, effectiveSha1);
+                    }
+                    else
+                    {
+                        LogDebugInfo($"No valid SHA1 detected or provided for {filename}. Using standard decryption.");
+                        decryptedData = await DecryptHCDBFilesAsync(filePath, outputDirectory);
+                    }
+
+                    if (decryptedData != null)
+                    {
+                        if (!await ProcessDecryptedHCDB(filePath, decryptedData, outputDirectory, cleanFilename))
+                        {
+                            decryptionSuccess = false;
+                            LogDebugInfo($"Post-decryption processing failed for {filename}.");
+                        }
+                        else
+                        {
+                            LogDebugInfo($"Post-decryption processing succeeded for {filename}.");
+                        }
+                    }
+                    else
+                    {
+                        decryptionSuccess = false;
+                        LogDebugInfo($"Decryption failed for {filename}.");
+                    }
+                }
+
+                string message = decryptionSuccess ? "Success: All HCDB files decrypted and processed" : "Decryption or processing failed for one or more files";
                 TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, message, 2000);
-
-                LogDebugInfo($"HCDB to SQL Conversion: Result - {message}");
+                LogDebugInfo($"HCDB Decryption: Result - {message}");
             }
             else
             {
-                LogDebugInfo("HCDB to SQL Conversion: Aborted - No HCDB files listed for conversion.");
-                TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "No HCDB files listed for conversion.", 2000);
+                LogDebugInfo("HCDB Decryption: Aborted - No HCDB files listed for decryption.");
+                TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "No HCDB files listed for decryption.", 2000);
             }
+        }
+
+
+        public async Task<byte[]?> DecryptHCDBFilesAsync(string filePath, string outputDirectory)
+        {
+            string filename = Path.GetFileName(filePath);
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                LogDebugInfo($"File content read successfully for {filename}, starting decryption.");
+
+                // Assuming decryption process
+                BruteforceProcess? proc = new BruteforceProcess(fileContent);
+                byte[]? decryptedContent = proc.StartBruteForce();  // Simplify, assuming this method does the decryption
+
+                if (decryptedContent != null)
+                {
+                    LogDebugInfo($"Decryption successful for {filename}.");
+                    return decryptedContent;
+                }
+                else
+                {
+                    LogDebugInfo($"Decryption process returned null for {filename}. No data written.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                return null;
+            }
+        }
+
+
+
+        public async Task<byte[]?> DecryptHCDBFilesSHA1Async(string filePath, string outputDirectory, string sha1Hash)
+        {
+            string filename = Path.GetFileName(filePath);
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                LogDebugInfo($"Reading file content for {filename}.");
+
+                // Using SHA1 hash to decrypt the file
+                byte[]? processedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, sha1Hash.Substring(0, 16));
+
+                if (processedContent != null)
+                {
+                    LogDebugInfo($"Decryption successful for {filename} using SHA1.");
+                    return processedContent;
+                }
+                else
+                {
+                    LogDebugInfo($"Decryption failed for {filename}. No output written.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                return null;
+            }
+        }
+
+
+
+        private async Task<bool> ProcessDecryptedHCDB(string filePath, byte[] decryptedData, string outputDirectory, string filename)
+        {
+            try
+            {
+                // If SHA1 was part of the filename, remove it before saving
+                string baseFilename = Path.GetFileNameWithoutExtension(filename);
+                string cleanFilename = Regex.Replace(baseFilename, "[a-fA-F0-9]{40}", ""); // Remove SHA1 hash
+                cleanFilename = cleanFilename.TrimEnd('_') + ".SQL"; // Ensure it ends with ".sql"
+
+                byte[]? processedData = HCDBUnpack(decryptedData, LogDebugInfo);
+                if (processedData != null)
+                {
+                    string outputPath = Path.Combine(outputDirectory, cleanFilename);
+                    await File.WriteAllBytesAsync(outputPath, processedData);
+                    LogDebugInfo($"Processed HCDB file successfully written to {outputPath}.");
+
+                    // Validate the processed SQL file
+                    if (IsValidSqlFile(outputPath))
+                    {
+                        LogDebugInfo($"Validation passed for SQL file at {outputPath}.");
+                        return true;
+                    }
+                    else
+                    {
+                        File.Delete(outputPath);
+                        LogDebugInfo($"Invalid SQL file deleted at {outputPath}.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    LogDebugInfo($"Failed to process decrypted data for {filename}.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error processing decrypted data for {filename}: {ex.Message}");
+                return false;
+            }
+        }
+
+
+        public static byte[]? HCDBUnpack(byte[] decryptedData, Action<string> log)
+        {
+            try
+            {
+                byte[]? decompressedData = new EdgeLZMA().Decompress(decryptedData, true);
+
+                if (decompressedData != null && decompressedData.Length >= 4 &&
+                    decompressedData[0] != 0x73 && decompressedData[1] != 0x65 &&
+                    decompressedData[2] != 0x67 && decompressedData[3] != 0x73)
+                {
+                    return decompressedData; // Returns the decompressed data array
+                }
+                else
+                {
+                    log("Decompression failed or data did not start with the expected header.");
+                    return null; // Returns null if decompression fails or header is incorrect
+                }
+            }
+            catch (Exception ex)
+            {
+                log($"Error during HCDB unpacking: {ex.Message}");
+                return null;
+            }
+        }
+
+        private bool IsValidSqlFile(string filePath)
+        {
+            // Expected header bytes for "SQLite" files
+            byte[] expectedHeader = { 0x53, 0x51, 0x4C, 0x69, 0x74, 0x65 };
+
+            try
+            {
+                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] fileHeader = new byte[expectedHeader.Length];
+                    int bytesRead = fs.Read(fileHeader, 0, fileHeader.Length);
+
+                    // Check if read bytes match the expected header
+                    if (bytesRead == expectedHeader.Length)
+                    {
+                        for (int i = 0; i < expectedHeader.Length; i++)
+                        {
+                            if (fileHeader[i] != expectedHeader[i])
+                            {
+                                LogDebugInfo($"SQL file validation failed: Header does not match at {filePath}.");
+                                return false;
+                            }
+                        }
+                        return true;  // Header matches
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error validating SQL file at {filePath}: {ex.Message}");
+            }
+
+            LogDebugInfo($"SQL file validation failed: Insufficient header bytes at {filePath}.");
+            return false;  // Header does not match or an error occurred
         }
 
 

@@ -753,7 +753,7 @@
 
 
                 <!-- Tab 3: HCDB Unpacker -->
-                <TabItem Header="HCDB" Tag="HCDBTool" Visibility="Collapsed">
+                <TabItem Header="HCDB" Tag="HCDBTool">
                     <StackPanel Background="#333333">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -769,8 +769,8 @@
                                 </Border>
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Add Original SHA1 to Output Filename:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                                    <CheckBox x:Name="HCDBAddSHA1LCheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
+                                    <TextBlock Text="Append SHA1 to Filenames:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                                    <CheckBox x:Name="HCDBAddSHA1CheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
                                 </StackPanel>
 
                                 <!-- Buttons -->
