@@ -21,17 +21,29 @@ using ColorPicker;
 using System.Windows.Media.Imaging;
 using System.Threading;
 using Newtonsoft.Json;
-using HomeTools.Crypto;
-using HomeTools.BARFramework;
-using HomeTools.UnBAR;
-using System.IO.Compression;
-using HomeTools.ChannelID;
-using CustomLogger;
-using HomeTools.AFS;
 using Ookii.Dialogs.Wpf;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Xml;
+
+using HomeTools.AFS;
+using HomeTools.BARFramework;
+using HomeTools.ChannelID;
+using HomeTools.Crypto;
+using HomeTools.UnBAR;
+using CyberBackendLibrary.HTTP;
+using WebAPIService.CDS;
+using CustomLogger;
+using HttpMultipartParser;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using CompressionLibrary.Custom;
+using CyberBackendLibrary.DataTypes;
+using System.IO;
+using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
 
 
 namespace NautilusXP2024
@@ -1843,26 +1855,26 @@ namespace NautilusXP2024
         private async void CDSEncrypterExecuteButtonClick(object sender, RoutedEventArgs e)
         {
             LogDebugInfo("CDS Encryption: Process Initiated");
-            TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, "Processing....", 2000);
+            TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, "Processing...", 2000);
 
-            // Assuming _settings.CDSEncrypterOutputDirectory is the relevant setting
-            if (!Directory.Exists(_settings.CdsOutputDirectory))
+            string baseOutputDirectory = _settings.CdsOutputDirectory; // Assume _settings.CdsOutputDirectory is already set
+            if (!Directory.Exists(baseOutputDirectory))
             {
-                Directory.CreateDirectory(_settings.CdsOutputDirectory);
-                LogDebugInfo($"CDS Encryption: Output directory created at {_settings.CdsOutputDirectory}");
+                Directory.CreateDirectory(baseOutputDirectory);
+                LogDebugInfo($"CDS Encryption: Output directory created at {baseOutputDirectory}");
             }
 
-            string filesToEncrypt = CDSEncrypterTextBox.Text;
+            string filesToEncrypt = CDSEncrypterTextBox.Text; // Assuming CDSEncrypterTextBox contains file paths separated by new lines
+            bool addSha1ToFilename = CDSAddSHA1CheckBox.IsChecked ?? false; // Check if the checkbox for adding SHA1 to filename is checked
+
             if (!string.IsNullOrWhiteSpace(filesToEncrypt))
             {
                 string[] filePaths = filesToEncrypt.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
                 LogDebugInfo($"CDS Encryption: Starting encryption for {filePaths.Length} files");
-                bool encryptionSuccess = await EncryptFilesAsync(filePaths);
+                bool encryptionSuccess = await EncryptFilesAsync(filePaths, baseOutputDirectory, addSha1ToFilename); // Pass the state of the checkbox to the encryption method
 
-                string message = encryptionSuccess ? $"Success: {filePaths.Length} Files Encrypted (Simulated)" : "Encryption Failed";
+                string message = encryptionSuccess ? $"Success: {filePaths.Length} Files Encrypted" : "Encryption Failed";
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, message, 2000);
-
                 LogDebugInfo($"CDS Encryption: Result - {message}");
             }
             else
@@ -2013,18 +2025,70 @@ namespace NautilusXP2024
         }
 
 
-        // Placeholder method for the encryption process
-        private Task<bool> EncryptFilesAsync(string[] filePaths)
+        public async Task<bool> EncryptFilesAsync(string[] filePaths, string baseOutputDirectory, bool addSha1ToFilename)
         {
-            // Log the start of the encryption process
-            LogDebugInfo($"CDS Encryption: Beginning encryption process for {filePaths.Length} files");
+            bool allFilesProcessed = true;
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                try
+                {
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    byte[]? encryptedContent = null;
+                    string inputSHA1 = "";
+                    string encryptedSHA1 = "";
 
-            // TODO: Implement the actual encryption logic here
+                    // Generate SHA1 hash from file content
+                    using (SHA1 sha1 = SHA1.Create())
+                    {
+                        byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                        inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", ""); // Full SHA1 of input content
+                        LogDebugInfo($"Input SHA1 for {filename}: {inputSHA1}");
 
-            // Log the completion and result of the encryption process
-            LogDebugInfo("CDS Encryption: Encryption Process Completed - Simulated Success");
+                        string computedSha1 = inputSHA1.Substring(0, 16); // First 16 characters for some process
+                        encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
 
-            return Task.FromResult(true); // Simulate success
+                        // Recompute SHA1 for encrypted content for logging purposes
+                        if (encryptedContent != null)
+                        {
+                            SHA1Data = sha1.ComputeHash(encryptedContent);
+                            encryptedSHA1 = BitConverter.ToString(SHA1Data).Replace("-", "");
+                            LogDebugInfo($"Encrypted SHA1 for {filename}: {encryptedSHA1}");
+                        }
+
+                        if (addSha1ToFilename)
+                        {
+                            string extension = Path.GetExtension(filename);
+                            string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+                            filename = $"{filenameWithoutExtension}_{encryptedSHA1}{extension}";
+                        }
+                    }
+
+                    if (encryptedContent != null)
+                    {
+                        string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath))); // Parent folder
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                            LogDebugInfo($"Output directory {outputDirectory} created.");
+                        }
+                        string outputPath = Path.Combine(outputDirectory, filename); // Maintain filename or modified with SHA1
+                        await File.WriteAllBytesAsync(outputPath, encryptedContent);
+                        LogDebugInfo($"File {filename} encrypted and written to {outputPath}.");
+                    }
+                    else
+                    {
+                        allFilesProcessed = false;
+                        LogDebugInfo($"Encryption failed for {filename}, no data written.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error encrypting {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+            return allFilesProcessed;
         }
 
 
@@ -2038,24 +2102,39 @@ namespace NautilusXP2024
             LogDebugInfo("CDS Decryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "Processing....", 2000);
 
-            // Assuming _settings.CDSDecrypterOutputDirectory is the relevant setting
-            if (!Directory.Exists(_settings.CdsOutputDirectory))
+            string baseOutputDirectory = _settings.CdsOutputDirectory;
+            if (!Directory.Exists(baseOutputDirectory))
             {
-                Directory.CreateDirectory(_settings.CdsOutputDirectory);
-                LogDebugInfo($"CDS Decryption: Output directory created at {_settings.CdsOutputDirectory}");
+                Directory.CreateDirectory(baseOutputDirectory);
+                LogDebugInfo($"CDS Decryption: Output directory created at {baseOutputDirectory}");
             }
 
             string filesToDecrypt = CDSDecrypterTextBox.Text;
             if (!string.IsNullOrWhiteSpace(filesToDecrypt))
             {
                 string[] filePaths = filesToDecrypt.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                bool decryptionSuccess = false;
 
-                LogDebugInfo($"CDS Decryption: Starting decryption for {filePaths.Length} files");
-                bool decryptionSuccess = await DecryptFilesAsync(filePaths);
+                // Analyze each file path for an embedded SHA1
+                foreach (string filePath in filePaths)
+                {
+                    string sha1Hash = CDSDecrypterSha1TextBox.Text.Trim();
+                    string filename = Path.GetFileName(filePath);
+                    string detectedSha1 = Regex.Match(filename, @"\b[0-9a-fA-F]{40}\b").Value;
+                    if (!string.IsNullOrWhiteSpace(detectedSha1) || !string.IsNullOrWhiteSpace(sha1Hash))
+                    {
+                        LogDebugInfo($"CDS Decryption: Starting SHA1-assisted decryption using SHA1 from {(!string.IsNullOrWhiteSpace(detectedSha1) ? "filename" : "input field")} for {filename}");
+                        decryptionSuccess = await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, string.IsNullOrWhiteSpace(detectedSha1) ? sha1Hash : detectedSha1);
+                    }
+                    else
+                    {
+                        LogDebugInfo($"CDS Decryption: Starting standard decryption for {filename}");
+                        decryptionSuccess = await DecryptFilesAsync(new string[] { filePath }, baseOutputDirectory);
+                    }
+                }
 
-                string message = decryptionSuccess ? $"Success: {filePaths.Length} Files Decrypted (Simulated)" : "Decryption Failed";
+                string message = decryptionSuccess ? "Success: Files Decrypted" : "Decryption Failed";
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
-
                 LogDebugInfo($"CDS Decryption: Result - {message}");
             }
             else
@@ -2064,6 +2143,124 @@ namespace NautilusXP2024
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "No files listed for Decryption.", 2000);
             }
         }
+
+
+
+        public async Task<bool> DecryptFilesAsync(string[] filePaths, string baseOutputDirectory)
+        {
+            bool allFilesProcessed = true;
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath); // It's good to capture the filename early for consistent use in logging
+                try
+                {
+                    string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+                    LogDebugInfo($"Reading file content for {filename}.");
+
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    LogDebugInfo($"File content read successfully for {filename}, starting decryption.");
+
+                    // Assuming decryption process returns the decrypted content as byte[]
+                    BruteforceProcess? proc = new BruteforceProcess(fileContent);
+                    byte[]? decryptedContent = proc.StartBruteForce();  // Simplify assuming this method does the decryption
+
+                    if (decryptedContent != null)
+                    {
+                        string outputDirectory = Path.Combine(baseOutputDirectory, parentFolderName);
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                            LogDebugInfo($"Output directory created at {outputDirectory}.");
+                        }
+                        string outputPath = Path.Combine(outputDirectory, filename);
+                        await File.WriteAllBytesAsync(outputPath, decryptedContent);
+                        LogDebugInfo($"Decryption successful for {filename}, file written to {outputPath}.");
+                    }
+                    else
+                    {
+                        allFilesProcessed = false;
+                        LogDebugInfo($"Decryption process returned null for {filename}. No data written.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+            if (allFilesProcessed)
+            {
+                LogDebugInfo("All files processed successfully.");
+            }
+            else
+            {
+                LogDebugInfo("One or more files failed to process correctly.");
+            }
+            return allFilesProcessed;
+        }
+
+
+        public async Task<bool> DecryptFilesSHA1Async(string[] filePaths, string baseOutputDirectory, string sha1Hash)
+        {
+            bool allFilesProcessed = true;
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                try
+                {
+                    string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    string fileSha1 = Regex.Match(filename, @"\b[0-9a-fA-F]{40}\b").Value;
+                    byte[]? processedContent = null;
+                    string useSha1;
+
+                    if (!string.IsNullOrWhiteSpace(fileSha1))
+                    {
+                        useSha1 = fileSha1;
+                        LogDebugInfo($"SHA1 {useSha1} detected in filename for {filename}.");
+                    }
+                    else if (!string.IsNullOrWhiteSpace(sha1Hash))
+                    {
+                        useSha1 = sha1Hash;
+                        LogDebugInfo($"SHA1 {useSha1} provided manually for {filename}.");
+                    }
+                    else
+                    {
+                        using (SHA1 sha1 = SHA1.Create())
+                        {
+                            byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                            useSha1 = BitConverter.ToString(SHA1Data).Replace("-", "").Substring(0, 16);
+                            LogDebugInfo($"No SHA1 found in filename or provided. Generated SHA1 for {filename}: {useSha1}");
+                        }
+                    }
+
+                    processedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, useSha1.Substring(0, 16));
+                    if (processedContent != null)
+                    {
+                        string outputDirectory = Path.Combine(baseOutputDirectory, parentFolderName);
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                        }
+                        string outputPath = Path.Combine(outputDirectory, filename);
+                        await File.WriteAllBytesAsync(outputPath, processedContent);
+                        LogDebugInfo($"Decryption successful for {filename}. Output written to {outputPath}.");
+                    }
+                    else
+                    {
+                        allFilesProcessed = false;
+                        LogDebugInfo($"Decryption failed for {filename}. No output written.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+            return allFilesProcessed;
+        }
+
 
 
         private void CDSDecrypterDragDropHandler(object sender, DragEventArgs e)

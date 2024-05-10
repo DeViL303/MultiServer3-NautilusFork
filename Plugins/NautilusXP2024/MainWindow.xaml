@@ -694,7 +694,7 @@
 
 
                 <!-- Tab 2: CDS Tool -->
-                <TabItem Header="CDS Tool" Tag="CDSTool" Visibility="Collapsed" >
+                <TabItem Header="CDS Tool" Tag="CDSTool" >
                     <StackPanel Background="#333333" >
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -710,8 +710,8 @@
                                 </Border>
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Add Original SHA1 to Output Filename:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                                    <CheckBox x:Name="CDSAddSHA1LCheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
+                                    <TextBlock Text="Append SHA1 to Filenames:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                                    <CheckBox x:Name="CDSAddSHA1CheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
                                 </StackPanel>
 
                                 <!-- Buttons -->
