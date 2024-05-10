@@ -87,8 +87,46 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option is you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
+
 <h2 align="center">
-   Tab 2: SceneID Generator / Decrypter
+   Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
+</h2>
+
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c22b0dfa-4e93-43c5-a324-072b451ecf78)
+
+</div>
+
+This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
+
+<h2 align="center">
+   Tool 3: CDS Encrypter Tool
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/33e48df1-ee99-4871-b789-bce4a71bc7ec)
+
+</div>
+
+### Note:
+- The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
+- Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
+- Encrypter by default will output to Output/CDS/ net to the exe.
+
+<h2 align="center">
+   Tool 3: CDS Decrypter Tool
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/50c46f3d-246c-4c44-8a98-ae98295aa1a5)
+
+</div>
+
+<h2 align="center">
+   Tab 3: SceneID Generator / Decrypter
 </h2>
 
 <div align="center">
@@ -101,7 +139,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
 
 <h2 align="center">
-   Tool 3: Scene ID Generator
+   Tool 5: Scene ID Generator
 </h2>
 
 <div align="center">
@@ -119,7 +157,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 <h2 align="center">
-   Tool 4: Scene ID Decrypter
+   Tool 6: Scene ID Decrypter
 </h2>
 
 <div align="center">
@@ -138,7 +176,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 
 <h2 align="center">
-   Tab 3: LUA / LUAC TOOL
+   Tab 4: LUA / LUAC TOOL
 </h2>
 
 <div align="center">
@@ -148,7 +186,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 </div>
 
 <h2 align="center">
-   Tool 5: Home LUA Compiler
+   Tool 7: Home LUA Compiler
 </h2>
 
 <div align="center">
@@ -171,7 +209,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 - Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information - stripping this information potentially makes future modification more difficult and adds a small bit of security. 
 
 <h2 align="center">
-   Tool 5: Home LUAC Decompiler
+   Tool 8: Home LUAC Decompiler
 </h2>
 
 <div align="center">
@@ -199,7 +237,7 @@ In rare cases Java based UnLuac might give better results but its unlikely. I'm 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
 <h2 align="center">
-   Tab 4: SDC / ODC Tool
+   Tab 5: SDC / ODC Tool
 </h2>
 
 <div align="center">
@@ -222,7 +260,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h2 align="center">
-   Tab 5: Path2Hash Tool
+   Tab 6: Path2Hash Tool
 </h2>
 
 <div align="center">
