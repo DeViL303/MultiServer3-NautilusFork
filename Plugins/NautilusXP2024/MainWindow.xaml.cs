@@ -2637,14 +2637,13 @@ namespace NautilusXP2024
 
                     if (encryptedContent != null)
                     {
-                        string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath)));
-                        if (!Directory.Exists(outputDirectory))
-                        {
-                            Directory.CreateDirectory(outputDirectory);
-                        }
-                        string outputPath = Path.Combine(outputDirectory, cleanFilename);
+                        string outputPath = Path.Combine(baseOutputDirectory, cleanFilename);
                         await File.WriteAllBytesAsync(outputPath, encryptedContent);
                         LogDebugInfo($"File {cleanFilename} encrypted and written to {outputPath}.");
+
+                        // After successful encryption, delete the .segs file
+                        File.Delete(filePath);
+                        LogDebugInfo($"Temporary file {filePath} deleted after successful encryption.");
                     }
                     else
                     {
@@ -2660,7 +2659,6 @@ namespace NautilusXP2024
             }
             return allFilesProcessed;
         }
-
 
 
 
