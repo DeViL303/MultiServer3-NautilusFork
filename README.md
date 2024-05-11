@@ -270,7 +270,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h2 align="center">
-   Tab 6: Path2Hash Tool
+   Tab 7: Path2Hash Tool
 </h2>
 
 <div align="center">
@@ -285,7 +285,7 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 
 <h2 align="center">
-   Tab 7: Home EBOOT Patcher
+   Tab 8: Home EBOOT Patcher
 </h2>
 
 <div align="center">
@@ -299,7 +299,7 @@ View and or Patch various fields in Home EBOOTS.
 ### Work in Progress
 
 <h2 align="center">
-   Tab 8: SHA1 Checker
+   Tab 9: SHA1 Checker
 </h2>
 
 <div align="center">
@@ -317,7 +317,7 @@ Currently decryption mode is not linked up to the backend.
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
-   Tab 9: Settings
+   Tab 10: Settings
 </h2>
 
 <div align="center">
