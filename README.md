@@ -99,7 +99,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
-This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
+This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply any SHA1 as it can use another method to get the IV, however in some rare cases where the file has a non standard header you might need to supply a SHA1 to decrypt. 
 
 <h2 align="center">
    CDS Encrypter Tool
