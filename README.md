@@ -235,7 +235,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 ### Usage:
 - Drag LUA files or folders containing LUA files into the tools drag area.
-- It will scan all all sub folders recursively for LUA files and add all to the current task
+- It will scan all sub folders recursively for LUA files and add all to the current task
 
 ### Options:
 - Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found in the gui text area.
