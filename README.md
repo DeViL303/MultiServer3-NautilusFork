@@ -126,6 +126,12 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 </div>
 
+### Note:
+- CDS Decrypter Tool can decrypt almost all ODC / SDC / SceneList xmls wihout any SHA1 provided. It uses an exploit to "work backwards" and "guess" the IV used.
+- This exploit will work as long as the header of the xml has one of several expected byte sequences. 
+- In rare cases where there is a modified header you will need to supply a sha1 for decryption, this can be supplied either in the filename, or typed into SHA1 input box.
+- If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists. 
+
 <h2 align="center">
    Tab 3: HCDB Encrypter / Decrypter
 </h2>
