@@ -17,7 +17,7 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 ### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
 
 <h2 align="center">
-   Tool 1: Home Archive Creator
+   Home Archive Creator
 </h2>
 
 <div align="center">
@@ -49,7 +49,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
 
 <h2 align="center">
-   Tool 2: Home Archive Unpacker
+   Home Archive Unpacker
 </h2>
 
 <div align="center">
@@ -101,7 +101,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
 
 <h2 align="center">
-   Tool 3: CDS Encrypter Tool
+   CDS Encrypter Tool
 </h2>
 
 <div align="center">
@@ -116,7 +116,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Encrypter by default will output to Output/CDS/ net to the exe.
 
 <h2 align="center">
-   Tool 4: CDS Decrypter Tool
+   CDS Decrypter Tool
 </h2>
 
 <div align="center">
@@ -149,7 +149,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
 
 <h2 align="center">
-   Tool 5: Scene ID Generator
+  Scene ID Generator
 </h2>
 
 <div align="center">
@@ -167,7 +167,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 <h2 align="center">
-   Tool 6: Scene ID Decrypter
+   Scene ID Decrypter
 </h2>
 
 <div align="center">
@@ -186,7 +186,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 
 <h2 align="center">
-   Tab 4: LUA / LUAC TOOL
+   Tab 5: LUA / LUAC TOOL
 </h2>
 
 <div align="center">
@@ -196,7 +196,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 </div>
 
 <h2 align="center">
-   Tool 7: Home LUA Compiler
+  Home LUA Compiler
 </h2>
 
 <div align="center">
@@ -219,7 +219,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 - Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information - stripping this information potentially makes future modification more difficult and adds a small bit of security. 
 
 <h2 align="center">
-   Tool 8: Home LUAC Decompiler
+   Home LUAC Decompiler
 </h2>
 
 <div align="center">
@@ -247,7 +247,7 @@ In rare cases Java based UnLuac might give better results but its unlikely. I'm 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
 <h2 align="center">
-   Tab 5: SDC / ODC Tool
+   Tab 6: SDC / ODC Tool
 </h2>
 
 <div align="center">
@@ -285,7 +285,7 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 
 <h2 align="center">
-   Tab 6: Home EBOOT Patcher
+   Tab 7: Home EBOOT Patcher
 </h2>
 
 <div align="center">
@@ -299,7 +299,7 @@ View and or Patch various fields in Home EBOOTS.
 ### Work in Progress
 
 <h2 align="center">
-   Tab 7: SHA1 Checker
+   Tab 8: SHA1 Checker
 </h2>
 
 <div align="center">
@@ -317,7 +317,7 @@ Currently decryption mode is not linked up to the backend.
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
-   Tab 8: Settings
+   Tab 9: Settings
 </h2>
 
 <div align="center">
