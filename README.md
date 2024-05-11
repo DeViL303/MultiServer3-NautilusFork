@@ -149,6 +149,16 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Currently you do need to supply the segs files SHA1 to decrypt. In later versions it will be able to brute force the IV as most bytes of the segs file header are known.
 
 <h2 align="center">
+   SQL to HCDB Encrypter Tool
+</h2>
+
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fb01dd1a-6e29-42e5-a0d1-fc0b00421e5a)
+
+</div>
+
+<h2 align="center">
    Tab 4: SceneID Generator / Decrypter
 </h2>
 
