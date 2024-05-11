@@ -15,7 +15,7 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 </div>
 
-### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
+### Important: Use of Nautilus is entirely at your own risk! It is recommended to backup your data beforehand!
 
 <h2 align="center">
    Home Archive Creator
