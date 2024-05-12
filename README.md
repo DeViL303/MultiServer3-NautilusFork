@@ -10,14 +10,15 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 <div align="center">
    
-![BAR/SDAT/SHARC Tool](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a378bb7-382a-4ff6-b328-a7fff8cb836c)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/584930ff-098f-4180-bf74-8e7d834ee0d4)
+
 
 </div>
 
-### Caution: Use of Nautilus is entirely at your own risk! It is strongly recommended to backup your data beforehand!
+### Important: Use of Nautilus is entirely at your own risk! It is recommended to backup your data beforehand!
 
 <h2 align="center">
-   Tool 1: Home Archive Creator
+   Home Archive Creator
 </h2>
 
 <div align="center">
@@ -49,7 +50,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
 
 <h2 align="center">
-   Tool 2: Home Archive Unpacker
+   Home Archive Unpacker
 </h2>
 
 <div align="center">
@@ -84,7 +85,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 ##### Offline Structure:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
-- This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option is you dont intend to repack the objects into archives.
+- This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
 
@@ -98,10 +99,10 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 </div>
 
-This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply a SHA1 as it can use another method to get the IV, in some rare cases you might need to supply a SHA1 to decrypt. 
+This tab handles all the smaller xml files that are encrypted with their SHA1. 99.9% of the time you dont need to supply any SHA1 as it can use another method to get the IV, however in some rare cases where the file has a non standard header you might need to supply a SHA1 to decrypt. 
 
 <h2 align="center">
-   Tool 3: CDS Encrypter Tool
+   CDS Encrypter Tool
 </h2>
 
 <div align="center">
@@ -113,10 +114,10 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 ### Note:
 - The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
 - Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- Encrypter by default will output to Output/CDS/ net to the exe.
+- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
 
 <h2 align="center">
-   Tool 3: CDS Decrypter Tool
+   CDS Decrypter Tool
 </h2>
 
 <div align="center">
@@ -125,8 +126,40 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 </div>
 
+### Note:
+- CDS Decrypter Tool can decrypt almost all ODC / SDC / SceneList xmls wihout any SHA1 provided. It uses an exploit to "work backwards" and "guess" the IV used.
+- This exploit will work as long as the header of the xml has one of several expected byte sequences. 
+- In rare cases where there is a modified header you will need to supply a sha1 for decryption, this can be supplied either in the filename, or typed into SHA1 input box.
+- If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
+- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+
 <h2 align="center">
-   Tab 3: SceneID Generator / Decrypter
+   Tab 3: HCDB Encrypter / Decrypter
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0fa29f04-ee86-4a40-92de-0b228e2a681a)
+
+</div>
+
+### Notes:
+- Playstation Home HCDB object catalogues are natively SQL files that are LMZA compressed to a segs file which reduces the filesize by about 80%.
+- Then that segs file (compressed SQL) is encrypted in a similar way to SDC/ODC with the first 16 bytes of the segs SHA1 used as the encryption IV.
+- Currently you DO need to supply the segs files SHA1 to decrypt. In later versions it will be able to brute force the IV as most bytes of the segs file header are known.
+
+<h2 align="center">
+   SQL to HCDB Encrypter Tool
+</h2>
+
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fb01dd1a-6e29-42e5-a0d1-fc0b00421e5a)
+
+</div>
+
+<h2 align="center">
+   Tab 4: SceneID Generator / Decrypter
 </h2>
 
 <div align="center">
@@ -139,7 +172,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation Home. If two scenes share a Scene ID listed in SceneList.xml, players will be placed into the same instance. Generally, each scene must have a unique Scene ID, although under certain conditions where scenes are VERY similar, sharing IDs may be feasible.
 
 <h2 align="center">
-   Tool 5: Scene ID Generator
+  Scene ID Generator
 </h2>
 
 <div align="center">
@@ -157,7 +190,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 <h2 align="center">
-   Tool 6: Scene ID Decrypter
+   Scene ID Decrypter
 </h2>
 
 <div align="center">
@@ -176,7 +209,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 
 <h2 align="center">
-   Tab 4: LUA / LUAC TOOL
+   Tab 5: LUA / LUAC TOOL
 </h2>
 
 <div align="center">
@@ -186,7 +219,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 </div>
 
 <h2 align="center">
-   Tool 7: Home LUA Compiler
+  Home LUA Compiler
 </h2>
 
 <div align="center">
@@ -202,14 +235,14 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 ### Usage:
 - Drag LUA files or folders containing LUA files into the tools drag area.
-- It will scan all all sub folders recursively for LUA files and add all to the current task
+- It will scan all sub folders recursively for LUA files and add all to the current task
 
 ### Options:
 - Parse Only: This will just run all LUA files through the compiler but with the argument -p enabled. Nothing will be compiled. This will log any syntax errors found in the gui text area.
 - Strip Debug Info: When compiling LUA to LUAC this option adds the argument -s which will remove extra debug information - stripping this information potentially makes future modification more difficult and adds a small bit of security. 
 
 <h2 align="center">
-   Tool 8: Home LUAC Decompiler
+   Home LUAC Decompiler
 </h2>
 
 <div align="center">
@@ -237,7 +270,7 @@ In rare cases Java based UnLuac might give better results but its unlikely. I'm 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
 <h2 align="center">
-   Tab 5: SDC / ODC Tool
+   Tab 6: SDC / ODC Tool
 </h2>
 
 <div align="center">
@@ -260,7 +293,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h2 align="center">
-   Tab 6: Path2Hash Tool
+   Tab 7: Path2Hash Tool
 </h2>
 
 <div align="center">
@@ -275,7 +308,7 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 
 <h2 align="center">
-   Tab 6: Home EBOOT Patcher
+   Tab 8: Home EBOOT Patcher
 </h2>
 
 <div align="center">
@@ -289,7 +322,7 @@ View and or Patch various fields in Home EBOOTS.
 ### Work in Progress
 
 <h2 align="center">
-   Tab 7: SHA1 Checker
+   Tab 9: SHA1 Checker
 </h2>
 
 <div align="center">
@@ -307,7 +340,7 @@ Currently decryption mode is not linked up to the backend.
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
-   Tab 8: Settings
+   Tab 10: Settings
 </h2>
 
 <div align="center">
