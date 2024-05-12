@@ -763,13 +763,13 @@
 
                             <!-- Left Side: HCDB Encrypter -->
                             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                <TextBlock Text="HCDB Encrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                                <TextBlock Text="HCDB Packer" Style="{StaticResource ToolTitleTextBlockStyle}"/>
                                 <Border x:Name="HCDBEncrypterDragArea" Style="{StaticResource DragAreaStyle2}" Drop="HCDBEncrypterDragDropHandler" MouseLeftButtonUp="ClickToBrowseHCDBEncryptHandler">
                                     <TextBlock x:Name="HCDBEncrypterDragAreaText" Text="Drag Folders or SQL files here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
                                 </Border>
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Append SHA1 to Filenames:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                                    <TextBlock Text="Append segs SHA1 to HCDB Filenames:" Style="{StaticResource SceneIdTextBlockStyle}"/>
                                     <CheckBox x:Name="HCDBAddSHA1CheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
                                 </StackPanel>
 
@@ -786,14 +786,14 @@
 
                             <!-- Right Side: HCDB Decrypter -->
                             <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                <TextBlock Text="HCDB Decrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                                <TextBlock Text="HCDB UnPacker" Style="{StaticResource ToolTitleTextBlockStyle}"/>
                                 <Border x:Name="HCDBDecrypterDragArea" Style="{StaticResource DragAreaStyle2}" Drop="HCDBDecrypterDragDropHandler" MouseLeftButtonUp="ClickToBrowseHCDBDecryptHandler">
                                     <TextBlock x:Name="HCDBDecrypterDragAreaText" Text="Drag Folders or HCDB files here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
                                 </Border>
 
                                 <!-- SHA1 TextBox -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Original SHA1 (Optional):" Style="{StaticResource Sha1TextBlockStyle}"/>
+                                    <TextBlock Text="Segs SHA1 (HCDB Decryption key):" Style="{StaticResource Sha1TextBlockStyle}"/>
                                     <TextBox x:Name="HCDBDecrypterSha1TextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="300" MaxLength="40"/>
                                 </StackPanel>
 
@@ -853,7 +853,7 @@
                                 <!-- Legacy Mode Toggle -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="Legacy Mode:" Style="{StaticResource Toggle1TextBlockStyle}" />
-                                    <CheckBox Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxLSTDecrypterLegacyMode"/>
+                                    <CheckBox x:Name="CheckBoxLSTDecrypterLegacyMode1" Style="{StaticResource ModernToggleSwitchStyle}" />
                                 </StackPanel>
 
                                 <!-- Buttons -->
@@ -880,7 +880,7 @@
 
                         <!-- Left Side: SceneID Encrypter -->
                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                            <TextBlock Text="SceneID Encrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                            <TextBlock Text="SceneID Generator" Style="{StaticResource ToolTitleTextBlockStyle}"/>
                             <TextBlock Text="Enter a Number or a range eg. 1-5000:" Style="{StaticResource SceneIdTextBlockStyle}"/>
                             <TextBox x:Name="SceneIDnumberInputTextBox" MaxLength="11" Height="24" Width="60" Padding="0,2,0,0" Style="{StaticResource SceneIdInputTextBoxStyle}"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -977,7 +977,7 @@
                 </TabItem>
 
                 <!-- Tab 6: Cache Tool -->
-                <TabItem Header="Cache Disabled" Tag="CacheTool" IsEnabled="False" Visibility="Collapsed">
+                <TabItem Header="Cache" Tag="CacheTool" Visibility="Collapsed">
                     <StackPanel Background="#333333" >
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -1309,32 +1309,46 @@
                 </TabItem>
 
                 <!-- Tab Video Tool -->
-                <TabItem Header="Video" Tag="Video" Visibility="Collapsed">
-                    <StackPanel Background="#333333" AllowDrop="True" Drop="Sha1DragArea_Drop">
+                <TabItem Header="Video" Tag="Video">
+                    <StackPanel Background="#333333" AllowDrop="True" Drop="VideoDragArea_Drop">
 
                         <!-- Title TextBlock -->
                         <TextBlock Text="Video Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
 
                         <!-- Drag-and-Drop Area -->
-                        <Border x:Name="VideoDragArea" Height="100" Width="800" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="SHA1BrowseButton_Click">
+                        <Border x:Name="VideoDragArea" Height="100" Width="800" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="VideoBrowseButton_Click">
                             <TextBlock x:Name="VideoDragAreaText" Text="Drag Videos here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}" />
                         </Border>
 
-                        <!-- Toggle Switch -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="480p:  " Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <CheckBox x:Name="VideoCheckerDecryptCheckBox" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            <TextBlock Text="Video URLs (Comma/space/line/pipe separated):" Style="{StaticResource Sha1TextBlockStyle}"/>
+                            <TextBox x:Name="VideoYoutubeURLTextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="400"/>
+                        </StackPanel>
+
+                        <!-- Radio Button Panel -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="360p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video360pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="480p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video480pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="576p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video576pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="VideoResolution"/>
+                            <TextBlock Text="720p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video720pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="1080p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video1080pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="Audio Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="30,0,0,0" />
+                            <CheckBox x:Name="VideoAudioBoostCheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
                         </StackPanel>
 
                         <!-- Buttons Row -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="videoCopyButton" Content="Copy" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CopySHA1Button_Click"/>
-                            <Button x:Name="videoClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearSHA1Button_Click"/>
-                            <Button Content="Verify Content" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerVerifyTestButtonClick"/>
+                            <Button x:Name="videoConvertButton" Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ConvertVideoButton_Click"/>
+                            <Button x:Name="videoClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearVideoButton_Click"/>
                         </StackPanel>
 
                         <!-- File List Box -->
-                        <TextBox x:Name="VideoTextBox" Height="350" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+                        <TextBox x:Name="VideoTextBox" Height="270" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </TabItem>
 
@@ -1380,14 +1394,14 @@
                             </StackPanel>
                             <!-- HCDB Output Directory -->
                             <StackPanel Orientation="Horizontal" Margin="5">
-                                <TextBlock Text="HCDB Tool Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
+                                <TextBlock Text="HCDB Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
                                 <TextBox x:Name="HcdbOutputDirectoryTextBox" Width="450" Style="{StaticResource SettingsTextBoxStyle}" Text="C:\Nautilus\Output\HCDB"/>
                                 <Button Content="Change" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="5,0,0,0" Width="70" Click="HcdbBrowseButton_Click"/>
                                 <Button Content="Open" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="10,0,0,0" Width="60" Click="HcdbOpenButton_Click"/>
                             </StackPanel>
                             <!-- SQL Output Directory -->
                             <StackPanel Orientation="Horizontal" Margin="5">
-                                <TextBlock Text="SQL Tool Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
+                                <TextBlock Text="SQL Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
                                 <TextBox x:Name="sqlOutputDirectoryTextBox" Width="450" Style="{StaticResource SettingsTextBoxStyle}" Text="C:\Nautilus\Output\SQL"/>
                                 <Button Content="Change" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="5,0,0,0" Width="70" Click="sqlBrowseButton_Click"/>
                                 <Button Content="Open" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="10,0,0,0" Width="60" Click="sqlOpenButton_Click"/>
@@ -1426,6 +1440,13 @@
                                 <TextBox x:Name="CacheOutputDirectoryTextBox" Width="450" Style="{StaticResource SettingsTextBoxStyle}" Text="C:\Nautilus\Output\Cache"/>
                                 <Button Content="Change" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="5,0,0,0" Width="70" Click="CacheBrowseButton_Click"/>
                                 <Button Content="Open" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="10,0,0,0" Width="60" Click="CacheOpenButton_Click"/>
+                            </StackPanel>
+                            <!-- Converted/Download Video Output Directory -->
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <TextBlock Text="Video Tool Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
+                                <TextBox x:Name="VideoOutputDirectoryTextBox" Width="450" Style="{StaticResource SettingsTextBoxStyle}" Text="C:\Nautilus\Output\Video"/>
+                                <Button Content="Change" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="5,0,0,0" Width="70" Click="VideoBrowseButton_Click"/>
+                                <Button Content="Open" Cursor="Hand" Style="{StaticResource DarkModeButtonSmallStyle}" FontSize="14" Margin="10,0,0,0" Width="60" Click="VideoOpenButton_Click"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal"  Margin="5,0,5,0">
                                 <TextBlock Text="If Output File Already Exists:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
@@ -1501,7 +1522,7 @@
                                     </ComboBox.Template>
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock  FontSize="14" Foreground="White" Margin="0,70,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
+                            <TextBlock  FontSize="14" Foreground="White" Margin="0,40,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>

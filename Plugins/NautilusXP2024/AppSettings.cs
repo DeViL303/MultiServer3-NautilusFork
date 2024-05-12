@@ -19,6 +19,8 @@ namespace NautilusXP2024
         public string LuaOutputDirectory { get; set; }
         public string InfToolOutputDirectory { get; set; }
         public string CacheOutputDirectory { get; set; }
+
+        public string VideoOutputDirectory { get; set; }
         public int CpuPercentage { get; set; }
         public int MappingThreads { get; set; }
         public string ThemeColor { get; set; }
@@ -42,6 +44,7 @@ namespace NautilusXP2024
             LuaOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "LUA");
             InfToolOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "INF");
             CacheOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Cache");
+            VideoOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Video");
             CpuPercentage = 50;
             MappingThreads = 12;
             ThemeColor = "#FF00FF27"; // Default color as a string

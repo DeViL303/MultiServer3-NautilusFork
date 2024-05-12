@@ -44,6 +44,7 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using System.Net;
 
 
 namespace NautilusXP2024
@@ -128,6 +129,7 @@ namespace NautilusXP2024
             LUAOutputDirectoryTextBox.Text = _settings.LuaOutputDirectory;
             InfToolOutputDirectoryTextBox.Text = _settings.InfToolOutputDirectory;
             CacheOutputDirectoryTextBox.Text = _settings.CacheOutputDirectory;
+            VideoOutputDirectoryTextBox.Text = _settings.VideoOutputDirectory;
             cpuPercentageTextBox.Text = _settings.CpuPercentage.ToString();
             MappingThreadsTextbox.Text = _settings.MappingThreads.ToString();
             ThemeColorPicker.SelectedColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(_settings.ThemeColor);
@@ -282,6 +284,14 @@ namespace NautilusXP2024
             if (_settings != null && CacheOutputDirectoryTextBox != null)
             {
                 _settings.CacheOutputDirectory = CacheOutputDirectoryTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+        private void VideoOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null && VideoOutputDirectoryTextBox != null)
+            {
+                _settings.VideoOutputDirectory = VideoOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
@@ -3323,25 +3333,71 @@ namespace NautilusXP2024
             TemporaryMessageHelper.ShowTemporaryMessage(TicketLSTEncrypterDragAreaText, message, 2000);
         }
 
+        // Not working
 
-        // Placeholder method for LST file decryption
-        private Task<bool> DecryptLstFilesAsync(string[] filePaths)
+        private async Task<bool> DecryptLstFilesAsync(string[] filePaths)
         {
             LogDebugInfo($"Ticket LST Decryption: Starting decryption for {filePaths.Length} LST file(s)");
+            bool allDecryptedSuccessfully = true;
 
-            // TODO: Implement the actual decryption logic here
-            bool decryptionResult = true; // Simulate success for now
-
-            if (decryptionResult)
+            string outputDirectory = TicketListOutputDirectoryTextBox.Text;
+            if (!Directory.Exists(outputDirectory))
             {
-                LogDebugInfo("Ticket LST Decryption: Decryption process completed successfully");
-            }
-            else
-            {
-                LogDebugInfo("Ticket LST Decryption: Decryption process failed");
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            return Task.FromResult(decryptionResult);
+            foreach (string filePath in filePaths)
+            {
+                try
+                {
+                    byte[] fileData = File.ReadAllBytes(filePath);
+                    byte[] decryptedData = null;
+
+                    // Check for decryption header and version
+                    if (fileData.Length > 8 && fileData[0] == 0xBE && fileData[1] == 0xE5 && fileData[2] == 0xBE && fileData[3] == 0xE5)
+                    {
+                        int version = BitConverter.ToInt32(fileData, 4);
+                        byte[] dataToDecrypt = new byte[fileData.Length - 8];
+                        Buffer.BlockCopy(fileData, 8, dataToDecrypt, 0, dataToDecrypt.Length);
+
+                        // Handle decryption based on version
+                        decryptedData = DecryptDataByVersion(dataToDecrypt, version);
+                    }
+
+                    if (decryptedData != null)
+                    {
+                        string outputFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(filePath) + "_decrypted.lst");
+                        File.WriteAllBytes(outputFilePath, decryptedData);
+                        LogDebugInfo($"Decrypted file saved: {outputFilePath}");
+                    }
+                    else
+                    {
+                        LogDebugInfo($"Decryption failed for file: {filePath}");
+                        allDecryptedSuccessfully = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error processing file {filePath}: {ex.Message}");
+                    allDecryptedSuccessfully = false;
+                }
+            }
+
+            return allDecryptedSuccessfully;
+        }
+
+        private byte[] DecryptDataByVersion(byte[] data, int version)
+        {
+            switch (version)
+            {
+                case 1:
+                    return LIBSECURE.InitiateBlowfishBuffer(data, ToolsImpl.TicketListV1Key, ToolsImpl.TicketListV1IV, "CTR");
+                case 0:
+                    return LIBSECURE.InitiateBlowfishBuffer(data, ToolsImpl.TicketListV0Key, ToolsImpl.TicketListV0IV, "CTR");
+                default:
+                    LogDebugInfo($"Unsupported version: {version}");
+                    return null;
+            }
         }
 
 
@@ -5480,6 +5536,9 @@ namespace NautilusXP2024
                 case RememberLastTabUsed.SHAChecker:
                     MainTabControl.SelectedIndex = 10; // Index of SHAChecker tab
                     break;
+                case RememberLastTabUsed.Video:
+                    MainTabControl.SelectedIndex = 11; // Index of Video tab
+                    break;
                 default:
                     MainTabControl.SelectedIndex = 0; // Default to ArchiveTool tab if none is matched
                     break;
@@ -6134,6 +6193,401 @@ namespace NautilusXP2024
         }
 
 
+        // Tab 9 vuideo converter
+
+        private async void VideoDragArea_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] droppedItems = (string[])e.Data.GetData(DataFormats.FileDrop);
+                cancellationTokenSource?.Cancel();
+                cancellationTokenSource = new CancellationTokenSource();
+                await ProcessVideoFiles(droppedItems, cancellationTokenSource.Token);
+            }
+        }
+
+        private async Task ProcessVideoFiles(string[] videoFiles, CancellationToken cancellationToken)
+        {
+            VideoTextBox.Clear();
+            int fileCount = 0;
+            await Task.Run(() =>
+            {
+                foreach (string file in videoFiles)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                    if (File.Exists(file) && (file.EndsWith(".mp4") || file.EndsWith(".avi") || file.EndsWith(".mov"))) // Add other video formats as needed
+                    {
+                        Dispatcher.Invoke(() => VideoTextBox.AppendText($"Video file: {file}{Environment.NewLine}"));
+                        fileCount++;
+                    }
+                }
+            });
+
+            Dispatcher.Invoke(() =>
+                TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, $"{fileCount} video files processed.", 1000)
+            );
+        }
+
+        private async void VideoBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Video files (*.mp4;*.avi;*.mov)|*.mp4;*.avi;*.mov|All files (*.*)|*.*",
+                Multiselect = true
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var selectedFiles = openFileDialog.FileNames;
+                cancellationTokenSource?.Cancel();
+                cancellationTokenSource = new CancellationTokenSource();
+                await ProcessVideoFiles(selectedFiles, cancellationTokenSource.Token);
+            }
+        }
+
+
+        private void ClearVideoButton_Click(object sender, RoutedEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+            VideoTextBox.Clear();
+            Dispatcher.Invoke(() =>
+                TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Video list cleared", 1000)
+            );
+        }
+
+        private async void ConvertVideoButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Gather all input from UI
+            string videoUrls = VideoYoutubeURLTextBox.Text.Trim();
+            string localVideoEntries = VideoTextBox.Text.Trim(); // This should contain lines that may start with "Video file:"
+            string outputDirectory = VideoOutputDirectoryTextBox.Text.Trim();
+
+            // Ensure there's meaningful input
+            if (string.IsNullOrEmpty(videoUrls) && string.IsNullOrEmpty(localVideoEntries))
+            {
+                Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Please enter a video URL or check for local video paths.", 2000));
+                return;
+            }
+
+            // Prepare the output directory
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Define paths to dependencies
+            string dependenciesPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "dependencies");
+            string ytDlpPath = Path.Combine(dependenciesPath, "yt-dlp.exe");
+            string ffmpegPath = Path.Combine(dependenciesPath, "ffmpeg.exe");
+
+            // Check for required dependencies
+            await EnsureDependencies(ytDlpPath, ffmpegPath);
+
+            // Process local video files detected in the VideoTextBox
+            var localVideoPaths = localVideoEntries.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Where(line => line.StartsWith("Video file:"))
+                                        .Select(line => line.Replace("Video file:", "").Trim());
+
+            foreach (string localPath in localVideoPaths)
+            {
+                await ConvertLocalVideoFile(localPath, outputDirectory, ffmpegPath);
+            }
+
+            // Process each URL for download and conversion
+            var urls = videoUrls.Split(new[] { ' ', ',', '\n', '\r', '|' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var url in urls)
+            {
+                await DownloadAndOrConvertVideo(url, outputDirectory, ytDlpPath, ffmpegPath);
+            }
+        }
+
+        private async Task ConvertLocalVideoFile(string filePath, string outputDirectory, string ffmpegPath)
+        {
+            var (selectedResolution, selectedBitrate) = GetResolutionAndBitrate();
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
+
+            string audioFilter = VideoAudioBoostCheckBox.IsChecked == true ? ",volume=6dB" : "";
+            string ffmpegArguments = $"-i \"{filePath}\" " +
+                $"-c:v mpeg4 -b:v {selectedBitrate} -minrate {selectedBitrate} -maxrate {selectedBitrate} -bufsize {int.Parse(selectedBitrate.Replace("k", "")) * 2}k " +
+                $"-vf scale={selectedResolution} -aspect 16:9 -r 29.970 " +
+                $"-c:a aac -b:a 160k -ar 48000 -ac 2 -profile:a aac_low " +
+                $"-af \"loudnorm=I=-23:LRA=7:tp=-2{audioFilter}\" " +
+                $"-movflags +faststart " +
+                $"-metadata:s:a title=\"Stereo\" " +
+                $"\"{outputFilePath}\"";
+
+            ProcessStartInfo ffmpegStartInfo = new ProcessStartInfo()
+            {
+                FileName = ffmpegPath,
+                Arguments = ffmpegArguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using (Process ffmpegProcess = Process.Start(ffmpegStartInfo))
+            {
+                ffmpegProcess.OutputDataReceived += (s, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        Dispatcher.Invoke(() => VideoTextBox.AppendText(args.Data + Environment.NewLine));
+                    }
+                };
+                ffmpegProcess.BeginOutputReadLine();
+                ffmpegProcess.ErrorDataReceived += (s, args) =>
+                {
+                    if (args.Data != null)
+                        Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion: " + args.Data + Environment.NewLine));
+                };
+                ffmpegProcess.BeginErrorReadLine();
+
+                await ffmpegProcess.WaitForExitAsync();
+                if (ffmpegProcess.ExitCode == 0)
+                {
+                    Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion successful. Converted video located at: " + outputFilePath + Environment.NewLine));
+                }
+                else
+                {
+                    Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Conversion failed, check output for details.", 2000));
+                }
+            }
+        }
+
+
+        private async Task EnsureDependencies(string ytDlpPath, string ffmpegPath)
+        {
+            // Ensure yt-dlp is downloaded
+            if (!File.Exists(ytDlpPath))
+            {
+                if (MessageBox.Show("yt-dlp.exe was not found. You can manually add it to the dependencies folder and try again, OR Would you like to download it from https://github.com/yt-dlp/yt-dlp/releases/ now?", "Download yt-dlp", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    await DownloadFileAsync("https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe", ytDlpPath);
+                }
+                else
+                {
+                    throw new InvalidOperationException("yt-dlp is required to proceed.");
+                }
+            }
+
+            // Ensure ffmpeg is downloaded
+            if (!File.Exists(ffmpegPath))
+            {
+                if (MessageBox.Show("ffmpeg.exe was not found. You can manually add it to the dependencies folder and try again, OR Would you like to download it from https://github.com/yt-dlp/FFmpeg-Builds/releases/ now?", "Download ffmpeg", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    await DownloadAndExtractFfmpeg(Path.GetDirectoryName(ffmpegPath), ffmpegPath);
+                }
+                else
+                {
+                    throw new InvalidOperationException("ffmpeg is required to proceed.");
+                }
+            }
+        }
+
+
+        private async Task DownloadFileAsync(string url, string path)
+        {
+            Dispatcher.Invoke(() => VideoTextBox.AppendText($"Starting download from {url}...\n"));
+            using (var client = new WebClient())
+            {
+                await client.DownloadFileTaskAsync(new Uri(url), path);
+            }
+            Dispatcher.Invoke(() => VideoTextBox.AppendText("Download completed.\n"));
+        }
+
+        private async Task DownloadAndExtractFfmpeg(string dependenciesPath, string ffmpegPath)
+        {
+            string zipPath = Path.Combine(dependenciesPath, "ffmpeg.zip");
+            string extractPath = Path.Combine(dependenciesPath, "ffmpeg-extract");
+
+            // Download ffmpeg
+            Dispatcher.Invoke(() => VideoTextBox.AppendText("Downloading ffmpeg...\n"));
+            using (var client = new WebClient())
+            {
+                await client.DownloadFileTaskAsync(new Uri("https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2024-05-12-14-08/ffmpeg-n7.0-28-ge7d2238ad7-win64-gpl-7.0.zip"), zipPath);
+            }
+            Dispatcher.Invoke(() => VideoTextBox.AppendText("ffmpeg downloaded. Extracting...\n"));
+
+            // Extract ffmpeg
+            ZipFile.ExtractToDirectory(zipPath, extractPath);
+            File.Move(Path.Combine(extractPath, "ffmpeg-n7.0-28-ge7d2238ad7-win64-gpl-7.0", "bin", "ffmpeg.exe"), ffmpegPath);
+            Dispatcher.Invoke(() => VideoTextBox.AppendText("ffmpeg extracted successfully.\n"));
+
+            // Cleanup
+            Directory.Delete(extractPath, true);
+            File.Delete(zipPath);
+            Dispatcher.Invoke(() => VideoTextBox.AppendText("Cleanup completed.\n"));
+        }
+
+        private async Task DownloadAndOrConvertVideo(string videoUrls, string outputDirectory, string ytDlpPath, string ffmpegPath)
+        {
+
+
+            if (string.IsNullOrEmpty(videoUrls))
+            {
+                Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Please enter a video URL.", 2000));
+                return;
+            }
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Handling multiple URLs separated by space, comma, or newline
+            var urls = videoUrls.Split(new[] { ' ', ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var videoUrl in urls)
+            {
+                string downloadArguments = $"-f bestvideo+bestaudio/best {videoUrl} -o \"{outputDirectory}\\%(title)s.%(ext)s\"";
+
+                ProcessStartInfo startInfo = new ProcessStartInfo()
+                {
+                    FileName = ytDlpPath,
+                    Arguments = downloadArguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    var outputBuilder = new StringBuilder();
+                    var lastFewLines = new Queue<string>(5);
+
+                    process.OutputDataReceived += (s, args) =>
+                    {
+                        if (args.Data != null)
+                        {
+                            Dispatcher.Invoke(() => VideoTextBox.AppendText(args.Data + Environment.NewLine));
+                            outputBuilder.AppendLine(args.Data);
+                            if (lastFewLines.Count >= 5)
+                                lastFewLines.Dequeue();
+                            lastFewLines.Enqueue(args.Data);
+                        }
+                    };
+                    process.BeginOutputReadLine();
+                    process.ErrorDataReceived += (s, args) =>
+                    {
+                        if (args.Data != null)
+                            Dispatcher.Invoke(() => VideoTextBox.AppendText("" + args.Data + Environment.NewLine));
+                    };
+                    process.BeginErrorReadLine();
+
+                    await process.WaitForExitAsync();
+
+                    if (process.ExitCode == 0)
+                    {
+                        Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Download successful.", 2000));
+                        string mergedFilePath = ParseForMergedFilePath(lastFewLines);
+                        if (!string.IsNullOrEmpty(mergedFilePath))
+                        {
+                            Dispatcher.Invoke(() => VideoTextBox.AppendText($"Merged video file: {mergedFilePath}{Environment.NewLine}"));
+
+                            var (selectedResolution, selectedBitrate) = GetResolutionAndBitrate();
+                            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mergedFilePath);
+                            string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
+
+                            string audioFilter = VideoAudioBoostCheckBox.IsChecked == true ? ",volume=6dB" : "";
+                            string ffmpegArguments = $"-i \"{mergedFilePath}\" " +
+                             $"-c:v mpeg4 -b:v {selectedBitrate} -minrate {selectedBitrate} -maxrate {selectedBitrate} -bufsize {int.Parse(selectedBitrate.Replace("k", "")) * 2}k " +
+                             $"-vf scale={selectedResolution} -aspect 16:9 -r 29.970 " +
+                             $"-c:a aac -b:a 160k -ar 48000 -ac 2 -profile:a aac_low " +
+                             $"-af \"loudnorm=I=-23:LRA=7:tp=-2{audioFilter}\" " +
+                             $"-movflags +faststart " +
+                             $"-metadata:s:a title=\"Stereo\" " +
+                             $"\"{outputFilePath}\"";
+
+                            ProcessStartInfo ffmpegStartInfo = new ProcessStartInfo()
+                            {
+                                FileName = ffmpegPath,
+                                Arguments = ffmpegArguments,
+                                UseShellExecute = false,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true,
+                                CreateNoWindow = true
+                            };
+                            using (Process ffmpegProcess = Process.Start(ffmpegStartInfo))
+                            {
+                                ffmpegProcess.OutputDataReceived += (s, args) =>
+                                {
+                                    if (args.Data != null)
+                                    {
+                                        Dispatcher.Invoke(() => VideoTextBox.AppendText(args.Data + Environment.NewLine));
+                                    }
+                                };
+                                ffmpegProcess.BeginOutputReadLine();
+                                ffmpegProcess.ErrorDataReceived += (s, args) =>
+                                {
+                                    if (args.Data != null)
+                                        Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion: " + args.Data + Environment.NewLine));
+                                };
+                                ffmpegProcess.BeginErrorReadLine();
+
+                                await ffmpegProcess.WaitForExitAsync();
+                                if (ffmpegProcess.ExitCode == 0)
+                                {
+                                    Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion successful. Converted video located at: " + outputFilePath + Environment.NewLine));
+
+                                    // Delete the original file after successful conversion
+                                    File.Delete(mergedFilePath);
+                                }
+                                else
+                                {
+                                    Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Conversion failed, check output for details.", 2000));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Download may have failed, check the output for details.", 2000));
+                    }
+                }
+            }
+        }
+
+
+
+        private (string resolution, string bitrate) GetResolutionAndBitrate()
+        {
+            if (Video360pRadioButton.IsChecked == true)
+                return ("640:360", "1500k");
+            else if (Video480pRadioButton.IsChecked == true)
+                return ("854:480", "2500k");
+            else if (Video576pRadioButton.IsChecked == true)
+                return ("1024:576", "3500k");
+            else if (Video720pRadioButton.IsChecked == true)
+                return ("1280:720", "4500k");
+            else if (Video1080pRadioButton.IsChecked == true)
+                return ("1920:1080", "7000k");
+            else
+                return ("1024:576", "3500k"); //  if none is selected somehow
+        }
+
+
+
+
+        private string ParseForMergedFilePath(Queue<string> lastFewLines)
+        {
+            string mergePrefix = "[Merger] Merging formats into ";
+            foreach (var line in lastFewLines)
+            {
+                if (line.StartsWith(mergePrefix))
+                {
+                    return line.Substring(mergePrefix.Length).Trim('"');
+                }
+            }
+            return null;
+        }
+
+
+
 
         private void CacheTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -6443,6 +6897,35 @@ namespace NautilusXP2024
         private void CacheOpenButton_Click(object sender, RoutedEventArgs e)
         {
             string outputDirectory = CacheOutputDirectoryTextBox.Text;
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(outputDirectory))
+                {
+                    // Create the directory if it does not exist
+                    Directory.CreateDirectory(outputDirectory);
+                    MessageBox.Show($"Directory created: {outputDirectory}");
+                }
+
+                // Open the directory in File Explorer
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = outputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions (e.g., invalid path or lack of permissions)
+                MessageBox.Show($"Error opening directory: {ex.Message}");
+            }
+        }
+
+        private void VideoOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            string outputDirectory = VideoOutputDirectoryTextBox.Text;
 
             try
             {

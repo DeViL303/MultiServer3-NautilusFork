@@ -29,7 +29,8 @@ namespace NautilusXP2024
         SDCODCTool,
         Path2Hash,
         EbootPatcher,
-        SHAChecker
+        SHAChecker,
+        Video
     }
 
     public enum ArchiveMapperSetting
