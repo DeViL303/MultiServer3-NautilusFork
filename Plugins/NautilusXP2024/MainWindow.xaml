@@ -1336,15 +1336,15 @@
                             <TextBlock Text="480p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Video480pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="576p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video576pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video576pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="VideoResolution"/>
                             <TextBlock Text="720p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video720pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True"  GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video720pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}"  GroupName="VideoResolution"/>
                             <TextBlock Text="1080p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Video1080pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="4K:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Video4KRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="AVC H.264:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="5,0,0,0" />
-                            <CheckBox x:Name="VideoAVCh264CheckBox" Margin="10,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True"/>
+                            <CheckBox x:Name="VideoAVCh264CheckBox" Margin="10,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
                             <TextBlock Text="4:3 AR:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="5,0,0,0" />
                             <CheckBox x:Name="AspectRatioFourThreeCheckBox" Margin="10,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
                         </StackPanel>

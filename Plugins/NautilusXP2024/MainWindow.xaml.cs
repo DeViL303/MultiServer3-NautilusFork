@@ -6395,21 +6395,21 @@ namespace NautilusXP2024
             bool isFourThree = AspectRatioFourThreeCheckBox.IsChecked == true;
 
             if (Video240pRadioButton.IsChecked == true)
-                return isFourThree ? ("320:240", "1000k") : ("426:240", "1500k");
+                return isFourThree ? ("320:240", "1000k") : ("426:240", "1000k");
             else if (Video360pRadioButton.IsChecked == true)
-                return isFourThree ? ("480:360", "1200k") : ("640:360", "1500k");
+                return isFourThree ? ("480:360", "1800k") : ("640:360", "1800k");
             else if (Video480pRadioButton.IsChecked == true)
-                return isFourThree ? ("640:480", "2000k") : ("854:480", "2500k");
+                return isFourThree ? ("640:480", "2500k") : ("854:480", "2500k");
             else if (Video576pRadioButton.IsChecked == true)
-                return isFourThree ? ("768:576", "3000k") : ("1024:576", "3500k");
+                return isFourThree ? ("768:576", "3500k") : ("1024:576", "3500k");
             else if (Video720pRadioButton.IsChecked == true)
-                return isFourThree ? ("960:720", "4000k") : ("1280:720", "4500k");
+                return isFourThree ? ("960:720", "4500k") : ("1280:720", "4500k");
             else if (Video1080pRadioButton.IsChecked == true)
                 return isFourThree ? ("1440:1080", "6000k") : ("1920:1080", "7000k");
             else if (Video4KRadioButton.IsChecked == true)
                 return isFourThree ? ("2880:2160", "15000k") : ("3840:2160", "20000k");
             else
-                return isFourThree ? ("768:576", "3000k") : ("1024:576", "3500k"); // Default case if none is selected
+                return isFourThree ? ("768:576", "2500k") : ("1024:576", "2500k"); // Default case if none is selected
         }
 
 
