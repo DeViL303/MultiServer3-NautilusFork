@@ -340,7 +340,7 @@ Currently decryption mode is not linked up to the backend.
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
-   Tab 9: Video Converter
+   Tab 10: Video Converter
 </h2>
 
 <div align="center">
@@ -360,7 +360,7 @@ Verify Content: This is a standalone function that allows you to choose a folder
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
 <h2 align="center">
-   Tab 10: Settings
+   Tab 11: Settings
 </h2>
 
 <div align="center">
