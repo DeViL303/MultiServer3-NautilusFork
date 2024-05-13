@@ -340,6 +340,26 @@ Currently decryption mode is not linked up to the backend.
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
 <h2 align="center">
+   Tab 9: Video Converter
+</h2>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7f3b18fc-4a0d-4963-abfc-f65d7acc9ca9)
+
+</div>
+
+### Usage:
+- Local Videos: Drag and drop videos into drag area, or Click to browse and choose files.  
+- Youtube conversion: Enter URL, or multiple URLs (comma, space, line or pipe separated)
+- Choose settings and click convert. Find output in Output/Video when its finished
+- Video Quality: 576p recommended for Home for best balance between filesize and quality.
+- Recommended to choose 4:3 when converting 4:3 videos as it will result in higher quality i the end, the defult is 16:9.
+- If you ignore this aspect ratio setting it will still work ok as home stretches/squashes videos to fit the screen they are shown on anyway.
+- Audio bitrate, 160kbps recommended for best balance between filesize and quality. 
+- For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
+
+<h2 align="center">
    Tab 10: Settings
 </h2>
 
