@@ -978,62 +978,7 @@
                     </StackPanel>
                 </TabItem>
 
-                <!-- Tab 6: Cache Tool -->
-                <TabItem Header="Cache" Tag="CacheTool" Visibility="Collapsed">
-                    <StackPanel Background="#333333" >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Left Side: INF Decrypter -->
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                <TextBlock Text="INF Decrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
-                                <Border x:Name="INFDecrypterDragArea" Style="{StaticResource DragAreaStyle2}" Drop="INFDecrypterDragDropHandler" MouseLeftButtonUp="ClickToBrowseINFDecrypterHandler">
-                                    <TextBlock x:Name="INFDecrypterDragAreaText" Text="Drag Folders or INF files here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
-                                </Border>
-
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Save Decrypted INFs:" Style="{StaticResource Sha1TextBlockStyle}" />
-                                    <CheckBox x:Name="CheckBoxSaveDecInfs" Style="{StaticResource ModernToggleSwitchStyle}" Background="Gray" Unchecked="CheckBoxSaveDecInfs_Unchecked" Checked="CheckBoxSaveDecInfs_Checked"/>
-                                </StackPanel>
-
-                                <!-- Buttons -->
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="Decrypt" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="INFDecrypterExecuteButtonClick"/>
-                                    <Button x:Name="INFDecrypterClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
-                                </StackPanel>
-
-                                <!-- Text Area -->
-                                <TextBox x:Name="INFDecrypterTextBox" Height="290" Style="{StaticResource FileListTextBoxStyle}"/>
-                            </StackPanel>
-
-                            <!-- Right Side: CACHE Mapper -->
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                <TextBlock Text="CACHE Mapper" Style="{StaticResource ToolTitleTextBlockStyle}"/>
-                                <Border x:Name="CACHEMapperDragArea" Style="{StaticResource DragAreaStyle2}" Drop="CACHEMapperDragDropHandler" MouseLeftButtonUp="ClickToBrowseCACHEMapperHandler">
-                                    <TextBlock x:Name="CACHEMapperDragAreaText" Text="Drag Folders Containing CACHE here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
-                                </Border>
-
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Save Decrypted INFs:" Style="{StaticResource Sha1TextBlockStyle}" />
-                                    <CheckBox x:Name="CheckBoxSaveDecInfsCACHE" Style="{StaticResource ModernToggleSwitchStyle}" Background="Gray" Unchecked="CheckBoxSaveDecInfsCACHE_Unchecked" Checked="CheckBoxSaveDecInfsCACHE_Checked"/>
-                                </StackPanel>
-
-                                <!-- Buttons -->
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="Unpack and Map" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CACHEMapperExecuteButtonClick"/>
-                                    <Button x:Name="CACHEMapperClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
-                                </StackPanel>
-
-                                <!-- Text Area -->
-                                <TextBox x:Name="CACHEMapperTextBox" Height="290" Style="{StaticResource FileListTextBoxStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
+               
 
                 <!-- Tab 8 SDC ODC Creator -->
                 <TabItem Header="SDC / ODC" Tag="SDCODCTool">
