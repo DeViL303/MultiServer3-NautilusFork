@@ -6193,7 +6193,7 @@ namespace NautilusXP2024
         }
 
 
-        // Tab 9 vuideo converter
+        // Tab 9 video converter
 
         private async void VideoDragArea_Drop(object sender, DragEventArgs e)
         {
@@ -6217,7 +6217,12 @@ namespace NautilusXP2024
                     if (cancellationToken.IsCancellationRequested)
                         return;
 
-                    if (File.Exists(file) && (file.EndsWith(".mp4") || file.EndsWith(".avi") || file.EndsWith(".mov"))) // Add other video formats as needed
+                    if (File.Exists(file) &&
+                        (file.EndsWith(".mp4") || file.EndsWith(".avi") || file.EndsWith(".mov") ||
+                         file.EndsWith(".mpeg") || file.EndsWith(".mpg") || file.EndsWith(".mkv") ||
+                         file.EndsWith(".wmv") || file.EndsWith(".flv") || file.EndsWith(".webm") ||
+                         file.EndsWith(".ogv") || file.EndsWith(".3gp"))) // Add other video formats as needed
+
                     {
                         Dispatcher.Invoke(() => VideoTextBox.AppendText($"Video file: {file}{Environment.NewLine}"));
                         fileCount++;
@@ -6234,7 +6239,8 @@ namespace NautilusXP2024
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Video files (*.mp4;*.avi;*.mov)|*.mp4;*.avi;*.mov|All files (*.*)|*.*",
+                Filter = "Video files (*.mp4; *.avi; *.mov; *.mpeg; *.mpg; *.mkv; *.wmv; *.flv; *.webm; *.ogv; *.3gp)|*.mp4;*.avi;*.mov;*.mpeg;*.mpg;*.mkv;*.wmv;*.flv;*.webm;*.ogv;*.3gp|All files (*.*)|*.*",
+
                 Multiselect = true
             };
 
@@ -6292,28 +6298,49 @@ namespace NautilusXP2024
 
             foreach (string localPath in localVideoPaths)
             {
-                await ConvertLocalVideoFile(localPath, outputDirectory, ffmpegPath);
+                await ConvertLocalVideoFile(localPath, outputDirectory);
             }
 
             // Process each URL for download and conversion
             var urls = videoUrls.Split(new[] { ' ', ',', '\n', '\r', '|' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var url in urls)
             {
-                await DownloadAndOrConvertVideo(url, outputDirectory, ytDlpPath, ffmpegPath);
+                await DownloadVideo(url, outputDirectory, ytDlpPath);
             }
         }
 
-        private async Task ConvertLocalVideoFile(string filePath, string outputDirectory, string ffmpegPath)
+        private async Task ConvertLocalVideoFile(string filePath, string outputDirectory)
         {
             var (selectedResolution, selectedBitrate) = GetResolutionAndBitrate();
+            string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string ffmpegPath = Path.Combine(Path.GetDirectoryName(exeLocation), "dependencies\\ffmpeg.exe");
+
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
 
-            string audioFilter = VideoAudioBoostCheckBox.IsChecked == true ? ",volume=6dB" : "";
+            string audioBitrate = "160k"; // Default audio bitrate
+            if (Audio128kRadioButton.IsChecked == true)
+                audioBitrate = "128k";
+            else if (Audio160kRadioButton.IsChecked == true)
+                audioBitrate = "160k";
+            else if (Audio256kRadioButton.IsChecked == true)
+                audioBitrate = "256k";
+            else if (Audio320kRadioButton.IsChecked == true)
+                audioBitrate = "320k";
+
+            int audioBoost = 0;
+            if (VideoAudioBoost3CheckBox.IsChecked == true) audioBoost += 3;
+            if (VideoAudioBoost6CheckBox.IsChecked == true) audioBoost += 6;
+            string audioFilter = audioBoost > 0 ? $",volume={audioBoost}dB" : "";
+
+            string videoCodec = VideoAVCh264CheckBox.IsChecked ?? false ? "libx264" : "mpeg4";
+            string additionalArgs = VideoAVCh264CheckBox.IsChecked ?? false ? "-profile:v high -preset slow" : "";
+            string aspectRatio = AspectRatioFourThreeCheckBox.IsChecked ?? false ? "4/3" : "16/9";
+
             string ffmpegArguments = $"-i \"{filePath}\" " +
-                $"-c:v mpeg4 -b:v {selectedBitrate} -minrate {selectedBitrate} -maxrate {selectedBitrate} -bufsize {int.Parse(selectedBitrate.Replace("k", "")) * 2}k " +
-                $"-vf scale={selectedResolution} -aspect 16:9 -r 29.970 " +
-                $"-c:a aac -b:a 160k -ar 48000 -ac 2 -profile:a aac_low " +
+                $"-c:v {videoCodec} {additionalArgs} -b:v {selectedBitrate} -minrate {selectedBitrate} -maxrate {selectedBitrate} -bufsize {int.Parse(selectedBitrate.Replace("k", "")) * 2}k " +
+                $"-vf setdar={aspectRatio} -s {selectedResolution} -r 29.970 " +
+                $"-c:a aac -b:a {audioBitrate} -ar 48000 -ac 2 " +
                 $"-af \"loudnorm=I=-23:LRA=7:tp=-2{audioFilter}\" " +
                 $"-movflags +faststart " +
                 $"-metadata:s:a title=\"Stereo\" " +
@@ -6350,6 +6377,7 @@ namespace NautilusXP2024
                 if (ffmpegProcess.ExitCode == 0)
                 {
                     Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion successful. Converted video located at: " + outputFilePath + Environment.NewLine));
+                    File.Delete(filePath); // Optionally delete the original file after successful conversion
                 }
                 else
                 {
@@ -6357,6 +6385,34 @@ namespace NautilusXP2024
                 }
             }
         }
+
+
+        
+
+        private (string resolution, string bitrate) GetResolutionAndBitrate()
+        {
+            // Check if the 4:3 aspect ratio option is selected
+            bool isFourThree = AspectRatioFourThreeCheckBox.IsChecked == true;
+
+            if (Video240pRadioButton.IsChecked == true)
+                return isFourThree ? ("320:240", "1000k") : ("426:240", "1500k");
+            else if (Video360pRadioButton.IsChecked == true)
+                return isFourThree ? ("480:360", "1200k") : ("640:360", "1500k");
+            else if (Video480pRadioButton.IsChecked == true)
+                return isFourThree ? ("640:480", "2000k") : ("854:480", "2500k");
+            else if (Video576pRadioButton.IsChecked == true)
+                return isFourThree ? ("768:576", "3000k") : ("1024:576", "3500k");
+            else if (Video720pRadioButton.IsChecked == true)
+                return isFourThree ? ("960:720", "4000k") : ("1280:720", "4500k");
+            else if (Video1080pRadioButton.IsChecked == true)
+                return isFourThree ? ("1440:1080", "6000k") : ("1920:1080", "7000k");
+            else if (Video4KRadioButton.IsChecked == true)
+                return isFourThree ? ("2880:2160", "15000k") : ("3840:2160", "20000k");
+            else
+                return isFourThree ? ("768:576", "3000k") : ("1024:576", "3500k"); // Default case if none is selected
+        }
+
+
 
 
         private async Task EnsureDependencies(string ytDlpPath, string ffmpegPath)
@@ -6423,10 +6479,8 @@ namespace NautilusXP2024
             Dispatcher.Invoke(() => VideoTextBox.AppendText("Cleanup completed.\n"));
         }
 
-        private async Task DownloadAndOrConvertVideo(string videoUrls, string outputDirectory, string ytDlpPath, string ffmpegPath)
+        private async Task DownloadVideo(string videoUrls, string outputDirectory, string ytDlpPath)
         {
-
-
             if (string.IsNullOrEmpty(videoUrls))
             {
                 Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Please enter a video URL.", 2000));
@@ -6438,13 +6492,10 @@ namespace NautilusXP2024
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            // Handling multiple URLs separated by space, comma, or newline
             var urls = videoUrls.Split(new[] { ' ', ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
             foreach (var videoUrl in urls)
             {
                 string downloadArguments = $"-f bestvideo+bestaudio/best {videoUrl} -o \"{outputDirectory}\\%(title)s.%(ext)s\"";
-
                 ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
                     FileName = ytDlpPath,
@@ -6457,25 +6508,21 @@ namespace NautilusXP2024
 
                 using (Process process = Process.Start(startInfo))
                 {
-                    var outputBuilder = new StringBuilder();
-                    var lastFewLines = new Queue<string>(5);
-
                     process.OutputDataReceived += (s, args) =>
                     {
                         if (args.Data != null)
                         {
                             Dispatcher.Invoke(() => VideoTextBox.AppendText(args.Data + Environment.NewLine));
-                            outputBuilder.AppendLine(args.Data);
-                            if (lastFewLines.Count >= 5)
-                                lastFewLines.Dequeue();
-                            lastFewLines.Enqueue(args.Data);
                         }
                     };
                     process.BeginOutputReadLine();
+
                     process.ErrorDataReceived += (s, args) =>
                     {
                         if (args.Data != null)
-                            Dispatcher.Invoke(() => VideoTextBox.AppendText("" + args.Data + Environment.NewLine));
+                        {
+                            Dispatcher.Invoke(() => VideoTextBox.AppendText("Error: " + args.Data + Environment.NewLine));
+                        }
                     };
                     process.BeginErrorReadLine();
 
@@ -6484,65 +6531,7 @@ namespace NautilusXP2024
                     if (process.ExitCode == 0)
                     {
                         Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Download successful.", 2000));
-                        string mergedFilePath = ParseForMergedFilePath(lastFewLines);
-                        if (!string.IsNullOrEmpty(mergedFilePath))
-                        {
-                            Dispatcher.Invoke(() => VideoTextBox.AppendText($"Merged video file: {mergedFilePath}{Environment.NewLine}"));
-
-                            var (selectedResolution, selectedBitrate) = GetResolutionAndBitrate();
-                            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mergedFilePath);
-                            string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
-
-                            string audioFilter = VideoAudioBoostCheckBox.IsChecked == true ? ",volume=6dB" : "";
-                            string ffmpegArguments = $"-i \"{mergedFilePath}\" " +
-                             $"-c:v mpeg4 -b:v {selectedBitrate} -minrate {selectedBitrate} -maxrate {selectedBitrate} -bufsize {int.Parse(selectedBitrate.Replace("k", "")) * 2}k " +
-                             $"-vf scale={selectedResolution} -aspect 16:9 -r 29.970 " +
-                             $"-c:a aac -b:a 160k -ar 48000 -ac 2 -profile:a aac_low " +
-                             $"-af \"loudnorm=I=-23:LRA=7:tp=-2{audioFilter}\" " +
-                             $"-movflags +faststart " +
-                             $"-metadata:s:a title=\"Stereo\" " +
-                             $"\"{outputFilePath}\"";
-
-                            ProcessStartInfo ffmpegStartInfo = new ProcessStartInfo()
-                            {
-                                FileName = ffmpegPath,
-                                Arguments = ffmpegArguments,
-                                UseShellExecute = false,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true,
-                                CreateNoWindow = true
-                            };
-                            using (Process ffmpegProcess = Process.Start(ffmpegStartInfo))
-                            {
-                                ffmpegProcess.OutputDataReceived += (s, args) =>
-                                {
-                                    if (args.Data != null)
-                                    {
-                                        Dispatcher.Invoke(() => VideoTextBox.AppendText(args.Data + Environment.NewLine));
-                                    }
-                                };
-                                ffmpegProcess.BeginOutputReadLine();
-                                ffmpegProcess.ErrorDataReceived += (s, args) =>
-                                {
-                                    if (args.Data != null)
-                                        Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion: " + args.Data + Environment.NewLine));
-                                };
-                                ffmpegProcess.BeginErrorReadLine();
-
-                                await ffmpegProcess.WaitForExitAsync();
-                                if (ffmpegProcess.ExitCode == 0)
-                                {
-                                    Dispatcher.Invoke(() => VideoTextBox.AppendText("Conversion successful. Converted video located at: " + outputFilePath + Environment.NewLine));
-
-                                    // Delete the original file after successful conversion
-                                    File.Delete(mergedFilePath);
-                                }
-                                else
-                                {
-                                    Dispatcher.Invoke(() => TemporaryMessageHelper.ShowTemporaryMessage(VideoDragAreaText, "Conversion failed, check output for details.", 2000));
-                                }
-                            }
-                        }
+                        await ScanAndConvertWebmFiles(outputDirectory); // Scan and convert any webm files after successful download
                     }
                     else
                     {
@@ -6553,24 +6542,15 @@ namespace NautilusXP2024
         }
 
 
-
-        private (string resolution, string bitrate) GetResolutionAndBitrate()
+        private async Task ScanAndConvertWebmFiles(string directory)
         {
-            if (Video360pRadioButton.IsChecked == true)
-                return ("640:360", "1500k");
-            else if (Video480pRadioButton.IsChecked == true)
-                return ("854:480", "2500k");
-            else if (Video576pRadioButton.IsChecked == true)
-                return ("1024:576", "3500k");
-            else if (Video720pRadioButton.IsChecked == true)
-                return ("1280:720", "4500k");
-            else if (Video1080pRadioButton.IsChecked == true)
-                return ("1920:1080", "7000k");
-            else
-                return ("1024:576", "3500k"); //  if none is selected somehow
+            var webmFiles = Directory.GetFiles(directory, "*.webm");
+            foreach (var file in webmFiles)
+            {
+                await ConvertLocalVideoFile(file, directory);
+                File.Delete(file); // Delete the webm file after conversion
+            }
         }
-
-
 
 
         private string ParseForMergedFilePath(Queue<string> lastFewLines)

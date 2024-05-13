@@ -598,7 +598,7 @@
                 Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,10,0" Background="Transparent" Foreground="White"/>
                 <!-- Maximize Button -->
                 <Button FontFamily="Segoe MDL2 Assets" Content="&#xE922;" Click="Maximize_Click" 
-                Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,10,0" Background="Transparent" Foreground="White"/>
+                Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,10,0" Background="Transparent" Foreground="#555555"/>
                 <!-- Close Button -->
                 <Button FontFamily="Segoe MDL2 Assets" Content="&#xE8BB;" Click="Close_Click" 
                 Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,7,0" Background="Transparent" Foreground="White"/>
@@ -667,7 +667,7 @@
                                 </StackPanel>
 
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="360">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="490">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
                                     <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
@@ -676,7 +676,9 @@
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
                                     <TextBlock Text="Offline Structure:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
-                                   
+                                    <TextBlock Text="UUID Guesser:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperUUIDGuesser" Style="{StaticResource ModernToggleSwitchStyle}" />
+
                                 </StackPanel>
 
                                 <!-- Buttons -->
@@ -1316,29 +1318,51 @@
                         <TextBlock Text="Video Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
 
                         <!-- Drag-and-Drop Area -->
-                        <Border x:Name="VideoDragArea" Height="100" Width="800" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="VideoBrowseButton_Click">
+                        <Border x:Name="VideoDragArea" Height="70" Width="800" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="VideoBrowseButton_Click">
                             <TextBlock x:Name="VideoDragAreaText" Text="Drag Videos here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}" />
                         </Border>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Video URLs (Comma/space/line/pipe separated):" Style="{StaticResource Sha1TextBlockStyle}"/>
-                            <TextBox x:Name="VideoYoutubeURLTextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="400"/>
+                            <TextBlock Text="YouTube URLs:" Style="{StaticResource Sha1TextBlockStyle}"/>
+                            <TextBox x:Name="VideoYoutubeURLTextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="712"/>
                         </StackPanel>
-
+                        <TextBlock Text="Video Settings:" Foreground="White" FontSize="14" Height="20" Margin="0,15,0,0" Width="95"/>
                         <!-- Radio Button Panel -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="240p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video240pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="360p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video360pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video360pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="480p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video480pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video480pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="576p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video576pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video576pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
                             <TextBlock Text="720p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video720pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <RadioButton x:Name="Video720pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True"  GroupName="VideoResolution"/>
                             <TextBlock Text="1080p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="Video1080pRadioButton" Margin="5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
-                            <TextBlock Text="Audio Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="30,0,0,0" />
-                            <CheckBox x:Name="VideoAudioBoostCheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            <RadioButton x:Name="Video1080pRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="4K:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Video4KRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution"/>
+                            <TextBlock Text="AVC H.264:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="5,0,0,0" />
+                            <CheckBox x:Name="VideoAVCh264CheckBox" Margin="10,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True"/>
+                            <TextBlock Text="4:3 AR:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="5,0,0,0" />
+                            <CheckBox x:Name="AspectRatioFourThreeCheckBox" Margin="10,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                        </StackPanel>
+                        <TextBlock Text="Audio Settings:" Foreground="White" FontSize="14" Height="20" Margin="0,15,0,0" Width="95"/>
+                        <!-- Radio Button Panel -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="128kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Audio128kRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
+                            <TextBlock Text="160kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Audio160kRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="AudioResolution"/>
+                            <TextBlock Text="256kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Audio256kRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
+                            <TextBlock Text="320kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="Audio320kRadioButton" Margin="0,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
+                            <TextBlock Text="+3DB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <CheckBox x:Name="VideoAudioBoost3CheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            <TextBlock Text="+6DB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <CheckBox x:Name="VideoAudioBoost6CheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
                         </StackPanel>
 
                         <!-- Buttons Row -->
@@ -1348,7 +1372,7 @@
                         </StackPanel>
 
                         <!-- File List Box -->
-                        <TextBox x:Name="VideoTextBox" Height="270" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+                        <TextBox x:Name="VideoTextBox" Height="240" Width="1000" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </TabItem>
 
