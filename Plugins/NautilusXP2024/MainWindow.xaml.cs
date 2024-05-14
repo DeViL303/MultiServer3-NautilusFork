@@ -1266,6 +1266,7 @@ namespace NautilusXP2024
         private string UserSuppliedPathPrefix = string.Empty;
         private string UUIDFoundInPath = string.Empty;
         private string CurrentUUID = string.Empty;
+        private string GuessedUUID = string.Empty;
 
         private async Task<bool> UnpackFilesAsync(string[] filePaths)
         {
@@ -1370,10 +1371,15 @@ namespace NautilusXP2024
         public async Task ExperimentalMapperAsync(string directoryPath, string ogfilename)
         {
             CurrentUUID = string.Empty;
+            GuessedUUID = string.Empty;
             UUIDFoundInPath = string.Empty;
             UserSuppliedPathPrefix = string.Empty;
             Stopwatch MappingStopwatch = Stopwatch.StartNew();
             CheckForUUID();
+            if (CheckBoxArchiveMapperUUIDGuesser.IsChecked == true)
+            {
+                await UUIDguesserCheckAsync(directoryPath); // Now an async call
+            }
 
             LogDebugInfo($"Archive Unpacker: Starting experimental mapping for directory: {directoryPath}");
             var allFilePaths = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories);
@@ -1408,7 +1414,80 @@ namespace NautilusXP2024
             LogDebugInfo($"Archive Unpacker: Mapping Completed (Time Taken {MappingStopwatch.ElapsedMilliseconds}ms)");
         }
 
+        private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
+        private async Task UUIDguesserCheckAsync(string directoryPath)
+        {
+            await semaphore.WaitAsync();
+            try
+            {
+                string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string dependencyPath = Path.Combine(Path.GetDirectoryName(exeLocation), "dependencies", "uuid_helper.txt");
+
+                // Dictionary to store prefix to UUID mappings
+                Dictionary<string, string> prefixToUUID = new Dictionary<string, string>();
+
+                if (File.Exists(dependencyPath))
+                {
+                    var fileLines = await File.ReadAllLinesAsync(dependencyPath);
+                    foreach (var line in fileLines)
+                    {
+                        var parts = line.Split(':');
+                        if (parts.Length == 2)
+                        {
+                            // Store each prefix and its corresponding UUID
+                            prefixToUUID[parts[0]] = parts[1];
+                        }
+                    }
+
+                    LogDebugInfo($"UUID Guesser Check: uuid_helper.txt found with {fileLines.Length} lines.");
+                }
+                else
+                {
+                    LogDebugInfo("UUID Guesser Check: uuid_helper.txt not found.");
+                    return;
+                }
+
+                // Get all files in the root of the directory path, excluding subdirectories
+                var rootFiles = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly);
+
+                // Check for files that start with any of the prefixes
+                foreach (var filePath in rootFiles)
+                {
+                    string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+                    foreach (var entry in prefixToUUID)
+                    {
+                        if (filenameWithoutExtension.StartsWith(entry.Key))
+                        {
+                            // Format and set the GuessedUUID with prefix, suffix and make it lowercase
+                            string formattedUUID = $"objects/{entry.Value.ToLower()}/";
+                            LogDebugInfo($"UUID Guesser Check: Guessed UUID = {formattedUUID}");
+
+                            // Only set CurrentUUID if it's currently empty
+                            if (string.IsNullOrEmpty(CurrentUUID))
+                            {
+                                CurrentUUID = entry.Value.ToUpper(); // Set CurrentUUID to the raw UUID value from the file
+                                LogDebugInfo($"UUID Guesser Check: CurrentUUID set to {CurrentUUID}");
+                            }
+
+                            // Update GuessedUUID regardless of CurrentUUID's state
+                            GuessedUUID = formattedUUID;
+                            return; // Stop checking after the first match
+                        }
+                    }
+                }
+
+                // If no UUID is guessed
+                if (string.IsNullOrEmpty(GuessedUUID))
+                {
+                    LogDebugInfo("UUID Guesser Check: No matching UUID guessed from file names.");
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
 
 
         private async Task RenameFiles(string[] allFilePaths, ConcurrentDictionary<string, string> hashesToPaths, string directoryPath)
@@ -1469,11 +1548,23 @@ namespace NautilusXP2024
         {
             LogDebugInfo($"Archive Unpacker: Starting directory final check: {directoryPath}");
 
-            // Directory renaming logic simplified without existence checks
             string directoryName = Path.GetFileName(directoryPath);
             string parentDirectoryPath = Directory.GetParent(directoryPath)?.FullName ?? string.Empty;
             string newDirectoryName = directoryPath;
 
+            // Handling when CurrentUUID is not set and the directory ends with "_DAT"
+            if (string.IsNullOrEmpty(CurrentUUID) && directoryName.EndsWith("_DAT"))
+            {
+                newDirectoryName = await FindAndRenameForSceneFile(directoryPath, directoryName, parentDirectoryPath);
+                if (newDirectoryName != directoryPath)
+                {
+                    Directory.Move(directoryPath, newDirectoryName);
+                    LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
+                    directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
+                }
+            }
+
+            // Handling when CurrentUUID is set
             if (!string.IsNullOrEmpty(CurrentUUID))
             {
                 if (directoryName.StartsWith("object_"))
@@ -1484,8 +1575,12 @@ namespace NautilusXP2024
                 {
                     newDirectoryName = Path.Combine(parentDirectoryPath, CurrentUUID + "_T000");
                 }
+                if (directoryName.EndsWith("_DAT"))
+                {
+                    newDirectoryName = Path.Combine(parentDirectoryPath, CurrentUUID + "_UNKN_" + directoryName);
+                }
 
-                // Handle existing directory case by appending suffix (2), (3), etc.
+                // Check if new directory name already exists and create a new name if necessary
                 string baseNewDirectoryName = newDirectoryName;
                 int counter = 2;
                 while (Directory.Exists(newDirectoryName))
@@ -1493,15 +1588,16 @@ namespace NautilusXP2024
                     newDirectoryName = $"{baseNewDirectoryName} ({counter++})";
                 }
 
+                // Rename directory if new name is different
                 if (newDirectoryName != directoryPath)
                 {
                     Directory.Move(directoryPath, newDirectoryName);
-                    LogDebugInfo($"Archive Unpacker: Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
+                    LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
                     directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
                 }
             }
 
-            // Check if the checkbox is checked before scanning
+            // Remaining logic for scanning and moving directory to "checked" folder
             if (CheckBoxArchiveMapperVerify.IsChecked ?? false)
             {
                 Stopwatch scanStopwatch = Stopwatch.StartNew();
@@ -1511,42 +1607,61 @@ namespace NautilusXP2024
                 LogDebugInfo($"FileScanner: Scanned directory {directoryPath} (Time Taken: {scanStopwatch.ElapsedMilliseconds}ms)");
             }
 
-            // Move directory to a "checked" subfolder, append "_CHECK" if unmapped files are found
+            // Handle directory naming conflicts in 'checked' folder
             bool hasUnmappedFiles = CheckForUnmappedFiles(directoryPath);
             string checkedFolder = Path.Combine(parentDirectoryPath, "Complete");
-            Directory.CreateDirectory(checkedFolder);  // Ensure the 'checked' folder exists
+            Directory.CreateDirectory(checkedFolder);
             string finalDirectoryPath = Path.Combine(checkedFolder, Path.GetFileName(directoryPath));
             if (hasUnmappedFiles)
             {
                 finalDirectoryPath += "_CHECK";
             }
 
-            // Handle directory naming conflicts in 'checked' folder
-            string baseFinalDirectoryPath = finalDirectoryPath;
             int suffixCounter = 2;
             while (Directory.Exists(finalDirectoryPath))
             {
-                finalDirectoryPath = $"{baseFinalDirectoryPath} ({suffixCounter++})";
+                finalDirectoryPath = $"{finalDirectoryPath} ({suffixCounter++})";
             }
 
             Directory.Move(directoryPath, finalDirectoryPath);
             LogDebugInfo($"Archive Unpacker: Directory moved to 'checked' at '{finalDirectoryPath}'.");
 
-            // Copy JobReport.txt if it exists
+            // Copy JobReport.txt if exists
             string sourceFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "JobReport.txt");
             string destinationFile = Path.Combine(checkedFolder, "JobReport.txt");
-
-            if (CheckBoxArchiveMapperOfflineMode.IsChecked ?? false)
-            {
-                await CreateHDKFolderStructure(finalDirectoryPath);
-            }
-
             if (File.Exists(sourceFile))
             {
                 File.Copy(sourceFile, destinationFile, overwrite: true);
                 LogDebugInfo($"JobReport.txt was copied to '{destinationFile}'.");
             }
         }
+
+
+        private async Task<string> FindAndRenameForSceneFile(string directoryPath, string directoryName, string parentDirectoryPath)
+        {
+            string newDirectoryName = directoryPath;  // Default to the original directory path if no .SCENE file is found
+
+            try
+            {
+                // Get all .SCENE files in the directory, including subdirectories
+                var sceneFiles = Directory.GetFiles(directoryPath, "*.SCENE", SearchOption.AllDirectories);
+                string sceneFilePath = sceneFiles.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(sceneFilePath))
+                {
+                    string sceneFileName = Path.GetFileNameWithoutExtension(sceneFilePath);
+                    newDirectoryName = Path.Combine(parentDirectoryPath, sceneFileName + "_" + directoryName);
+                    LogDebugInfo($"Found .SCENE file: {sceneFileName}, renaming directory to '{newDirectoryName}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error finding .SCENE file: {ex.Message}");
+            }
+
+            return newDirectoryName;
+        }
+
 
         private async Task CreateHDKFolderStructure(string directoryPath)
         {
@@ -1739,6 +1854,12 @@ namespace NautilusXP2024
                 processedMatches.AddRange(processedMatches.ToList().Select(pm => UserSuppliedPathPrefix + pm));
             }
 
+            // Append GuessedUUID if not empty and the checkbox is checked
+            if (!string.IsNullOrEmpty(GuessedUUID))
+            {
+                processedMatches.AddRange(processedMatches.ToList().Select(pm => GuessedUUID + pm));
+            }
+
             // Add all processed matches to the concurrent bag
             foreach (var finalMatch in processedMatches)
             {
@@ -1748,8 +1869,16 @@ namespace NautilusXP2024
 
 
 
+
         private async Task TryMapSceneFile(string directoryPath)
         {
+            // Check if CurrentUUID is already set; if yes, skip the function
+            if (!string.IsNullOrEmpty(CurrentUUID))
+            {
+                LogDebugInfo("Archive Unpacker: CurrentUUID is already set, skipping scene file mapping.");
+                return;  // Exit the function early
+            }
+
             Stopwatch SceneFileLookupStopwatch = Stopwatch.StartNew();
             LogDebugInfo($"Archive Unpacker: Unmapped file detected in: {directoryPath} - Checking if it's a known scene file in lookup table");
 
@@ -1780,19 +1909,13 @@ namespace NautilusXP2024
             foreach (var filePath in filesInRootDirectory)
             {
                 string fileName = Path.GetFileNameWithoutExtension(filePath);
-
-                // Assuming both filename and helper file entry are always uppercase,
-                // direct comparison is used without converting cases.
                 if (fileMappings.TryGetValue(fileName, out var newRelativePath))
                 {
                     var newFilePath = Path.Combine(directoryPath, newRelativePath);
-
                     try
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(newFilePath)); // Ensure the directory exists
                         File.Move(filePath, newFilePath); // Attempt to move the file
-
-                        //  LogDebugInfo($"Archive Unpacker: Successfully renamed scene file from {filePath} to {newFilePath}");
                     }
                     catch (Exception ex)
                     {
@@ -1800,9 +1923,11 @@ namespace NautilusXP2024
                     }
                 }
             }
-            SceneFileLookupStopwatch.Stop(); // Stop timing the extractio
+
+            SceneFileLookupStopwatch.Stop(); // Stop timing the extraction
             LogDebugInfo($"Archive Unpacker: Mapping Stage 4 Complete - Scene filename lookup (Time Taken {SceneFileLookupStopwatch.ElapsedMilliseconds}ms)");
         }
+
 
         public void CheckForUUID()
         {
@@ -1853,7 +1978,7 @@ namespace NautilusXP2024
                 int hashOfPath = 0;
                 foreach (char ch in text)
                     hashOfPath = hashOfPath * 37 + ch;
-              // LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
+              LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
 
                 return hashOfPath;
             }
@@ -4896,23 +5021,20 @@ namespace NautilusXP2024
                 case RememberLastTabUsed.LUACTool:
                     MainTabControl.SelectedIndex = 5; // Index of LUACTool tab
                     break;
-                case RememberLastTabUsed.CacheTool:
-                    MainTabControl.SelectedIndex = 6; // Index of CachTool tab
-                    break;
                 case RememberLastTabUsed.SDCODCTool:
-                    MainTabControl.SelectedIndex = 7; // Index of SDCODCTool tab
+                    MainTabControl.SelectedIndex = 6; // Index of SDCODCTool tab
                     break;
                 case RememberLastTabUsed.Path2Hash:
-                    MainTabControl.SelectedIndex = 8; // Index of Path2Hash tab
+                    MainTabControl.SelectedIndex = 7; // Index of Path2Hash tab
                     break;
                 case RememberLastTabUsed.EbootPatcher:
-                    MainTabControl.SelectedIndex = 9; // Index of EbootPatcher tab
+                    MainTabControl.SelectedIndex = 8; // Index of EbootPatcher tab
                     break;
                 case RememberLastTabUsed.SHAChecker:
-                    MainTabControl.SelectedIndex = 10; // Index of SHAChecker tab
+                    MainTabControl.SelectedIndex = 9; // Index of SHAChecker tab
                     break;
                 case RememberLastTabUsed.Video:
-                    MainTabControl.SelectedIndex = 11; // Index of Video tab
+                    MainTabControl.SelectedIndex = 10; // Index of Video tab
                     break;
                 default:
                     MainTabControl.SelectedIndex = 0; // Default to ArchiveTool tab if none is matched
@@ -8008,6 +8130,58 @@ namespace NautilusXP2024
                 MessageBox.Show("Scan completed!");
             }
         }
+
+        private void ArchiveUnpackerFastMapCcheButtonClick(object sender, RoutedEventArgs e)
+        {
+            // Open a folder browser dialog to select a folder
+            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string selectedFolder = folderDialog.SelectedPath;
+                // Read the text file next to the exe in the dependencies folder
+                string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string logFilePath = Path.Combine(Path.GetDirectoryName(exeLocation), "dependencies", "logs_ALL.txt");
+                Dictionary<string, string> fileMappings = new Dictionary<string, string>();
+
+                if (File.Exists(logFilePath))
+                {
+                    foreach (string line in File.ReadAllLines(logFilePath))
+                    {
+                        var parts = line.Split('|');
+                        if (parts.Length == 2)
+                        {
+                            fileMappings[parts[0]] = parts[1];
+                        }
+                    }
+
+                    // Scan the selected folder for _DAT.* files and process them
+                    foreach (string filePath in Directory.GetFiles(selectedFolder, "*_DAT.*", SearchOption.AllDirectories))
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        string id = fileName.Split('_')[0];
+
+                        if (fileMappings.TryGetValue(id, out string mappedPath))
+                        {
+                            string outputDirectory = CacheOutputDirectoryTextBox.Text;
+                            string newFileName = Path.Combine(outputDirectory, mappedPath.Replace('/', Path.DirectorySeparatorChar));
+                            string newFileDirectory = Path.GetDirectoryName(newFileName);
+
+                            if (!Directory.Exists(newFileDirectory))
+                            {
+                                Directory.CreateDirectory(newFileDirectory);
+                            }
+
+                            File.Copy(filePath, newFileName, overwrite: true);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Log file not found.");
+                }
+            }
+        }
+
 
     }
 }

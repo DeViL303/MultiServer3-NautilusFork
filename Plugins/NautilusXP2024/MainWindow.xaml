@@ -667,17 +667,17 @@
                                 </StackPanel>
 
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="336">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="578">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
                                     <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperEXP" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0" Unchecked="CheckBoxArchiveMapperEXP_Unchecked" Checked="CheckBoxArchiveMapperEXP_Checked"/>
                                     <TextBlock Text="Validate Files:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
-                                    <TextBlock Text="Offline Structure:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Offline HDK Structure:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
-                                    <TextBlock Text="UUID Guesser:" Width="0" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="CheckBoxArchiveMapperUUIDGuesser" Width="0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                    <TextBlock Text="UUID Guesser / Raw Cache:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperUUIDGuesser" Style="{StaticResource ModernToggleSwitchStyle}" />
 
                                 </StackPanel>
 
@@ -755,7 +755,7 @@
 
 
                 <!-- Tab 3: HCDB Unpacker -->
-                <TabItem Header="HCDB" Tag="HCDBTool">
+                <TabItem Header="HCDB / SQL" Tag="HCDBTool">
                     <StackPanel Background="#333333">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -1248,6 +1248,7 @@
                             <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CopySHA1Button_Click"/>
                             <Button x:Name="ClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearSHA1Button_Click"/>
                             <Button Content="Verify Content" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerVerifyTestButtonClick"/>
+                            <Button Content="Fast Map Cache" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerFastMapCcheButtonClick"/>
                         </StackPanel>
 
                         <!-- File List Box -->
@@ -1298,18 +1299,18 @@
                         <TextBlock Text="Audio Settings:" Foreground="White" FontSize="14" Height="20" Margin="0,15,0,0" Width="95"/>
                         <!-- Radio Button Panel -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="128kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="128Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Audio128kRadioButton" Margin="-5,0,10,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
-                            <TextBlock Text="160kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="160Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Audio160kRadioButton" Margin="-5,0,10,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="AudioResolution"/>
-                            <TextBlock Text="256kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="256Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Audio256kRadioButton" Margin="-5,0,10,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
-                            <TextBlock Text="320kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="320Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center"/>
                             <RadioButton x:Name="Audio320kRadioButton" Margin="-5,0,30,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution"/>
                             
-                            <TextBlock Text="+3DB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <TextBlock Text="+3dB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
                             <CheckBox x:Name="VideoAudioBoost3CheckBox" Margin="5,0,10,0" Style="{StaticResource ModernToggleSwitchStyle}" />
-                            <TextBlock Text="+6DB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <TextBlock Text="+6dB Boost:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
                             <CheckBox x:Name="VideoAudioBoost6CheckBox" Margin="5,0,10,0" Style="{StaticResource ModernToggleSwitchStyle}" />
                         </StackPanel>
 

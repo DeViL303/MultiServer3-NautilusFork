@@ -25,7 +25,6 @@ namespace NautilusXP2024
         TickLSTTool,
         SceneIDTool,
         LUACTool,
-        CacheTool,
         SDCODCTool,
         Path2Hash,
         EbootPatcher,
