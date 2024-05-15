@@ -1248,8 +1248,6 @@
                             <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CopySHA1Button_Click"/>
                             <Button x:Name="ClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearSHA1Button_Click"/>
                             <Button Content="Verify Content" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerVerifyTestButtonClick"/>
-                            <Button Content="Fast Map Cache" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerFastMapCacheButtonClick"/>
-                            <Button Content="Decrypt INF" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ProcessINFFileButton_Click"/>
                         </StackPanel>
 
                         <!-- File List Box -->
