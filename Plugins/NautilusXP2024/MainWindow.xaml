@@ -217,8 +217,8 @@
 
 
         <Style x:Key="ModernToggleSwitchStyle" TargetType="{x:Type CheckBox}">
-            <Setter Property="Width" Value="45"/>
-            <Setter Property="Height" Value="26"/>
+            <Setter Property="Width" Value="43"/>
+            <Setter Property="Height" Value="24"/>
             <Setter Property="Margin" Value="5,0,15,0"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
             <Setter Property="Background" Value="#1E1E1E"/>
@@ -234,12 +234,75 @@
                             </Border.Effect>
                             <Grid>
                                 <!-- Adjusted Rectangle with a Stroke for the border -->
-                                <Rectangle x:Name="toggleRectangle" Fill="#1E1E1E" RadiusX="13" RadiusY="14" Stroke="#000000" StrokeThickness="1"/>
+                                <Rectangle x:Name="toggleRectangle" Fill="#1E1E1E" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
                                 <Ellipse x:Name="SwitchThumb" Fill="#FF767676" 
                                  Width="18" Height="18" 
                                  HorizontalAlignment="Left" 
                                  Margin="2.5"
                                  VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="SwitchThumb" Property="Margin" Value="0,2.5,2.5,2.5"/>
+                                <Setter TargetName="SwitchThumb" Property="Opacity" Value="0.9"/>
+                                <Setter TargetName="toggleRectangle" Property="StrokeThickness" Value="2.5"/>
+                                <Setter TargetName="toggleRectangle" Property="Stroke" Value="#101010"/>
+                                <Setter TargetName="toggleRectangle" Property="Fill" Value="#1E1E1E"/>
+                                <Setter Property="Background" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                <Setter TargetName="SwitchThumb" Property="Fill" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                <!-- Apply transform and drop shadow effect changes to the entire Border -->
+                                <Setter TargetName="toggleBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="0" Y="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="toggleBorder" Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                <Setter TargetName="toggleBorder" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#FF444444" BlurRadius="1" Opacity="0.5" ShadowDepth="1" Direction="315"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#333333"/>
+                                <Setter TargetName="SwitchThumb" Property="Fill" Value="#FF888888"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <!-- You can add setters here for when the mouse is over the toggle switch -->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernToggleSwitchStyleGrey" TargetType="{x:Type CheckBox}">
+            <Setter Property="Opacity" Value="0.35"/>
+            <Setter Property="Width" Value="43"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="5,0,15,0"/>
+            <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Border x:Name="toggleBorder" Width="{TemplateBinding Width}" 
+                Height="{TemplateBinding Height}" 
+                CornerRadius="2" 
+                Background="Transparent">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FF444444" BlurRadius="2" Opacity="0.5" ShadowDepth="2" Direction="315"/>
+                            </Border.Effect>
+                            <Grid>
+                                <!-- Adjusted Rectangle with a Stroke for the border -->
+                                <Rectangle x:Name="toggleRectangle" Fill="#1E1E1E" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
+                                <Ellipse x:Name="SwitchThumb" Fill="#FF767676" 
+                         Width="18" Height="18" 
+                         HorizontalAlignment="Left" 
+                         Margin="2.5"
+                         VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -423,6 +486,7 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="10"/>
             <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="AllowDrop" Value="True"/>
             <Setter Property="Height" Value="290"/>
             <Setter Property="Width" Value="540"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
@@ -620,7 +684,7 @@
                             <!-- Left Side: Home Archive Creator -->
                             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                                 <TextBlock Text="Home Archive Creator" Style="{StaticResource ToolTitleTextBlockStyle}"/>
-                                <Border x:Name="ArchiveCreatorDragArea" Style="{StaticResource DragAreaStyle2}" Drop="ArchiveCreatorDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveCreatorHandler">
+                                <Border x:Name="ArchiveCreatorDragArea" Style="{StaticResource DragAreaStyle2}" Height="100" Drop="ArchiveCreatorDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveCreatorHandler">
                                     <TextBlock x:Name="ArchiveCreatorDragAreaText" Text="Drag Folders or ZIP files here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -630,7 +694,7 @@
 
 
                                 <!-- Radio Buttons -->
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,0">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,0">
                                     <TextBlock Text="BAR:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <RadioButton x:Name="RadioButtonArchiveCreatorBAR" GroupName="ArchiveType" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorBAR_Checked"/>
                                     <TextBlock Text="BAR (Secure):" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
@@ -645,6 +709,13 @@
                                     <RadioButton x:Name="RadioButtonArchiveCreatorCONFIG_SHARC" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorCONFIG_SHARC_Checked"/>
                                 </StackPanel>
 
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,0" Width="1">
+                                    <TextBlock Text="Rename for CDN:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBofxArchiveMfapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                    <TextBlock Text="Ignore timestamp.txt:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBofxArcfhivefMapperCoredata" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                </StackPanel>
+
                                 <!-- Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <Button Content="Create Archive" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveCreatorExecuteButtonClick"/>
@@ -652,13 +723,22 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="ArchiveCreatorTextBox" Height="255" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ArchiveCreatorTextBox_MouseDoubleClick"/>
+                                <Border BorderBrush="Transparent"
+                BorderThickness="1"
+                AllowDrop="True"
+                Drop="ArchiveCreatorDragDropHandler">
+                                    <TextBox x:Name="ArchiveCreatorTextBox"
+                     Height="275"
+                     Style="{StaticResource FileListTextBoxStyle}"
+                     AllowDrop="False"
+                     MouseDoubleClick="ArchiveCreatorTextBox_MouseDoubleClick"/>
+                                </Border>
                             </StackPanel>
 
                             <!-- Right Side: Home Archive Unpacker -->
                             <StackPanel Grid.Column="1" HorizontalAlignment="Center">
                                 <TextBlock Text="Home Archive Unpacker" Style="{StaticResource ToolTitleTextBlockStyle}"/>
-                                <Border x:Name="ArchiveUnpackerDragArea" Style="{StaticResource DragAreaStyle2}" Drop="ArchiveUnpackerDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveUnpackerHandler">
+                                <Border x:Name="ArchiveUnpackerDragArea" Style="{StaticResource DragAreaStyle2}" Height="100" Drop="ArchiveUnpackerDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveUnpackerHandler">
                                     <TextBlock x:Name="ArchiveUnpackerDragAreaText" Text="Drag Folders, BAR, SDAT, or SHARC files here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -667,19 +747,33 @@
                                 </StackPanel>
 
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0" Width="578">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,0" Width="604">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
                                     <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperEXP" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0" Unchecked="CheckBoxArchiveMapperEXP_Unchecked" Checked="CheckBoxArchiveMapperEXP_Checked"/>
                                     <TextBlock Text="Validate Files:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
-                                    <TextBlock Text="Offline HDK Structure:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" />
-                                    <TextBlock Text="UUID Guesser / Raw Cache:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Coredata Mode:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperCoredata" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                    <TextBlock Text="Bruteforce UUID (Rarely Needed):"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperUUIDGuesser" Style="{StaticResource ModernToggleSwitchStyle}" />
 
                                 </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,0" Width="122">
+                                    <TextBlock Text="Offline Mode:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveMapperOfflineMode_Checked" Unchecked="CheckBoxArchiveMapperOfflineMode_Unchecked" />
+
+                                    <TextBlock Text="Add ODC/SDC/PNG:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperAddExtras" Style="{StaticResource ModernToggleSwitchStyleGrey}" IsEnabled="False" />
+
+                                    <TextBlock Text="Create Build:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="CheckBoxArchiveMapperCreateBuild" Style="{StaticResource ModernToggleSwitchStyleGrey}" IsEnabled="False" />
+                                </StackPanel>
+
+
+
 
                                 <!-- Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -688,7 +782,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="ArchiveUnpackerTextBox" Height="255" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="ArchiveUnpackerTextBox" Height="275" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="ArchiveUnpackerDragDropHandler" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -723,7 +817,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="CDSEncrypterTextBox" Margin="0,16,0,0" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="CDSEncrypterTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="CDSEncrypterTextBox" Margin="0,16,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="CDSEncrypterDragDropHandler" MouseDoubleClick="CDSEncrypterTextBox_MouseDoubleClick"/>
                             </StackPanel>
 
                             <!-- Right Side: CDS Decrypter -->
@@ -746,7 +840,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="CDSDecrypterTextBox" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="CDSDecrypterTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="CDSDecrypterTextBox" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="CDSDecrypterDragDropHandler" MouseDoubleClick="CDSDecrypterTextBox_MouseDoubleClick"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -783,7 +877,7 @@
 
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="HCDBEncrypterTextBox" Margin="0,16,0,0" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="HCDBEncrypterTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="HCDBEncrypterTextBox" Margin="0,16,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="HCDBEncrypterDragDropHandler" MouseDoubleClick="HCDBEncrypterTextBox_MouseDoubleClick"/>
                             </StackPanel>
 
                             <!-- Right Side: HCDB Decrypter -->
@@ -806,7 +900,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="HCDBDecrypterTextBox" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="HCDBDecrypterTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="HCDBDecrypterTextBox" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="HCDBDecrypterDragDropHandler" MouseDoubleClick="HCDBDecrypterTextBox_MouseDoubleClick"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -946,7 +1040,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="LUACompilerTextBox" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="LUACompilerTextBox_MouseDoubleClick" Drop="LuaDragDropHandler"/>
+                                <TextBox x:Name="LUACompilerTextBox" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="LuaDragDropHandler" MouseDoubleClick="LUACompilerTextBox_MouseDoubleClick"/>
                             </StackPanel>
 
                             <!-- Right Side: LUAC Decompiler -->
@@ -972,7 +1066,7 @@
                                 </StackPanel>
 
                                 <!-- Text Area -->
-                                <TextBox x:Name="LUACDecompilerTextBox" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="LUACDecompilerTextBox_MouseDoubleClick" Drop="LuacDragDropHandler"/>
+                                <TextBox x:Name="LUACDecompilerTextBox" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" MouseDoubleClick="LUACDecompilerTextBox_MouseDoubleClick" Drop="LuacDragDropHandler"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

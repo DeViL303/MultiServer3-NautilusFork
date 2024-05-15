@@ -1156,7 +1156,7 @@ namespace NautilusXP2024
             LogDebugInfo("Archive Creation: Process Success");
             await Dispatcher.InvokeAsync(() =>
             {
-                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Process Success";
+                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Process Success\nArchive Creator: Double click here to open output folder";
                 ArchiveCreatorTextBox.ScrollToEnd();
             });
 
@@ -1469,6 +1469,13 @@ namespace NautilusXP2024
 
         public async Task ExperimentalMapperAsync(string directoryPath, string ogfilename)
         {
+            // Check if the Coredata checkbox is checked and call MapCoreData041 if it is
+            if (CheckBoxArchiveMapperCoredata.IsChecked == true)
+            {
+                await MapCoreData041(directoryPath, ogfilename);
+                return;
+            }
+
             CurrentUUID = string.Empty;
             GuessedUUID = string.Empty;
             UUIDFoundInPath = string.Empty;
@@ -1586,6 +1593,168 @@ namespace NautilusXP2024
             {
                 semaphore.Release();
             }
+        }
+
+        private static Dictionary<string, string> hashToPath = new Dictionary<string, string>();
+        private static bool isHelperLoaded = false;
+
+        public async Task MapCoreData041(string directoryPath, string ogfilename)
+        {
+            // Logging messages at the start
+            string logMessage = "Map CoreData: NOTE: COREDATA Mode enabled. This does not scan for paths in the usual way.\nMap CoreData: Instead it uses a preset list of paths to rename the files. \nMap CoreData: Use this mode for COREDATA/DEVARCHIVE/CONFIG/COREOBJECTS/NPBOOT etc.\nMap CoreData: Also can be used for 0.41 era BARs\nMap CoreData: Discovered a filename for an Unmapped file? Add to Mapper in the Path2Hash Tool!\nMap CoreData: COREDATA Mode Static Path Processing started";
+            LogDebugInfo(logMessage);
+            Dispatcher.Invoke(() =>
+            {
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                ArchiveUnpackerTextBox.ScrollToEnd();
+            });
+
+            string directoryName = new DirectoryInfo(directoryPath).Name;
+            logMessage = $"Map CoreData: Handling directory: {directoryName} with original filename: {ogfilename}";
+            LogDebugInfo(logMessage);
+            Dispatcher.Invoke(() =>
+            {
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                ArchiveUnpackerTextBox.ScrollToEnd();
+            });
+
+            // Load the helper file if not already loaded
+            if (!isHelperLoaded)
+            {
+                logMessage = "Map CoreData: Loading core_data_mapper_helper.txt. Please wait...";
+                LogDebugInfo(logMessage);
+                Dispatcher.Invoke(() =>
+                {
+                    ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                    ArchiveUnpackerTextBox.ScrollToEnd();
+                });
+
+                string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string dependencyPath = Path.Combine(Path.GetDirectoryName(exeLocation), "dependencies", "core_data_mapper_helper.txt");
+
+                if (File.Exists(dependencyPath))
+                {
+                    var fileLines = await File.ReadAllLinesAsync(dependencyPath);
+                    foreach (var line in fileLines)
+                    {
+                        var parts = line.Split(':');
+                        if (parts.Length == 2)
+                        {
+                            // Store each hash and its corresponding new path
+                            hashToPath[parts[0].Trim()] = parts[1].Trim();
+                        }
+                    }
+
+                    isHelperLoaded = true;
+                    logMessage = $"Map CoreData: core_data_mapper_helper.txt loaded successfully with {fileLines.Length} lines.";
+                    LogDebugInfo(logMessage);
+                    Dispatcher.Invoke(() =>
+                    {
+                        ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                        ArchiveUnpackerTextBox.ScrollToEnd();
+                    });
+                }
+                else
+                {
+                    logMessage = "Map CoreData: core_data_mapper_helper.txt not found.";
+                    LogDebugInfo(logMessage);
+                    Dispatcher.Invoke(() =>
+                    {
+                        ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                        ArchiveUnpackerTextBox.ScrollToEnd();
+                    });
+                    return;
+                }
+            }
+
+            // Get all files in the root of the directory path, excluding subdirectories
+            var rootFiles = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly);
+
+            int filesRenamedCount = 0;
+
+            foreach (var filePath in rootFiles)
+            {
+                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+                if (hashToPath.TryGetValue(filenameWithoutExtension, out var newPath))
+                {
+                    string newFilePath = Path.Combine(directoryPath, newPath);
+
+                    // Ensure the target directory exists
+                    Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
+
+                    try
+                    {
+                        // Rename the file to the new path
+                        File.Move(filePath, newFilePath);
+                        LogDebugInfo($"Map CoreData: Renamed {filePath} to {newFilePath}");
+                        filesRenamedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogDebugInfo($"Map CoreData: Failed to rename {filePath} to {newFilePath}: {ex.Message}");
+                    }
+
+                    // Allow the UI to update
+                    await Task.Yield();
+                }
+            }
+
+            logMessage = $"Map CoreData: {filesRenamedCount} files renamed.";
+            LogDebugInfo(logMessage);
+            Dispatcher.Invoke(() =>
+            {
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                ArchiveUnpackerTextBox.ScrollToEnd();
+            });
+
+            // Rescan the directory for unmapped files
+            rootFiles = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly);
+
+            // Check for unmapped files
+            var unmappedFiles = rootFiles.Where(filePath =>
+            {
+                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+                return Regex.IsMatch(filenameWithoutExtension, @"^[A-F0-9]{8}$", RegexOptions.IgnoreCase);
+            }).ToList();
+
+            if (unmappedFiles.Any())
+            {
+                logMessage = $"Map CoreData: {unmappedFiles.Count} unmapped files found:";
+                LogDebugInfo(logMessage);
+                Dispatcher.Invoke(() =>
+                {
+                    ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                    ArchiveUnpackerTextBox.ScrollToEnd();
+                });
+
+                foreach (var unmappedFile in unmappedFiles)
+                {
+                    logMessage = $"Map CoreData: Unmapped file - {unmappedFile}";
+                    LogDebugInfo(logMessage);
+                   
+
+                    // Allow the UI to update
+                    await Task.Yield();
+                }
+            }
+            else
+            {
+                logMessage = "Map CoreData: No unmapped files found.";
+                LogDebugInfo(logMessage);
+                Dispatcher.Invoke(() =>
+                {
+                    ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                    ArchiveUnpackerTextBox.ScrollToEnd();
+                });
+            }
+
+            logMessage = "Map CoreData: Completed handling the directory.\nMap CoreData: Double click here to open Output folder";
+            LogDebugInfo(logMessage);
+            Dispatcher.Invoke(() =>
+            {
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}{logMessage}";
+                ArchiveUnpackerTextBox.ScrollToEnd();
+            });
         }
 
 
@@ -5634,68 +5803,79 @@ namespace NautilusXP2024
             // Handle the third click - Proceed with adding paths.
             if (addToMapperButtonClickCount >= 2)
             {
-                string helperFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scene_file_mapper_helper.txt");
+                // Paths to mapper helper files
+                string sceneHelperFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dependencies\\scene_file_mapper_helper.txt");
+                string coreDataHelperFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dependencies\\core_data_mapper_helper.txt");
+
+                // HashSet to store existing paths to avoid duplicates
                 HashSet<string> existingPaths = new HashSet<string>();
 
-                if (File.Exists(helperFilePath))
+                // Method to process helper files
+                void ProcessHelperFile(string helperFilePath)
                 {
-                    // Read existing content and remove trailing new lines
-                    var existingContent = File.ReadAllText(helperFilePath).TrimEnd('\r', '\n');
-                    using (var writer = new StreamWriter(helperFilePath, false)) // Overwrite to remove trailing new lines
+                    if (File.Exists(helperFilePath))
                     {
-                        writer.Write(existingContent);
-                        if (!string.IsNullOrEmpty(existingContent))
+                        // Read existing content and add to the existingPaths set
+                        var fileLines = File.ReadAllLines(helperFilePath).Select(line => line.Trim()).Where(line => !string.IsNullOrEmpty(line));
+                        foreach (var line in fileLines)
                         {
-                            // Ensure there's a new line after existing content if it's not empty
-                            writer.WriteLine();
+                            existingPaths.Add(line.ToUpper());
                         }
 
-                        // Process paths from text boxes
-                        var uniquePaths = new HashSet<string>();
-                        ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
-                        ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
-
-                        foreach (var path in uniquePaths)
+                        using (var writer = new StreamWriter(helperFilePath, true)) // Append mode
                         {
-                            if (!string.IsNullOrWhiteSpace(path))
+                            // Process paths from text boxes
+                            var uniquePaths = new HashSet<string>();
+                            ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
+                            ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
+
+                            foreach (var path in uniquePaths)
                             {
-                                int hash = BarHash(path);
-                                string hashString = hash.ToString("X8").ToUpper();
-                                if (hashString != "00000000")
+                                if (!string.IsNullOrWhiteSpace(path))
                                 {
-                                    writer.WriteLine($"{hashString}:{path.ToUpper()}");
+                                    int hash = BarHash(path);
+                                    string hashString = hash.ToString("X8").ToUpper();
+                                    string newEntry = $"{hashString}:{path.ToUpper()}";
+                                    if (!existingPaths.Contains(newEntry))
+                                    {
+                                        writer.WriteLine(newEntry);
+                                        existingPaths.Add(newEntry); // Add to set to avoid duplicates
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                else
-                {
-                    // File doesn't exist, create new file and add paths
-                    using (var writer = new StreamWriter(helperFilePath))
+                    else
                     {
-                        var uniquePaths = new HashSet<string>();
-                        ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
-                        ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
-
-                        foreach (var path in uniquePaths)
+                        // File doesn't exist, create new file and add paths
+                        using (var writer = new StreamWriter(helperFilePath))
                         {
-                            if (string.IsNullOrWhiteSpace(path)) continue;
-                            int hash = BarHash(path);
-                            writer.WriteLine($"{hash.ToString("X8").ToUpper()}:{path.ToUpper()}");
+                            var uniquePaths = new HashSet<string>();
+                            ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
+                            ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
+
+                            foreach (var path in uniquePaths)
+                            {
+                                if (string.IsNullOrWhiteSpace(path)) continue;
+                                int hash = BarHash(path);
+                                string newEntry = $"{hash.ToString("X8").ToUpper()}:{path.ToUpper()}";
+                                writer.WriteLine(newEntry);
+                                existingPaths.Add(newEntry); // Add to set to avoid duplicates
+                            }
                         }
                     }
                 }
 
+                // Process both helper files
+                ProcessHelperFile(sceneHelperFilePath);
+                ProcessHelperFile(coreDataHelperFilePath);
+
                 // After adding paths, update the text and use a delay to revert the message.
-                Path2HashDragAreaText.Text = "Paths added to scene_file_mapper_helper.txt";
+                Path2HashDragAreaText.Text = "Paths added to mapper helper files";
                 await Task.Delay(1000); // Wait for one second
                 Path2HashDragAreaText.Text = "Drag a folder or TXT/XML here to hash all paths";
-
-
             }
         }
-
 
 
         private void ProcessTextBoxForUniquePaths(string textBoxContent, HashSet<string> existingPaths, HashSet<string> uniquePaths, bool isInput = false)
@@ -8728,6 +8908,25 @@ namespace NautilusXP2024
                 Verb = "open"
             });
         }
+
+        private void CheckBoxArchiveMapperOfflineMode_Checked(object sender, RoutedEventArgs e)
+        {
+            CheckBoxArchiveMapperAddExtras.IsEnabled = true;
+            CheckBoxArchiveMapperAddExtras.Style = (Style)FindResource("ModernToggleSwitchStyle");
+
+            CheckBoxArchiveMapperCreateBuild.IsEnabled = true;
+            CheckBoxArchiveMapperCreateBuild.Style = (Style)FindResource("ModernToggleSwitchStyle");
+        }
+
+        private void CheckBoxArchiveMapperOfflineMode_Unchecked(object sender, RoutedEventArgs e)
+        {
+            CheckBoxArchiveMapperAddExtras.IsEnabled = false;
+            CheckBoxArchiveMapperAddExtras.Style = (Style)FindResource("ModernToggleSwitchStyleGrey");
+
+            CheckBoxArchiveMapperCreateBuild.IsEnabled = false;
+            CheckBoxArchiveMapperCreateBuild.Style = (Style)FindResource("ModernToggleSwitchStyleGrey");
+        }
+
 
 
     }
