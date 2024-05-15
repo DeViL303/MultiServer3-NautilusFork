@@ -25,7 +25,6 @@ using Ookii.Dialogs.Wpf;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Xml;
-
 using HomeTools.AFS;
 using HomeTools.BARFramework;
 using HomeTools.ChannelID;
@@ -44,7 +43,12 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using System;
+using System.IO;
 using System.Net;
+using System.Windows;
+using System.Windows.Controls;
+using Microsoft.Win32;
 
 
 namespace NautilusXP2024
@@ -119,7 +123,8 @@ namespace NautilusXP2024
         private void ApplySettingsToUI()
         {
             // Applying settings to UI elements
-            CdsOutputDirectoryTextBox.Text = _settings.CdsOutputDirectory;
+            CdsEncryptOutputDirectoryTextBox.Text = _settings.CdsEncryptOutputDirectory;
+            CdsDecryptOutputDirectoryTextBox.Text = _settings.CdsDecryptOutputDirectory;
             BarSdatSharcOutputDirectoryTextBox.Text = _settings.BarSdatSharcOutputDirectory;
             MappedOutputDirectoryTextBox.Text = _settings.MappedOutputDirectory;
             HcdbOutputDirectoryTextBox.Text = _settings.HcdbOutputDirectory;
@@ -197,11 +202,21 @@ namespace NautilusXP2024
 
         public static Dictionary<string, string> SceneFileMappings { get; private set; } = new Dictionary<string, string>();
 
-        private void CdsOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void CdsEncryptOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_settings != null)
             {
-                _settings.CdsOutputDirectory = CdsOutputDirectoryTextBox.Text;
+                _settings.CdsEncryptOutputDirectory = CdsEncryptOutputDirectoryTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+
+        private void CdsDecryptOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.CdsDecryptOutputDirectory = CdsDecryptOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
@@ -866,232 +881,287 @@ namespace NautilusXP2024
 
 
         // Placeholder method for the archive creation process
-        private Task<bool> CreateArchiveAsync(string[] itemPaths, ArchiveTypeSetting type)
+        private async Task<bool> CreateArchiveAsync(string[] itemPaths, ArchiveTypeSetting type)
         {
-            // Here you would log the start of the archive creation process
-            LogDebugInfo($"Archive Creation: Beginning Archive Creation for {itemPaths.Length} items with type {type}.");
+            // Filter out lines starting with "Archive:" and log the start of the archive creation process
+            var validItemPaths = itemPaths.Where(p => !p.Trim().StartsWith("Archive Creator:")).ToArray();
+            LogDebugInfo($"Archive Creation: Beginning Archive Creation for {validItemPaths.Length} items with type {type}.");
+            await Dispatcher.InvokeAsync(() =>
+            {
+                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Beginning Archive Creation for {validItemPaths.Length} items with type {type}.";
+                ArchiveCreatorTextBox.ScrollToEnd();
+            });
 
+            bool allItemsProcessed = true;
             int i = 0;
 
-            foreach (string itemPath in itemPaths)
+            foreach (string itemPath in validItemPaths)
             {
-                LogDebugInfo($"Archive Creation: Processing item {i + 1}: {itemPath}");
-                if (itemPath.ToLower().EndsWith(".zip"))
+                try
                 {
-
-                    string filename = Path.GetFileNameWithoutExtension(itemPath);
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Extracting ZIP: {filename}");
-
-                    // Combine the temporary folder path with the unique folder name
-                    string temppath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Temporary extraction path: {temppath}");
-
-                    UncompressFile(itemPath, temppath);
-
-                    bool sdat = false;
-                    IEnumerable<string> enumerable = Directory.EnumerateFiles(temppath, "*.*", SearchOption.AllDirectories);
-                    BARArchive? bararchive = null;
-
-                    // Declare the fileExtension variable
-                    string fileExtension = "";
-
-                    switch (_settings.ArchiveTypeSettingRem)
+                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: {itemPath}");
+                    await Dispatcher.InvokeAsync(() =>
                     {
-                        case ArchiveTypeSetting.BAR:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
-                            fileExtension = ".BAR"; // Set file extension
-                            break;
-                        case ArchiveTypeSetting.BAR_S:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.bar", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true);
-                            fileExtension = ".bar"; // Set file extension
-                            break;
-                        case ArchiveTypeSetting.SDAT:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
-                            sdat = true;
-                            fileExtension = ".sdat";  // Set file extension
-                            break;
-                        case ArchiveTypeSetting.CORE_SHARC:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64DefaultSharcKey);
-                            fileExtension = ".SHARC"; // Set file extension
-                            break;
-                        case ArchiveTypeSetting.SDAT_SHARC:
-                            sdat = true;
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
-                            fileExtension = ".sdat"; // Set file extension
-                            break;
-                        case ArchiveTypeSetting.CONFIG_SHARC:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.sharc", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
-                            fileExtension = ".sharc"; // Set file extension
-                            break;
+                        ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Processing item {i + 1}: {itemPath}";
+                        ArchiveCreatorTextBox.ScrollToEnd();
+                    });
+
+                    if (itemPath.ToLower().EndsWith(".zip"))
+                    {
+                        string filename = Path.GetFileNameWithoutExtension(itemPath);
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Extracting ZIP: {filename}");
+
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Processing item {i + 1}: Extracting ZIP: {filename}";
+                            ArchiveCreatorTextBox.ScrollToEnd();
+                        });
+
+                        // Combine the temporary folder path with the unique folder name
+                        string temppath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Temporary extraction path: {temppath}");
+
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Processing item {i + 1}: Temporary extraction path: {temppath}";
+                            ArchiveCreatorTextBox.ScrollToEnd();
+                        });
+
+                        UncompressFile(itemPath, temppath);
+
+                        bool sdat = false;
+                        IEnumerable<string> enumerable = Directory.EnumerateFiles(temppath, "*.*", SearchOption.AllDirectories);
+                        BARArchive? bararchive = null;
+
+                        // Declare the fileExtension variable
+                        string fileExtension = "";
+
+                        switch (_settings.ArchiveTypeSettingRem)
+                        {
+                            case ArchiveTypeSetting.BAR:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
+                                fileExtension = ".BAR"; // Set file extension
+                                break;
+                            case ArchiveTypeSetting.BAR_S:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.bar", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true);
+                                fileExtension = ".bar"; // Set file extension
+                                break;
+                            case ArchiveTypeSetting.SDAT:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
+                                sdat = true;
+                                fileExtension = ".sdat";  // Set file extension
+                                break;
+                            case ArchiveTypeSetting.CORE_SHARC:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64DefaultSharcKey);
+                                fileExtension = ".SHARC"; // Set file extension
+                                break;
+                            case ArchiveTypeSetting.SDAT_SHARC:
+                                sdat = true;
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
+                                fileExtension = ".sdat"; // Set file extension
+                                break;
+                            case ArchiveTypeSetting.CONFIG_SHARC:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.sharc", temppath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
+                                fileExtension = ".sharc"; // Set file extension
+                                break;
+                        }
+
+                        bararchive.AllowWhitespaceInFilenames = true;
+
+                        foreach (string path in enumerable)
+                        {
+                            var fullPath = Path.Combine(temppath, path);
+                            bararchive.AddFile(fullPath);
+                            LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file to archive: {fullPath}");
+                        }
+
+                        // Get the name of the directory
+                        string directoryName = new DirectoryInfo(temppath).Name;
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Processing directory: {directoryName}");
+
+                        // Create a text file to write the paths to
+                        StreamWriter writer = new(temppath + @"/files.txt");
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Creating file list text file at: {temppath}files.txt");
+
+                        // Get all files in the directory and its immediate subdirectories
+                        string[] files = Directory.GetFiles(temppath, "*.*", SearchOption.AllDirectories);
+
+                        // Loop through the files and write their paths to the text file
+                        foreach (string file in files)
+                        {
+                            string relativePath = $"file=\"{file.Replace(temppath, "").TrimStart(Path.DirectorySeparatorChar)}\"";
+                            writer.WriteLine(relativePath.Replace(@"\", "/"));
+                            LogDebugInfo($"Archive Creation: Processing item {i + 1}: Writing file path to text: {relativePath.Replace(@"\", "/")}");
+                        }
+
+                        LogDebugInfo("Archive Creation: Completed writing file paths to text file.");
+
+                        writer.Close();
+
+                        bararchive.AddFile(temppath + @"/files.txt");
+
+                        bararchive.CreateManifest();
+
+                        bararchive.Save();
+
+                        bararchive = null;
+
+                        if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC"))
+                        {
+                            LogDebugInfo($"Archive Creation: Starting SDAT encryption for SHARC file: {filename}.SHARC");
+                            RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
+                            File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC");
+                            LogDebugInfo($"Archive Creation: SDAT encryption completed and original SHARC file deleted for: {filename}.SHARC");
+                        }
+                        else if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR"))
+                        {
+                            LogDebugInfo($"Archive Creation: Starting SDAT encryption for BAR file: {filename}.BAR");
+                            RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
+                            File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR");
+                            LogDebugInfo($"Archive Creation: SDAT encryption completed and original BAR file deleted for: {filename}.BAR");
+                        }
+
+                        // Log to the textbox after creating the archive
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Success {filename}{fileExtension} Created.";
+                            ArchiveCreatorTextBox.ScrollToEnd();
+                        });
+
+                        // Allow UI to process its queue
+                        await Task.Delay(50);
+                    }
+                    else
+                    {
+                        string? folderPath = Path.GetDirectoryName(itemPath);
+                        string? filename = Path.GetFileName(folderPath);
+
+                        bool sdat = false;
+                        IEnumerable<string> enumerable = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories);
+                        BARArchive? bararchive = null;
+
+                        string fileExtension = "";
+
+                        switch (_settings.ArchiveTypeSettingRem)
+                        {
+                            case ArchiveTypeSetting.BAR:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
+                                fileExtension = ".BAR"; // Set the file extension
+                                break;
+                            case ArchiveTypeSetting.BAR_S:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.bar", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true);
+                                fileExtension = ".bar"; // Set the file extension
+                                break;
+                            case ArchiveTypeSetting.SDAT:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
+                                sdat = true;
+                                fileExtension = ".sdat"; // Set the file extension
+                                break;
+                            case ArchiveTypeSetting.CORE_SHARC:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64DefaultSharcKey);
+                                fileExtension = ".SHARC"; // Set the file extension
+                                break;
+                            case ArchiveTypeSetting.SDAT_SHARC:
+                                sdat = true;
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
+                                fileExtension = ".sdat"; // Set the file extension
+                                break;
+                            case ArchiveTypeSetting.CONFIG_SHARC:
+                                bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.sharc", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
+                                fileExtension = ".sharc"; // Set the file extension
+                                break;
+                        }
+
+                        bararchive.AllowWhitespaceInFilenames = true;
+
+                        foreach (string path in enumerable)
+                        {
+                            var fullPath = Path.Combine(folderPath, path);
+                            bararchive.AddFile(fullPath);
+                            LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file to archive from directory: {fullPath}");
+                        }
+
+                        // Get the name of the directory
+                        string directoryName = new DirectoryInfo(folderPath).Name;
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Processing directory into archive: {directoryName}");
+
+                        // Create a text file to write the paths to
+                        StreamWriter writer = new(folderPath + @"/files.txt");
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Creating list of files at: {folderPath}files.txt for archive manifest.");
+
+                        // Get all files in the directory and its immediate subdirectories
+                        string[] files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+
+                        // Loop through the files and write their paths to the text file
+                        foreach (string file in files)
+                        {
+                            string relativePath = $"file=\"{file.Replace(folderPath, "").TrimStart(Path.DirectorySeparatorChar)}\"";
+                            writer.WriteLine(relativePath.Replace(@"\", "/"));
+                            LogDebugInfo($"Archive Creation: Processing item {i + 1}: Logging file path for archive manifest: {relativePath.Replace(@"\", "/")}");
+                        }
+
+                        writer.Close();
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: File list for archive manifest completed and file closed.");
+
+                        bararchive.AddFile(folderPath + @"/files.txt");
+                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file list to archive: {folderPath}files.txt");
+
+                        bararchive.CreateManifest();
+                        LogDebugInfo("Archive Creation: Manifest created for archive.");
+
+                        bararchive.Save();
+
+                        bararchive = null;
+                        LogDebugInfo($"Archive Creation: New Archive Saved at: {_settings.BarSdatSharcOutputDirectory}\\{filename}{fileExtension}.");
+
+                        if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC"))
+                        {
+                            RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
+                            File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC");
+                            LogDebugInfo($"Archive Creation: SDAT encryption completed and original SHARC file deleted for: {filename}.SHARC");
+                        }
+                        else if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR"))
+                        {
+                            RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
+                            File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR");
+                            LogDebugInfo($"Archive Creation: SDAT encryption completed and original BAR file deleted for: {filename}.BAR");
+                        }
+
+                        // Log to the textbox after creating the archive
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Success {filename}{fileExtension} Created.";
+                            ArchiveCreatorTextBox.ScrollToEnd();
+                        });
+
+                        // Allow UI to process its queue
+                        await Task.Delay(50);
                     }
 
-                    bararchive.AllowWhitespaceInFilenames = true;
-
-                    foreach (string path in enumerable)
-                    {
-                        var fullPath = Path.Combine(temppath, path);
-                        bararchive.AddFile(fullPath);
-                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file to archive: {fullPath}");
-                    }
-
-                    // Get the name of the directory
-                    string directoryName = new DirectoryInfo(temppath).Name;
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Processing directory: {directoryName}");
-
-                    // Create a text file to write the paths to
-                    StreamWriter writer = new(temppath + @"/files.txt");
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Creating file list text file at: {temppath}files.txt");
-
-                    // Get all files in the directory and its immediate subdirectories
-                    string[] files = Directory.GetFiles(temppath, "*.*", SearchOption.AllDirectories);
-
-                    // Loop through the files and write their paths to the text file
-                    foreach (string file in files)
-                    {
-                        string relativePath = $"file=\"{file.Replace(temppath, "").TrimStart(Path.DirectorySeparatorChar)}\"";
-                        writer.WriteLine(relativePath.Replace(@"\", "/"));
-                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Writing file path to text: {relativePath.Replace(@"\", "/")}");
-                    }
-
-                    LogDebugInfo("Archive Creation: Completed writing file paths to text file.");
-
-                    writer.Close();
-
-                    bararchive.AddFile(temppath + @"/files.txt");
-
-                    bararchive.CreateManifest();
-
-                    bararchive.Save();
-
-                    bararchive = null;
-
-                    if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC"))
-                    {
-                        LogDebugInfo($"Archive Creation: Starting SDAT encryption for SHARC file: {filename}.SHARC");
-                        RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
-                        File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC");
-                        LogDebugInfo($"Archive Creation: SDAT encryption completed and original SHARC file deleted for: {filename}.SHARC");
-                    }
-                    else if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR"))
-                    {
-                        LogDebugInfo($"Archive Creation: Starting SDAT encryption for BAR file: {filename}.BAR");
-                        RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
-                        File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR");
-                        LogDebugInfo($"Archive Creation: SDAT encryption completed and original BAR file deleted for: {filename}.BAR");
-                    }
-
+                    i++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    string? folderPath = Path.GetDirectoryName(itemPath);
-
-                    string? filename = Path.GetFileName(folderPath);
-
-                    bool sdat = false;
-                    IEnumerable<string> enumerable = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories);
-                    BARArchive? bararchive = null;
-
-                    string fileExtension = "";
-
-                    switch (_settings.ArchiveTypeSettingRem)
+                    LogDebugInfo($"Archive Creation: Error processing item {i + 1}: {itemPath}, {ex.Message}");
+                    await Dispatcher.InvokeAsync(() =>
                     {
-                        case ArchiveTypeSetting.BAR:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
-                            fileExtension = ".BAR"; // Set the file extension
-                            break;
-                        case ArchiveTypeSetting.BAR_S:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.bar", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true);
-                            fileExtension = ".bar"; // Set the file extension
-                            break;
-                        case ArchiveTypeSetting.SDAT:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.BAR", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), false, true);
-                            sdat = true;
-                            fileExtension = ".sdat"; // Set the file extension
-                            break;
-                        case ArchiveTypeSetting.CORE_SHARC:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64DefaultSharcKey);
-                            fileExtension = ".SHARC"; // Set the file extension
-                            break;
-                        case ArchiveTypeSetting.SDAT_SHARC:
-                            sdat = true;
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.SHARC", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
-                            fileExtension = ".sdat"; // Set the file extension
-                            break;
-                        case ArchiveTypeSetting.CONFIG_SHARC:
-                            bararchive = new BARArchive($"{_settings.BarSdatSharcOutputDirectory}/{filename}.sharc", folderPath, Convert.ToInt32(ArchiveCreatorTimestampTextBox.Text, 16), true, true, ToolsImpl.base64CDNKey2);
-                            fileExtension = ".sharc"; // Set the file extension
-                            break;
-                    }
-
-
-                    bararchive.AllowWhitespaceInFilenames = true;
-
-                    foreach (string path in enumerable)
-                    {
-                        var fullPath = Path.Combine(folderPath, path);
-                        bararchive.AddFile(fullPath);
-                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file to archive from directory: {fullPath}");
-                    }
-
-                    // Get the name of the directory
-                    string directoryName = new DirectoryInfo(folderPath).Name;
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Processing directory into archive: {directoryName}");
-
-                    // Create a text file to write the paths to
-                    StreamWriter writer = new(folderPath + @"/files.txt");
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Creating list of files at: {folderPath}files.txt for archive manifest.");
-
-                    // Get all files in the directory and its immediate subdirectories
-                    string[] files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
-
-                    // Loop through the files and write their paths to the text file
-                    foreach (string file in files)
-                    {
-                        string relativePath = $"file=\"{file.Replace(folderPath, "").TrimStart(Path.DirectorySeparatorChar)}\"";
-                        writer.WriteLine(relativePath.Replace(@"\", "/"));
-                        LogDebugInfo($"Archive Creation: Processing item {i + 1}: Logging file path for archive manifest: {relativePath.Replace(@"\", "/")}");
-                    }
-
-                    writer.Close();
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: File list for archive manifest completed and file closed.");
-
-                    bararchive.AddFile(folderPath + @"/files.txt");
-                    LogDebugInfo($"Archive Creation: Processing item {i + 1}: Added file list to archive: {folderPath}files.txt");
-
-                    bararchive.CreateManifest();
-                    LogDebugInfo("Archive Creation: Manifest created for archive.");
-
-                    bararchive.Save();
-
-                    bararchive = null;
-                    LogDebugInfo($"Archive Creation: New Archive Saved at: {_settings.BarSdatSharcOutputDirectory}\\{filename}{fileExtension}.");
-
-                    if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC"))
-                    {
-                        RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
-                        File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.SHARC");
-                        LogDebugInfo($"Archive Creation: SDAT encryption completed and original SHARC file deleted for: {filename}.SHARC");
-                    }
-                    else if (sdat && File.Exists(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR"))
-                    {
-                        RunUnBAR.RunEncrypt(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR", _settings.BarSdatSharcOutputDirectory + $"/{filename}.sdat");
-                        File.Delete(_settings.BarSdatSharcOutputDirectory + $"/{filename}.BAR");
-                        LogDebugInfo($"Archive Creation: SDAT encryption completed and original BAR file deleted for: {filename}.BAR");
-                    }
-
-                    LogDebugInfo("Archive Creation: Completed processing item for archive creation.");
-
+                        ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Error processing item {i + 1}: {itemPath}, {ex.Message}";
+                        ArchiveCreatorTextBox.ScrollToEnd();
+                    });
+                    allItemsProcessed = false;
                 }
-
-                i++;
             }
 
             // Log the completion and result of the archive creation process
             LogDebugInfo("Archive Creation: Process Success");
+            await Dispatcher.InvokeAsync(() =>
+            {
+                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Process Success";
+                ArchiveCreatorTextBox.ScrollToEnd();
+            });
 
-            return Task.FromResult(true);
+            return allItemsProcessed;
         }
-
 
 
 
@@ -1272,16 +1342,28 @@ namespace NautilusXP2024
         {
             Stopwatch TotalJobStopwatch = Stopwatch.StartNew();
             LogDebugInfo($"Archive Unpacker: Beginning unpacking process for {filePaths.Length} files");
+
             string ogfilename = string.Empty;
             string Outputpath = MappedOutputDirectoryTextBox.Text;
 
             Directory.CreateDirectory(Outputpath);
+
+            // Filter out lines starting with "Archive Unpacker:"
+            filePaths = filePaths.Where(path => !path.StartsWith("Archive Unpacker:")).ToArray();
 
             foreach (string filePath in filePaths)
             {
                 Stopwatch extractionStopwatch = Stopwatch.StartNew();
                 currentFilePath = filePath;
                 LogDebugInfo($"Archive Unpacker: Now processing file: {currentFilePath}");
+
+                // Log start of processing to ArchiveUnpackerTextBox
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: Processing file {currentFilePath}";
+                    ArchiveUnpackerTextBox.ScrollToEnd();
+                });
+
                 if (File.Exists(filePath))
                 {
                     string filename = Path.GetFileName(filePath);
@@ -1359,14 +1441,31 @@ namespace NautilusXP2024
                             }
                         }
                     }
+
+                    // Log completion of processing to ArchiveUnpackerTextBox
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: Success {filename} processed.";
+                        ArchiveUnpackerTextBox.ScrollToEnd();
+                    });
+
+                    // Allow UI to process its queue
+                    await Task.Delay(50);
                 }
             }
+
             TotalJobStopwatch.Stop();
             LogDebugInfo($"Archive Unpacker: Job Complete - All files processed (Time Taken {TotalJobStopwatch.ElapsedMilliseconds}ms)");
+
+            // Log completion of all files to ArchiveUnpackerTextBox
+            await Dispatcher.InvokeAsync(() =>
+            {
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: All files processed successfully.";
+                ArchiveUnpackerTextBox.ScrollToEnd();
+            });
+
             return true;
         }
-
-
 
         public async Task ExperimentalMapperAsync(string directoryPath, string ogfilename)
         {
@@ -1992,7 +2091,7 @@ namespace NautilusXP2024
             LogDebugInfo("CDS Encryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(CDSEncrypterDragAreaText, "Processing...", 2000);
 
-            string baseOutputDirectory = _settings.CdsOutputDirectory; // Assume _settings.CdsOutputDirectory is already set
+            string baseOutputDirectory = _settings.CdsEncryptOutputDirectory; // Assume _settings.CdsOutputDirectory is already set
             if (!Directory.Exists(baseOutputDirectory))
             {
                 Directory.CreateDirectory(baseOutputDirectory);
@@ -2231,7 +2330,7 @@ namespace NautilusXP2024
             LogDebugInfo("CDS Decryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "Processing....", 2000);
 
-            string baseOutputDirectory = _settings.CdsOutputDirectory;
+            string baseOutputDirectory = _settings.CdsDecryptOutputDirectory;
             if (!Directory.Exists(baseOutputDirectory))
             {
                 Directory.CreateDirectory(baseOutputDirectory);
@@ -2265,7 +2364,7 @@ namespace NautilusXP2024
                     }
                     else
                     {
-                        LogDebugInfo($"No valid SHA1 detected or provided for {filename}. Using standard decryption.");
+                        LogDebugInfo($"No valid SHA1 detected or provided for {filename}. Using CTR Exploit to decrypt.");
                         decryptionSuccess &= await DecryptFilesAsync(new string[] { filePath }, baseOutputDirectory);
                     }
                 }
@@ -2424,7 +2523,7 @@ namespace NautilusXP2024
         private bool IsValidDecryptedFile(string filePath, string extension)
         {
             // Automatically pass validation for HCDB files
-            if (extension == ".hcdb")
+            if (string.Equals(extension, ".hcdb", StringComparison.OrdinalIgnoreCase))
             {
                 LogDebugInfo($"HCDB file validation passed automatically for {Path.GetFileName(filePath)}.");
                 return true;
@@ -2432,34 +2531,212 @@ namespace NautilusXP2024
 
             try
             {
-                var doc = XDocument.Load(filePath);
-                if (extension == ".sdc" && doc.Descendants("NAME").Any())
+                if (string.Equals(extension, ".sdc", StringComparison.OrdinalIgnoreCase))
                 {
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <NAME> element.");
-                    return true;
+                    return ValidateSdcFile(filePath);
                 }
-                else if (extension == ".odc" && doc.Descendants("uuid").Any())
+                else if (string.Equals(extension, ".odc", StringComparison.OrdinalIgnoreCase))
                 {
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <uuid> element.");
-                    return true;
+                    return ValidateOdcFile(filePath);
                 }
-                else if (extension == ".xml" && doc.Descendants("SCENELIST").Any())
+                else if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
                 {
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <SCENELIST> element.");
-                    return true;
+                    return ValidateXmlFile(filePath);
                 }
-                else
+
+                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Unsupported file extension.");
+                Dispatcher.Invoke(() =>
                 {
-                    LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required element not found.");
-                    return false;
-                }
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Unsupported file extension.";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
             }
             catch (Exception ex)
             {
                 LogDebugInfo($"Failed to validate file {Path.GetFileName(filePath)}: {ex.Message}");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate file {Path.GetFileName(filePath)}: {ex.Message}";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
                 return false;
             }
         }
+
+
+        private bool ValidateSdcFile(string filePath)
+        {
+            try
+            {
+                var doc = XDocument.Load(filePath);
+
+                // Main validation via <NAME> element
+                var nameElement = doc.Descendants("NAME").FirstOrDefault();
+                if (nameElement != null)
+                {
+                    string elementValue = nameElement.Value;
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <NAME> element with value {elementValue}.");
+                    Dispatcher.Invoke(() =>
+                    {
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SDC Decrypted for {elementValue}";
+                        CDSDecrypterTextBox.ScrollToEnd();
+                    });
+
+                    // Additional check for <ARCHIVE> element if filename contains _DAT.SDC
+                    if (Path.GetFileName(filePath).ToUpper().Contains("_DAT.SDC"))
+                    {
+                        var archiveElement = doc.Descendants("ARCHIVE").FirstOrDefault();
+                        if (archiveElement != null)
+                        {
+                            string archiveValue = archiveElement.Value;
+
+                            // Trim and change the extension
+                            string trimmedFileName = archiveValue.Replace("[CONTENT_SERVER_ROOT]", "").Replace(".sdat", ".sdc");
+
+                            // Print the final string to the textbox
+                            Dispatcher.Invoke(() =>
+                            {
+                                CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Real Filename Guess {trimmedFileName}";
+                                CDSDecrypterTextBox.ScrollToEnd();
+                            });
+                        }
+                    }
+
+                    return true;
+                }
+
+                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <NAME> element not found.");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <NAME> element not found.";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Failed to validate SDC file {Path.GetFileName(filePath)}: {ex.Message}");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate SDC file {Path.GetFileName(filePath)}: {ex.Message}";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+        }
+
+
+
+        private bool ValidateOdcFile(string filePath)
+        {
+            try
+            {
+                var doc = XDocument.Load(filePath);
+                var uuidElement = doc.Descendants("uuid").FirstOrDefault();
+                if (uuidElement != null)
+                {
+                    string uuidValue = uuidElement.Value;
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <uuid> element with value {uuidValue}.");
+                    Dispatcher.Invoke(() =>
+                    {
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success ODC Decrypted for {uuidValue}";
+                        CDSDecrypterTextBox.ScrollToEnd();
+                    });
+
+                    // Check for _DAT.ODC in the filename
+                    if (Path.GetFileName(filePath).ToUpper().Contains("_DAT.ODC"))
+                    {
+                        // Check for <small_image> element first
+                        var imageElement = doc.Descendants("small_image").FirstOrDefault();
+
+                        // If <small_image> is not found, check for <large_image>
+                        if (imageElement == null)
+                        {
+                            imageElement = doc.Descendants("large_image").FirstOrDefault();
+                        }
+
+                        if (imageElement != null)
+                        {
+                            string imageValue = imageElement.Value;
+
+                            // Trim and change the value
+                            string trimmedImageValue = imageValue.Replace("[THUMBNAIL_ROOT]small", "").Replace("[THUMBNAIL_ROOT]large", "").Replace(".png", "");
+
+                            // Combine uuid and trimmed value, then add .odc
+                            string finalName = $"Objects/{uuidValue}/object{trimmedImageValue}.odc";
+
+                            // Print the final string to the textbox
+                            Dispatcher.Invoke(() =>
+                            {
+                                CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Real ODC name guess {finalName}";
+                                CDSDecrypterTextBox.ScrollToEnd();
+                            });
+                        }
+                    }
+
+                    return true;
+                }
+                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <uuid> element not found.");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <uuid> element not found.";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Failed to validate ODC file {Path.GetFileName(filePath)}: {ex.Message}");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate ODC file {Path.GetFileName(filePath)}: {ex.Message}";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+        }
+
+
+        private bool ValidateXmlFile(string filePath)
+        {
+            try
+            {
+                var doc = XDocument.Load(filePath);
+                var sceneListElement = doc.Descendants("SCENELIST").FirstOrDefault();
+                if (sceneListElement != null)
+                {
+                    // Count the number of <SCENE> elements within <SCENELIST>
+                    int sceneCount = sceneListElement.Descendants("SCENE").Count();
+                    string elementValue = sceneListElement.Value;
+                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <SCENELIST> element with {sceneCount} <SCENE> elements.");
+                    Dispatcher.Invoke(() =>
+                    {
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SceneList.xml Decrypted (Contains {sceneCount} Scene entries)";
+                        CDSDecrypterTextBox.ScrollToEnd();
+                    });
+                    return true;
+                }
+                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <SCENELIST> element not found.");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <SCENELIST> element not found.";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Failed to validate XML file {Path.GetFileName(filePath)}: {ex.Message}");
+                Dispatcher.Invoke(() =>
+                {
+                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate XML file {Path.GetFileName(filePath)}: {ex.Message}";
+                    CDSDecrypterTextBox.ScrollToEnd();
+                });
+                return false;
+            }
+        }
+
 
 
 
@@ -2492,7 +2769,6 @@ namespace NautilusXP2024
 
                 int newFilesCount = 0;
                 int duplicatesCount = 0;
-                string message = string.Empty;
                 int displayTime = 2000;
 
                 if (validFiles.Count > 0)
@@ -2508,7 +2784,12 @@ namespace NautilusXP2024
 
                         CDSDecrypterTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} file(s) added, {duplicatesCount} duplicate(s) filtered";
+                        string message = $"{newFilesCount} file(s) added";
+                        if (duplicatesCount > 0)
+                        {
+                            message += $", {duplicatesCount} duplicate(s) filtered";
+                        }
+
                         TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
 
                         LogDebugInfo($"CDS Decryption: {newFilesCount} files added, {duplicatesCount} duplicates filtered from Drag and Drop.");
@@ -2517,7 +2798,7 @@ namespace NautilusXP2024
                 else
                 {
                     LogDebugInfo("CDS Decryption: Drag and Drop - No valid files found.");
-                    message = "No valid files found.";
+                    string message = "No valid files found.";
                     TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
                 }
             }
@@ -2527,6 +2808,7 @@ namespace NautilusXP2024
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "Drag and Drop operation failed - No Data Present.", 2000);
             }
         }
+
 
 
         private async void ClickToBrowseCDSDecryptHandler(object sender, RoutedEventArgs e)
@@ -2931,7 +3213,7 @@ namespace NautilusXP2024
             LogDebugInfo("HCDB Decryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "Processing...", 2000);
 
-            string outputDirectory = HcdbOutputDirectoryTextBox.Text;
+            string outputDirectory = sqlOutputDirectoryTextBox.Text;
             if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
@@ -5285,6 +5567,7 @@ namespace NautilusXP2024
             string inputPath = Path2HashInputTextBox.Text;
             int hash = BarHash(inputPath);
             Path2HashOutputTextBox.Text = hash.ToString("X8").ToUpper();
+            LogDebugInfo($"Path hashed: {inputPath}, Hash (Hex): {hash.ToString("X8").ToUpper()}, Hash (Int): {hash}");
 
             if (!string.IsNullOrWhiteSpace(Path2HashOutputExtraTextBox.Text))
             {
@@ -5298,6 +5581,7 @@ namespace NautilusXP2024
                         string modifiedPath = path.Contains(":") ? path.Substring(path.IndexOf(":") + 1) : path;
                         int pathHash = BarHash(modifiedPath);
                         Path2HashOutputExtraTextBox.AppendText($"{pathHash.ToString("X8").ToUpper()}:{modifiedPath.ToUpper()}\n");
+                        LogDebugInfo($"Path hashed: {modifiedPath}, Hash (Hex): {pathHash.ToString("X8").ToUpper()}, Hash (Int): {pathHash}");
                     }
                 }
             }
@@ -5305,7 +5589,6 @@ namespace NautilusXP2024
 
         public static int BarHash(string path)
         {
-
             path = path.Replace('\\', '/').ToLower();
 
             int crc = 0;
@@ -6132,18 +6415,56 @@ namespace NautilusXP2024
         }
 
         // Settings Tab - Set directories
-        private void CdsBrowseButton_Click(object sender, RoutedEventArgs e)
+        private void CdsEncryptBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var folderPath = OpenFolderDialog(CdsOutputDirectoryTextBox.Text);
+            var folderPath = OpenFolderDialog(CdsEncryptOutputDirectoryTextBox.Text);
             if (folderPath != null)
             {
-                CdsOutputDirectoryTextBox.Text = folderPath;
+                CdsEncryptOutputDirectoryTextBox.Text = folderPath;
             }
         }
 
-        private void CdsOpenButton_Click(object sender, RoutedEventArgs e)
+        private void CdsDecryptBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            string outputDirectory = CdsOutputDirectoryTextBox.Text;
+            var folderPath = OpenFolderDialog(CdsDecryptOutputDirectoryTextBox.Text);
+            if (folderPath != null)
+            {
+                CdsDecryptOutputDirectoryTextBox.Text = folderPath;
+            }
+        }
+
+        private void CdsDecryptOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            string outputDirectory = CdsDecryptOutputDirectoryTextBox.Text;
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(outputDirectory))
+                {
+                    // Create the directory if it does not exist
+                    Directory.CreateDirectory(outputDirectory);
+                    MessageBox.Show($"Directory created: {outputDirectory}");
+                }
+
+                // Open the directory in File Explorer
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = outputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions (e.g., invalid path or lack of permissions)
+                MessageBox.Show($"Error opening directory: {ex.Message}");
+            }
+        }
+
+        private void CdsEncryptOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            string outputDirectory = CdsEncryptOutputDirectoryTextBox.Text;
 
             try
             {
@@ -8131,7 +8452,7 @@ namespace NautilusXP2024
             }
         }
 
-        private void ArchiveUnpackerFastMapCcheButtonClick(object sender, RoutedEventArgs e)
+        private void ArchiveUnpackerFastMapCacheButtonClick(object sender, RoutedEventArgs e)
         {
             // Open a folder browser dialog to select a folder
             var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -8180,6 +8501,232 @@ namespace NautilusXP2024
                     MessageBox.Show("Log file not found.");
                 }
             }
+        }
+
+        private (byte[]?, string)? ProcessLocalFileDirectly(string filePath)
+        {
+            try
+            {
+                Console.WriteLine($"Starting processing for file: {filePath}");
+
+                // Read the file into a byte array
+                byte[] buffer = File.ReadAllBytes(filePath);
+                Console.WriteLine($"Read {buffer.Length} bytes from file.");
+
+                string filename = Path.GetFileName(filePath);
+                Console.WriteLine($"Filename: {filename}");
+
+                // Initialize the result list
+                List<(byte[]?, string)?> tasksResult = new List<(byte[]?, string)?>();
+
+                // Check the first few bytes to determine if the file should be decrypted
+                if (buffer.Length >= 4)
+                {
+                    Console.WriteLine("File is long enough to process.");
+
+                    if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0x00 && buffer[3] == 0x01)
+                    {
+                        Console.WriteLine("File identified as needing decryption.");
+
+                        // Remove padding prefix
+                        buffer = ToolsImpl.RemovePaddingPrefix(buffer);
+                        Console.WriteLine("Padding prefix removed.");
+
+                        // Decrypt using Blowfish
+                        byte[]? decryptedFileBytes = LIBSECURE.InitiateBlowfishBuffer(buffer, ToolsImpl.MetaDataV1Key, ToolsImpl.MetaDataV1IV, "CTR");
+                        Console.WriteLine(decryptedFileBytes != null ? "Decryption successful." : "Decryption failed.");
+
+                        if (decryptedFileBytes != null)
+                        {
+                            tasksResult.Add((decryptedFileBytes, $"{filename}_Decrypted.bin"));
+                        }
+                    }
+                    else
+                    {
+                        // Unrecognized file format
+                        Console.WriteLine("Unrecognized file format.");
+                    }
+                }
+                else
+                {
+                    // File too short to process
+                    Console.WriteLine("File is too short to process.");
+                }
+
+                // Return the result
+                if (tasksResult.Count > 0 && tasksResult[0].HasValue)
+                {
+                    Console.WriteLine("File processed successfully.");
+                    return tasksResult[0];
+                }
+                else
+                {
+                    Console.WriteLine("No valid task result. Processing failed.");
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while processing the file: {ex.Message}");
+                return null;
+            }
+        }
+
+        private void ProcessINFFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Open file dialog to select a file
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "All files (*.*)|*.*"; // Allows all file types
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    string inputFilePath = openFileDialog.FileName;
+                    Console.WriteLine($"Selected file: {inputFilePath}");
+
+                    var result = ProcessLocalFileDirectly(inputFilePath);
+
+                    if (result.HasValue)
+                    {
+                        string outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath), result.Value.Item2);
+                        File.WriteAllBytes(outputFilePath, result.Value.Item1);
+                        MessageBox.Show($"File processed successfully. Output saved to {outputFilePath}");
+                        Console.WriteLine($"Output saved to {outputFilePath}");
+                    }
+                    else
+                    {
+                        MessageBox.Show("File processing failed. Please check the console for more details.");
+                        Console.WriteLine("File processing failed. No result returned.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}");
+                Console.WriteLine($"An error occurred in ProcessINFFileButton_Click: {ex.Message}");
+            }
+        }
+
+        private void ArchiveUnpackerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the MappedOutputDirectoryTextBox
+            string path = MappedOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        private void ArchiveCreatorTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the BarSdatSharcOutputDirectoryTextBox
+            string path = BarSdatSharcOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        private void CDSEncrypterTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the CdsOutputDirectoryTextBox
+            string path = CdsEncryptOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        private void CDSDecrypterTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the CdsOutputDirectoryTextBox
+            string path = CdsDecryptOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        private void HCDBEncrypterTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the HcdbOutputDirectoryTextBox
+            string path = HcdbOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        private void HCDBDecrypterTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Get the text from the sqlOutputDirectoryTextBox
+            string path = sqlOutputDirectoryTextBox.Text;
+
+            // Check if the path is a valid directory, if not create it
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            // Open the directory in File Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
 

@@ -9,7 +9,8 @@ namespace NautilusXP2024
 {
     public class AppSettings
     {
-        public string CdsOutputDirectory { get; set; }
+        public string CdsEncryptOutputDirectory { get; set; }
+        public string CdsDecryptOutputDirectory { get; set; }
         public string BarSdatSharcOutputDirectory { get; set; }
         public string MappedOutputDirectory { get; set; }
         public string HcdbOutputDirectory { get; set; }
@@ -34,7 +35,8 @@ namespace NautilusXP2024
         public AppSettings()
         {
             // Set default values
-            CdsOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "CDS");
+            CdsEncryptOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "CDSEncrypt");
+            CdsDecryptOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "CDSDecrypt");
             BarSdatSharcOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Archive");
             MappedOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Mapped");
             HcdbOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "HCDB");
