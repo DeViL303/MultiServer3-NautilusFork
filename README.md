@@ -63,18 +63,16 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
-     - eg: 00000000-00000000-00000000-0000000B/object_T037.sdat
-     - eg: 00000000-00000000-00000000-0000000B/object_T037.bar
-
-
+     - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.sdat
+     - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.bar
 
 #### Rename Objects For Local
 - This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR or CORE SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
-     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
-     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
+     - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
+     - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
 
 #### Ignore Timestamp.txt
    - Use this setting to force every archive packed in the current task to take its timestamp from the GUI field above.
