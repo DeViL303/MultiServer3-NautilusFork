@@ -3,6 +3,16 @@
    </h1>
 
 This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
 
 <h1 align="center">
    Tab 1: BAR/SDAT/SHARC TOOL
@@ -88,6 +98,16 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
 
 <h1 align="center">
    Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
@@ -131,6 +151,17 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - In rare cases where there is a modified header you will need to supply a sha1 for decryption, this can be supplied either in the filename, or typed into SHA1 input box.
 - If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
 - CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
 
 <h1 align="center">
    Tab 3: HCDB Encrypter / Decrypter
@@ -200,6 +231,17 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+
 <h1 align="center">
    Tab 5: LUA / LUAC TOOL
 </h1>
@@ -260,6 +302,17 @@ for example if changing https to http.
 In rare cases Java based UnLuac might give better results but its unlikely. I'm leaving these options in for now as theyre not doing any harm really. 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
 <h1 align="center">
    Tab 6: SDC / ODC Tool
 </h1>
@@ -299,6 +352,15 @@ Use this tab for debugging mapping issues. It allows you to attempt to discover 
 
 If you know the path to a file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is ever encountered again it will map automatically.
 
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
 
 <h1 align="center">
    Tab 8: Home EBOOT Patcher
@@ -314,6 +376,16 @@ If you know the path to a file and it refuses to map normally, you can add the p
 View and or Patch various fields in Home EBOOTS. 
 
 ### Work in Progress
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
 
 <h1 align="center">
    Tab 9: Checker
@@ -334,6 +406,17 @@ Currently decryption mode is not linked up to the backend.
 
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
 <h1 align="center">
    Tab 10: Media Tool
 </h1>
@@ -353,6 +436,17 @@ Verify Content: This is a standalone function that allows you to choose a folder
 - If you ignore this aspect ratio setting it will still work ok in home as Home stretches/squashes videos to fit the screen they are shown on anyway.
 - Audio bitrate, 160kbps recommended for best balance between filesize and quality. 
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
+
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
 
 <h1 align="center">
    Tab 11: Settings
