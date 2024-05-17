@@ -77,7 +77,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
 
 #### Ignore Timestamp.txt
-   - Use this setting to force every archive packed in in the current task to take its timestamp from the field above.
+   - Use this setting to force every archive packed in the current task to take its timestamp from the GUI field above.
    - Only really useful if you plan to use FFFFFFF for everything.
    - This setting simply saves the bother of deleting all the timestamp.txt files.   
 
