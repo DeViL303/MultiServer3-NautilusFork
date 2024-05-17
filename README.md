@@ -25,7 +25,6 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 <div align="center">
    
-![Home Archive Creator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
 
 </div>
 
@@ -57,7 +56,6 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 <div align="center">
    
-![Home Archive Unpacker](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
 </div>
 
@@ -110,7 +108,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/33e48df1-ee99-4871-b789-bce4a71bc7ec)
 
 </div>
 
@@ -125,7 +122,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/50c46f3d-246c-4c44-8a98-ae98295aa1a5)
 
 </div>
 
@@ -157,8 +153,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 </h2>
 
 <div align="center">
-   
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fb01dd1a-6e29-42e5-a0d1-fc0b00421e5a)
+
 
 </div>
 
@@ -182,7 +177,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![Scene ID Generator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
 
 </div>
 
@@ -200,7 +194,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![Scene ID Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4e5679fa-3fe0-4cf4-b393-651b15a7384c)
 
 </div>
 
@@ -230,7 +223,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1bd9326b-06e2-4395-aada-9adc0cc3494c)
 
 </div>
 
@@ -253,7 +245,6 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
 
 </div>
 
