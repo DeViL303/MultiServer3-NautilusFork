@@ -115,7 +115,20 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - Lastly, any items with unmapped files will be logged. This check occurs regardless of whether the validate files feature is enabled. If unmapped files are detected, a _CHECK suffix will be added to the output folder name.
 - Should any warnings or file validation failures occur during the validation process, a JobReport.txt will be generated in your output folder.
 
-##### Offline Structure:
+#### Coredata Mode:
+   - This mode skips normal mapping techniques completely as they are not reliable for coredata, instead it uses a preset list of known coredata file names to rename the files.
+   - Use this mode for COREDATA.SHARC/BAR, COREOBJECTS.SHARC/BAR, SHADERS.SHARC/BAR, CONFIG***.SHARC/BAR
+   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
+   - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
+
+#### Bruteforce UUID Mode:
+   - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
+   - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
+   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
+      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
+      - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
+
+##### Offline Mode:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
