@@ -20,9 +20,7 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fabec4dc-8140-4f63-bf64-81d0fbae3ba2)
-
-
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a78b8fb-cf3d-46ff-9947-9d0aa3f2e381)
 
 
 </div>
