@@ -48,7 +48,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 ##### Timestamp:
    - Enter a timestamp here. The default is FFFFFFFF. If less than 8 bytes are entered, they will be padded to 8 bytes with a prefix of 0.
-   - If a timestamp.txt file is present in your input folder, this GUI field will be disregarded.
+   - If a timestamp.txt file is present in your input folder, this GUI field will normally be disregarded.
 
 ##### Types of Archives:
 - **BAR:** The most basic form of Home Archive, historically used in early retail home editions and later restricted to developer versions. These archives are the quickest to read, mount, create, and dump due to their simple zlib compression and lack of additional security layers.
@@ -57,6 +57,30 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **SDAT SHARC:** A secure archive format introduced in version 1.82 to combat hacking and piracy. These are both encrypted with NPD key, and with content server key found in the TSS.
 - **CORE SHARC:** First introduced in version 1.82+, this format secures local COREDATA sharc files within the client package. These are encrypted with a local key that is built into 1.82+ Retail EBOOTS.
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
+
+#### Rename for CDN
+   - This setting when enabled will rename objects to suit CDN if certain conditions are met:
+     - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
+     - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
+     - If those conditions are met it will rename the output to suit online CDN use:
+     - eg: 00000000-00000000-00000000-0000000B/object_T037.sdat
+     - eg: 00000000-00000000-00000000-0000000B/object_T037.bar
+
+
+
+#### Rename Objects For Local
+- This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
+     - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
+     - The Archive type must be set to either BAR or CORE SHARC.
+     - If those conditions are met it will rename the output to suit online CDN use:
+     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
+     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
+
+#### Ignore Timestamp.txt
+   - Use this setting to force every archive packed in in the current task to take its timestamp from the field above.
+   - Only really useful if you plan to use FFFFFFF for everything.
+   - This setting simply saves the bother of deleting all the timestamp.txt files.   
+
 
 <h2 align="center">
    Home Archive Unpacker
