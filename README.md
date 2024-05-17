@@ -148,12 +148,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Then that segs file (compressed SQL) is encrypted in a similar way to SDC/ODC with the first 16 bytes of the segs SHA1 used as the encryption IV.
 - Currently you DO need to supply the segs files SHA1 to decrypt. In later versions it will be able to brute force the IV as most bytes of the segs file header are known.
 
-<h2 align="center">
-   SQL to HCDB Encrypter Tool
-</h2>
-
-<div align="center">
-
 
 </div>
 
