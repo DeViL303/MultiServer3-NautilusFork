@@ -423,7 +423,8 @@ Verify Content: This is a standalone function that allows you to choose a folder
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/5a5c3a49-bf3c-4104-994c-c4510ab4154b)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/371aba2d-a068-43e8-9f56-08702eb7c89c)
+
 
 </div>
 
