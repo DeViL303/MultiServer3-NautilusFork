@@ -4,9 +4,9 @@
 
 This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
 
-<h2 align="center">
+<h1 align="center">
    Tab 1: BAR/SDAT/SHARC TOOL
-</h2>
+</h1>
 
 <div align="center">
    
@@ -89,9 +89,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
 
-<h2 align="center">
+<h1 align="center">
    Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
-</h2>
+</h1>
 
 <div align="center">
    
@@ -132,9 +132,9 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
 - CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
 
-<h2 align="center">
+<h1 align="center">
    Tab 3: HCDB Encrypter / Decrypter
-</h2>
+</h1>
 
 <div align="center">
 
@@ -151,9 +151,9 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 </div>
 
-<h2 align="center">
+<h1 align="center">
    Tab 4: SceneID Generator / Decrypter
-</h2>
+</h1>
 
 <div align="center">
    
@@ -200,9 +200,9 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 
-<h2 align="center">
+<h1 align="center">
    Tab 5: LUA / LUAC TOOL
-</h2>
+</h1>
 
 <div align="center">
    
@@ -260,9 +260,9 @@ for example if changing https to http.
 In rare cases Java based UnLuac might give better results but its unlikely. I'm leaving these options in for now as theyre not doing any harm really. 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
-<h2 align="center">
+<h1 align="center">
    Tab 6: SDC / ODC Tool
-</h2>
+</h1>
 
 <div align="center">
 
@@ -284,9 +284,9 @@ You could also switch out the JAR files for others if you find better solutions.
 - SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
 
 
-<h2 align="center">
+<h1 align="center">
    Tab 7: Path2Hash Tool
-</h2>
+</h1>
 
 <div align="center">
 
@@ -300,9 +300,9 @@ Use this tab for debugging mapping issues. It allows you to attempt to discover 
 If you know the path to a file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is ever encountered again it will map automatically.
 
 
-<h2 align="center">
+<h1 align="center">
    Tab 8: Home EBOOT Patcher
-</h2>
+</h1>
 
 <div align="center">
 
@@ -315,9 +315,9 @@ View and or Patch various fields in Home EBOOTS.
 
 ### Work in Progress
 
-<h2 align="center">
+<h1 align="center">
    Tab 9: Checker
-</h2>
+</h1>
 
 <div align="center">
    
@@ -334,9 +334,9 @@ Currently decryption mode is not linked up to the backend.
 
 Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
 
-<h2 align="center">
+<h1 align="center">
    Tab 10: Media Tool
-</h2>
+</h1>
 
 <div align="center">
 
@@ -354,9 +354,9 @@ Verify Content: This is a standalone function that allows you to choose a folder
 - Audio bitrate, 160kbps recommended for best balance between filesize and quality. 
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
-<h2 align="center">
+<h1 align="center">
    Tab 11: Settings
-</h2>
+</h1>
 
 <div align="center">
 
