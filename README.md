@@ -433,13 +433,13 @@ View and or Patch various fields in Home EBOOTS.
 
 </div>
 
-Used for checking SHA1s and building lists for comparison
+SHA1 Checker: Used for checking SHA1s and building lists for comparison
 
-### Work in Progress
+Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. 
 
-Currently decryption mode is not linked up to the backend.
+Get File Details: New tool that shows file info - Work in Progress
 
-Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
+This tab is currently not working fully. Just the sha1 checker portion works
 
 
 <div align="center">
