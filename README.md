@@ -3,14 +3,24 @@
    </h1>
 
 This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
+<div align="center">
 
-<h2 align="center">
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+
+<h1 align="center">
    Tab 1: BAR/SDAT/SHARC TOOL
-</h2>
+</h1>
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/584930ff-098f-4180-bf74-8e7d834ee0d4)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a78b8fb-cf3d-46ff-9947-9d0aa3f2e381)
 
 
 </div>
@@ -23,7 +33,6 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 <div align="center">
    
-![Home Archive Creator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/297ac8dc-65c2-4056-a4b8-8de8fcc07085)
 
 </div>
 
@@ -39,7 +48,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 ##### Timestamp:
    - Enter a timestamp here. The default is FFFFFFFF. If less than 8 bytes are entered, they will be padded to 8 bytes with a prefix of 0.
-   - If a timestamp.txt file is present in your input folder, this GUI field will be disregarded.
+   - If a timestamp.txt file is present in your input folder, this GUI field will normally be disregarded.
 
 ##### Types of Archives:
 - **BAR:** The most basic form of Home Archive, historically used in early retail home editions and later restricted to developer versions. These archives are the quickest to read, mount, create, and dump due to their simple zlib compression and lack of additional security layers.
@@ -49,13 +58,36 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **CORE SHARC:** First introduced in version 1.82+, this format secures local COREDATA sharc files within the client package. These are encrypted with a local key that is built into 1.82+ Retail EBOOTS.
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
 
+#### Rename for CDN
+   - This setting when enabled will rename objects to suit CDN if certain conditions are met:
+     - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
+     - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
+     - If those conditions are met it will rename the output to suit online CDN use:
+     - eg: 00000000-00000000-00000000-0000000B/object_T037.sdat
+     - eg: 00000000-00000000-00000000-0000000B/object_T037.bar
+
+
+
+#### Rename Objects For Local
+- This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
+     - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
+     - The Archive type must be set to either BAR or CORE SHARC.
+     - If those conditions are met it will rename the output to suit online CDN use:
+     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
+     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
+
+#### Ignore Timestamp.txt
+   - Use this setting to force every archive packed in in the current task to take its timestamp from the field above.
+   - Only really useful if you plan to use FFFFFFF for everything.
+   - This setting simply saves the bother of deleting all the timestamp.txt files.   
+
+
 <h2 align="center">
    Home Archive Unpacker
 </h2>
 
 <div align="center">
    
-![Home Archive Unpacker](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0bc3877d-41cf-4fa9-be46-4386c3856344)
 
 </div>
 
@@ -83,19 +115,43 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 - Lastly, any items with unmapped files will be logged. This check occurs regardless of whether the validate files feature is enabled. If unmapped files are detected, a _CHECK suffix will be added to the output folder name.
 - Should any warnings or file validation failures occur during the validation process, a JobReport.txt will be generated in your output folder.
 
-##### Offline Structure:
+#### Coredata Mode:
+   - This mode skips normal mapping techniques completely as they are not reliable for coredata, instead it uses a preset list of known coredata file names to rename the files.
+   - Use this mode for COREDATA.SHARC/BAR, COREOBJECTS.SHARC/BAR, SHADERS.SHARC/BAR, CONFIG***.SHARC/BAR
+   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
+   - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
+
+#### Bruteforce UUID Mode:
+   - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
+   - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
+   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
+      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
+      - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
+
+##### Offline Mode:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
 
+<div align="center">
 
-<h2 align="center">
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+
+<h1 align="center">
    Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
-</h2>
+</h1>
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c22b0dfa-4e93-43c5-a324-072b451ecf78)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/917aec61-c00b-49e8-813f-c10d4b218962)
+
 
 </div>
 
@@ -107,7 +163,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/33e48df1-ee99-4871-b789-bce4a71bc7ec)
 
 </div>
 
@@ -122,7 +177,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/50c46f3d-246c-4c44-8a98-ae98295aa1a5)
 
 </div>
 
@@ -133,13 +187,25 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
 - CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
 
-<h2 align="center">
-   Tab 3: HCDB Encrypter / Decrypter
-</h2>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0fa29f04-ee86-4a40-92de-0b228e2a681a)
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 3: HCDB Encrypter / Decrypter
+</h1>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/ce70fbf6-f845-41b7-a3d5-7ef738194ad0)
+
 
 </div>
 
@@ -148,23 +214,17 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Then that segs file (compressed SQL) is encrypted in a similar way to SDC/ODC with the first 16 bytes of the segs SHA1 used as the encryption IV.
 - Currently you DO need to supply the segs files SHA1 to decrypt. In later versions it will be able to brute force the IV as most bytes of the segs file header are known.
 
-<h2 align="center">
-   SQL to HCDB Encrypter Tool
-</h2>
-
-<div align="center">
-   
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fb01dd1a-6e29-42e5-a0d1-fc0b00421e5a)
 
 </div>
 
-<h2 align="center">
+<h1 align="center">
    Tab 4: SceneID Generator / Decrypter
-</h2>
+</h1>
 
 <div align="center">
    
-![SceneID Generator / Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4204a35c-9dea-40d5-afed-5367d5e8fb75)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d06a82b7-3a73-4079-9d0d-7a5345555279)
+
 
 </div>
 
@@ -177,7 +237,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![Scene ID Generator](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/fbc2f728-4c22-4f3d-9c2f-00091be53052)
 
 </div>
 
@@ -195,7 +254,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![Scene ID Decrypter](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/4e5679fa-3fe0-4cf4-b393-651b15a7384c)
 
 </div>
 
@@ -208,13 +266,25 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 - Generally, this setting does not require modification; keep it on default (Disabled) for newer Home versions.
 
 
-<h2 align="center">
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+
+<h1 align="center">
    Tab 5: LUA / LUAC TOOL
-</h2>
+</h1>
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/580dc901-efda-417c-937e-b9926a80203e)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/9b49c355-ac71-4662-9041-f18459cfa797)
+
 
 </div>
 
@@ -224,7 +294,6 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1bd9326b-06e2-4395-aada-9adc0cc3494c)
 
 </div>
 
@@ -247,7 +316,6 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/03ee4b4a-1cc8-442f-aa95-ba883c7c87ca)
 
 </div>
 
@@ -269,13 +337,25 @@ for example if changing https to http.
 In rare cases Java based UnLuac might give better results but its unlikely. I'm leaving these options in for now as theyre not doing any harm really. 
 You could also switch out the JAR files for others if you find better solutions. See Dependencies folder.
 
-<h2 align="center">
-   Tab 6: SDC / ODC Tool
-</h2>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/8cb5ccb0-da2b-4de3-bf0b-c7d2f056fca6)
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 6: SDC / ODC Tool
+</h1>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1f5f8223-681c-46ba-9ecd-545964d4f1d4)
+
 
 </div>
 
@@ -292,13 +372,14 @@ You could also switch out the JAR files for others if you find better solutions.
 - SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
 
 
-<h2 align="center">
+<h1 align="center">
    Tab 7: Path2Hash Tool
-</h2>
+</h1>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1eb8ed66-001b-41ed-901b-ebd4dfd27011)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94384bf1-eb52-444b-b639-7b3dc33fcb85)
+
 
 </div>
 
@@ -306,14 +387,24 @@ Use this tab for debugging mapping issues. It allows you to attempt to discover 
 
 If you know the path to a file and it refuses to map normally, you can add the path here by clicking "Add to Mapper". Once added if this file is ever encountered again it will map automatically.
 
+<div align="center">
 
-<h2 align="center">
-   Tab 8: Home EBOOT Patcher
-</h2>
+
+</div>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/ceb3bbc8-5174-492e-9835-8a2b893f9668)
+
+</div>
+
+<h1 align="center">
+   Tab 8: Home EBOOT Patcher
+</h1>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/22499105-6931-4ad6-a34b-32e8d31b73c5)
+
 
 </div>
 
@@ -321,35 +412,58 @@ View and or Patch various fields in Home EBOOTS.
 
 ### Work in Progress
 
-<h2 align="center">
-   Tab 9: SHA1 Checker
-</h2>
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 9: Checker
+</h1>
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/5d73316f-cf00-45e7-8147-ef37ff0c3b74)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6920a64f-3c3f-413e-ac30-aef56488447c)
+
 
 </div>
 
-Used for checking SHA1s and building lists for comparison
+SHA1 Checker: Used for checking SHA1s and building lists for comparison
 
-### Work in Progress
+Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. 
 
-Currently decryption mode is not linked up to the backend.
+Get File Details: New tool that shows file info - Work in Progress
 
-Verify Content: This is a standalone function that allows you to choose a folder of mapped content to run through the file validator function. 
+This tab is currently not working fully. Just the sha1 checker portion works
 
-<h2 align="center">
-   Tab 10: Video Converter
-</h2>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7f3b18fc-4a0d-4963-abfc-f65d7acc9ca9)
 
 </div>
 
-### Usage:
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 10: Media Tool
+</h1>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/371aba2d-a068-43e8-9f56-08702eb7c89c)
+
+
+</div>
+
+### Video Converter Usage:
 - Local Videos: Drag and drop videos into drag area, or Click to browse and choose files.  
 - Youtube conversion: Enter URL, or multiple URLs (comma, space, line or pipe separated)
 - Choose settings and click convert. Find output in Output/Video when its finished
@@ -359,13 +473,25 @@ Verify Content: This is a standalone function that allows you to choose a folder
 - Audio bitrate, 160kbps recommended for best balance between filesize and quality. 
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
-<h2 align="center">
-   Tab 11: Settings
-</h2>
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f1b23a25-25ff-4a02-b7a8-5331fbd2a4b9)
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 11: Settings
+</h1>
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/192d7ca5-8478-4da0-ac57-907640712f9b)
+
 
 </div>
 
