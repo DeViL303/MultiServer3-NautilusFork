@@ -18,8 +18,7 @@ namespace NautilusXP2024
         public string TicketListOutputDirectory { get; set; }
         public string LuacOutputDirectory { get; set; }
         public string LuaOutputDirectory { get; set; }
-        public string InfToolOutputDirectory { get; set; }
-        public string CacheOutputDirectory { get; set; }
+        public string AudioOutputDirectory { get; set; }
 
         public string VideoOutputDirectory { get; set; }
         public int CpuPercentage { get; set; }
@@ -44,12 +43,11 @@ namespace NautilusXP2024
             TicketListOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "LST");
             LuacOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "LUAC");
             LuaOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "LUA");
-            InfToolOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "INF");
-            CacheOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Cache");
+            AudioOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audio");
             VideoOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Video");
             CpuPercentage = 50;
             MappingThreads = 12;
-            ThemeColor = "#FF00FF27"; // Default color as a string
+            ThemeColor = "#fc030f"; // Default color as a string
             FileOverwriteBehavior = OverwriteBehavior.Rename;
             SaveDebugLogToggle = SaveDebugLog.True;
             ArchiveTypeSettingRem = ArchiveTypeSetting.SDAT;

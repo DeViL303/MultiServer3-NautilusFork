@@ -132,9 +132,8 @@ namespace NautilusXP2024
             TicketListOutputDirectoryTextBox.Text = _settings.TicketListOutputDirectory;
             LUACOutputDirectoryTextBox.Text = _settings.LuacOutputDirectory;
             LUAOutputDirectoryTextBox.Text = _settings.LuaOutputDirectory;
-            InfToolOutputDirectoryTextBox.Text = _settings.InfToolOutputDirectory;
-            CacheOutputDirectoryTextBox.Text = _settings.CacheOutputDirectory;
             VideoOutputDirectoryTextBox.Text = _settings.VideoOutputDirectory;
+            AudioOutputDirectoryTextBox.Text = _settings.AudioOutputDirectory;
             cpuPercentageTextBox.Text = _settings.CpuPercentage.ToString();
             MappingThreadsTextbox.Text = _settings.MappingThreads.ToString();
             ThemeColorPicker.SelectedColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(_settings.ThemeColor);
@@ -285,23 +284,6 @@ namespace NautilusXP2024
             }
         }
 
-        private void InfToolOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_settings != null && InfToolOutputDirectoryTextBox != null)
-            {
-                _settings.InfToolOutputDirectory = InfToolOutputDirectoryTextBox.Text;
-                SettingsManager.SaveSettings(_settings);
-            }
-        }
-
-        private void CacheOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_settings != null && CacheOutputDirectoryTextBox != null)
-            {
-                _settings.CacheOutputDirectory = CacheOutputDirectoryTextBox.Text;
-                SettingsManager.SaveSettings(_settings);
-            }
-        }
         private void VideoOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_settings != null && VideoOutputDirectoryTextBox != null)
@@ -880,9 +862,31 @@ namespace NautilusXP2024
 
 
 
-        // Placeholder method for the archive creation process
         private async Task<bool> CreateArchiveAsync(string[] itemPaths, ArchiveTypeSetting type)
         {
+            // Check if the "Ignore timestamp.txt" checkbox is enabled and delete the timestamp.txt file if it exists
+            if (CheckBoxArchiveCreatorDeleteTimestamp.IsChecked == true)
+            {
+                foreach (string itemPath in itemPaths)
+                {
+                    string directoryPath = Path.GetDirectoryName(itemPath);
+                    if (directoryPath != null)
+                    {
+                        string timestampFilePath = Path.Combine(directoryPath, "timestamp.txt");
+                        if (File.Exists(timestampFilePath))
+                        {
+                            File.Delete(timestampFilePath);
+                            LogDebugInfo($"timestamp.txt file ignored in directory: {directoryPath}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}timestamp.txt file ignored in directory: {directoryPath}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                    }
+                }
+            }
+
             // Filter out lines starting with "Archive:" and log the start of the archive creation process
             var validItemPaths = itemPaths.Where(p => !p.Trim().StartsWith("Archive Creator:")).ToArray();
             LogDebugInfo($"Archive Creation: Beginning Archive Creation for {validItemPaths.Length} items with type {type}.");
@@ -1152,6 +1156,174 @@ namespace NautilusXP2024
                 }
             }
 
+            // Check if renaming is enabled
+            if (CheckBoxArchiveCreatorRenameCDN.IsChecked == true &&
+                (RadioButtonArchiveCreatorBAR.IsChecked == true || RadioButtonArchiveCreatorSDAT.IsChecked == true || RadioButtonArchiveCreatorSDAT_SHARC.IsChecked == true))
+            {
+                // Get all files in the output directory
+                var outputFiles = Directory.GetFiles(_settings.BarSdatSharcOutputDirectory);
+
+                foreach (var outputFilePath in outputFiles)
+                {
+                    string outputFileName = Path.GetFileName(outputFilePath);
+
+                    // Delete .map files found in the root directory
+                    if (Path.GetExtension(outputFileName).Equals(".map", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            File.Delete(outputFilePath);
+                            LogDebugInfo($"Archive Creation: Deleted {outputFileName}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Deleted {outputFileName}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogDebugInfo($"Archive Creation: Failed to delete {outputFileName}: {ex.Message}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to delete {outputFileName}: {ex.Message}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+
+                        continue; // Skip further processing for this file
+                    }
+
+                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
+
+                    if (Regex.IsMatch(outputFileName, pattern, RegexOptions.IgnoreCase))
+                    {
+                        string newFileName = Regex.Replace(outputFileName, @"(_T\d{3})(\..+)$", "/object$1$2", RegexOptions.IgnoreCase);
+
+                        // Remove '_T000' from the file name if present
+                        newFileName = Regex.Replace(newFileName, @"_T000(?=\..+$)", "", RegexOptions.IgnoreCase);
+
+                        string newFilePath = Path.Combine(_settings.BarSdatSharcOutputDirectory, "Objects", newFileName);
+
+                        // Ensure the target directory exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
+
+                        // Ensure unique filename
+                        int counter = 1;
+                        string uniqueFilePath = newFilePath;
+                        while (File.Exists(uniqueFilePath))
+                        {
+                            uniqueFilePath = Path.Combine(Path.GetDirectoryName(newFilePath), $"{Path.GetFileNameWithoutExtension(newFilePath)}({counter}){Path.GetExtension(newFilePath)}");
+                            counter++;
+                        }
+
+                        try
+                        {
+                            File.Move(outputFilePath, uniqueFilePath);
+                            LogDebugInfo($"Archive Creation: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogDebugInfo($"Archive Creation: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                    }
+                }
+            }
+
+
+            if (CheckBoxArchiveCreatorRenameLocal.IsChecked == true &&
+    (RadioButtonArchiveCreatorBAR.IsChecked == true || RadioButtonArchiveCreatorCORE_SHARC.IsChecked == true))
+            {
+                var outputFiles = Directory.GetFiles(_settings.BarSdatSharcOutputDirectory);
+
+                foreach (var outputFilePath in outputFiles)
+                {
+                    string outputFileName = Path.GetFileName(outputFilePath);
+
+                    // Delete .map files found in the root directory
+                    if (Path.GetExtension(outputFileName).Equals(".map", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            File.Delete(outputFilePath);
+                            LogDebugInfo($"Archive Creation: Deleted {outputFileName}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Deleted {outputFileName}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogDebugInfo($"Archive Creation: Failed to delete {outputFileName}: {ex.Message}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to delete {outputFileName}: {ex.Message}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+
+                        continue; // Skip further processing for this file
+                    }
+
+                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
+
+                    if (Regex.IsMatch(outputFileName, pattern, RegexOptions.IgnoreCase))
+                    {
+                        string uuid = Regex.Match(outputFileName, @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}").Value;
+
+                        // Create the new folder path with the parent OBJECTS folder
+                        string newFolder = Path.Combine(_settings.BarSdatSharcOutputDirectory, "OBJECTS", uuid);
+
+                        // Ensure the target directory exists
+                        Directory.CreateDirectory(newFolder);
+
+                        // Define the new file path
+                        string newFilePath = Path.Combine(newFolder, $"{uuid}{Path.GetExtension(outputFileName)}");
+
+                        // Ensure unique filename
+                        int counter = 1;
+                        string uniqueFilePath = newFilePath;
+                        while (File.Exists(uniqueFilePath))
+                        {
+                            uniqueFilePath = Path.Combine(newFolder, $"{uuid}({counter}){Path.GetExtension(outputFileName)}");
+                            counter++;
+                        }
+
+                        try
+                        {
+                            File.Move(outputFilePath, uniqueFilePath);
+                            LogDebugInfo($"Archive Creation: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogDebugInfo($"Archive Creation: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}");
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}";
+                                ArchiveCreatorTextBox.ScrollToEnd();
+                            });
+                        }
+                    }
+                }
+            }
+
+
+
             // Log the completion and result of the archive creation process
             LogDebugInfo("Archive Creation: Process Success");
             await Dispatcher.InvokeAsync(() =>
@@ -1244,7 +1416,11 @@ namespace NautilusXP2024
 
                         ArchiveUnpackerTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
 
-                        message = $"{newFilesCount} file(s) added, {duplicatesCount} duplicate(s) filtered";
+                        message = $"{newFilesCount} file(s) added";
+                        if (duplicatesCount > 0)
+                        {
+                            message += $", {duplicatesCount} duplicate(s) filtered";
+                        }
                         TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, 2000);
 
                         LogDebugInfo($"Archive Unpacker: {newFilesCount} files added, {duplicatesCount} duplicates filtered from Drag and Drop.");
@@ -1263,6 +1439,7 @@ namespace NautilusXP2024
                 TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, "Drag and Drop operation failed - No Data Present.", 3000);
             }
         }
+
 
 
 
@@ -1865,6 +2042,11 @@ namespace NautilusXP2024
                 }
             }
 
+            File.Delete(Path.Combine(directoryPath, "1BA97CA6"));
+            File.Delete(Path.Combine(directoryPath, "7AB93954"));
+            File.Delete(Path.Combine(directoryPath, "files.txt"));
+            File.Delete(Path.Combine(directoryPath, "__$manifest$__"));
+
             // Remaining logic for scanning and moving directory to "checked" folder
             if (CheckBoxArchiveMapperVerify.IsChecked ?? false)
             {
@@ -1874,6 +2056,7 @@ namespace NautilusXP2024
                 scanStopwatch.Stop();
                 LogDebugInfo($"FileScanner: Scanned directory {directoryPath} (Time Taken: {scanStopwatch.ElapsedMilliseconds}ms)");
             }
+
 
             // Handle directory naming conflicts in 'checked' folder
             bool hasUnmappedFiles = CheckForUnmappedFiles(directoryPath);
@@ -1902,7 +2085,14 @@ namespace NautilusXP2024
                 File.Copy(sourceFile, destinationFile, overwrite: true);
                 LogDebugInfo($"JobReport.txt was copied to '{destinationFile}'.");
             }
+
+            // Call CreateHDKFolderStructure if CheckBoxArchiveMapperOfflineMode is checked
+            if (CheckBoxArchiveMapperOfflineMode.IsChecked ?? false)
+            {
+                await CreateHDKFolderStructure(finalDirectoryPath);
+            }
         }
+
 
 
         private async Task<string> FindAndRenameForSceneFile(string directoryPath, string directoryName, string parentDirectoryPath)
@@ -5484,7 +5674,7 @@ namespace NautilusXP2024
                 case RememberLastTabUsed.SHAChecker:
                     MainTabControl.SelectedIndex = 9; // Index of SHAChecker tab
                     break;
-                case RememberLastTabUsed.Video:
+                case RememberLastTabUsed.MediaTool:
                     MainTabControl.SelectedIndex = 10; // Index of Video tab
                     break;
                 default:
@@ -5807,60 +5997,24 @@ namespace NautilusXP2024
                 string sceneHelperFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dependencies\\scene_file_mapper_helper.txt");
                 string coreDataHelperFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dependencies\\core_data_mapper_helper.txt");
 
-                // HashSet to store existing paths to avoid duplicates
-                HashSet<string> existingPaths = new HashSet<string>();
-
                 // Method to process helper files
                 void ProcessHelperFile(string helperFilePath)
                 {
-                    if (File.Exists(helperFilePath))
+                    using (var writer = new StreamWriter(helperFilePath, true)) // Append mode
                     {
-                        // Read existing content and add to the existingPaths set
-                        var fileLines = File.ReadAllLines(helperFilePath).Select(line => line.Trim()).Where(line => !string.IsNullOrEmpty(line));
-                        foreach (var line in fileLines)
-                        {
-                            existingPaths.Add(line.ToUpper());
-                        }
+                        // Process paths from text boxes
+                        var uniquePaths = new HashSet<string>();
+                        ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, uniquePaths);
+                        ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, uniquePaths, true);
 
-                        using (var writer = new StreamWriter(helperFilePath, true)) // Append mode
+                        foreach (var path in uniquePaths)
                         {
-                            // Process paths from text boxes
-                            var uniquePaths = new HashSet<string>();
-                            ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
-                            ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
-
-                            foreach (var path in uniquePaths)
+                            if (!string.IsNullOrWhiteSpace(path))
                             {
-                                if (!string.IsNullOrWhiteSpace(path))
-                                {
-                                    int hash = BarHash(path);
-                                    string hashString = hash.ToString("X8").ToUpper();
-                                    string newEntry = $"{hashString}:{path.ToUpper()}";
-                                    if (!existingPaths.Contains(newEntry))
-                                    {
-                                        writer.WriteLine(newEntry);
-                                        existingPaths.Add(newEntry); // Add to set to avoid duplicates
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // File doesn't exist, create new file and add paths
-                        using (var writer = new StreamWriter(helperFilePath))
-                        {
-                            var uniquePaths = new HashSet<string>();
-                            ProcessTextBoxForUniquePaths(Path2HashOutputExtraTextBox.Text, existingPaths, uniquePaths);
-                            ProcessTextBoxForUniquePaths(Path2HashInputTextBox.Text, existingPaths, uniquePaths, true);
-
-                            foreach (var path in uniquePaths)
-                            {
-                                if (string.IsNullOrWhiteSpace(path)) continue;
                                 int hash = BarHash(path);
-                                string newEntry = $"{hash.ToString("X8").ToUpper()}:{path.ToUpper()}";
+                                string hashString = hash.ToString("X8").ToUpper();
+                                string newEntry = $"{hashString}:{path.ToUpper()}";
                                 writer.WriteLine(newEntry);
-                                existingPaths.Add(newEntry); // Add to set to avoid duplicates
                             }
                         }
                     }
@@ -5877,20 +6031,21 @@ namespace NautilusXP2024
             }
         }
 
-
-        private void ProcessTextBoxForUniquePaths(string textBoxContent, HashSet<string> existingPaths, HashSet<string> uniquePaths, bool isInput = false)
+        private void ProcessTextBoxForUniquePaths(string textBoxContent, HashSet<string> uniquePaths, bool isInput = false)
         {
             var lines = textBoxContent.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (var line in lines)
             {
                 string path = isInput ? line : line.Contains(":") ? line.Split(':')[1] : line;
                 path = path.Trim();
-                if (!existingPaths.Contains(path.ToUpper()) && !uniquePaths.Contains(path.ToUpper()) && !string.IsNullOrWhiteSpace(path))
+                if (!uniquePaths.Contains(path.ToUpper()) && !string.IsNullOrWhiteSpace(path))
                 {
                     uniquePaths.Add(path.ToUpper());
                 }
             }
         }
+
+
 
 
         private void Path2HashTabItem_Drop(object sender, DragEventArgs e)
@@ -6279,9 +6434,8 @@ namespace NautilusXP2024
             string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
 
             string audioBitrate = "160k"; // Default audio bitrate
-            if (Audio128kRadioButton.IsChecked == true)
-                audioBitrate = "128k";
-            else if (Audio160kRadioButton.IsChecked == true)
+            
+            if (Audio160kRadioButton.IsChecked == true)
                 audioBitrate = "160k";
             else if (Audio256kRadioButton.IsChecked == true)
                 audioBitrate = "256k";
@@ -6354,9 +6508,7 @@ namespace NautilusXP2024
             // Check if the 4:3 aspect ratio option is selected
             bool isFourThree = AspectRatioFourThreeCheckBox.IsChecked == true;
 
-            if (Video240pRadioButton.IsChecked == true)
-                return isFourThree ? ("320:240", "1000k") : ("426:240", "1000k");
-            else if (Video360pRadioButton.IsChecked == true)
+            if (Video360pRadioButton.IsChecked == true)
                 return isFourThree ? ("480:360", "1800k") : ("640:360", "1800k");
             else if (Video480pRadioButton.IsChecked == true)
                 return isFourThree ? ("640:480", "2500k") : ("854:480", "2500k");
@@ -6366,8 +6518,6 @@ namespace NautilusXP2024
                 return isFourThree ? ("960:720", "4500k") : ("1280:720", "4500k");
             else if (Video1080pRadioButton.IsChecked == true)
                 return isFourThree ? ("1440:1080", "6000k") : ("1920:1080", "7000k");
-            else if (Video4KRadioButton.IsChecked == true)
-                return isFourThree ? ("2880:2160", "15000k") : ("3840:2160", "20000k");
             else
                 return isFourThree ? ("768:576", "2500k") : ("1024:576", "2500k"); // Default case if none is selected
         }
@@ -6824,83 +6974,7 @@ namespace NautilusXP2024
                 MessageBox.Show($"Error opening directory: {ex.Message}");
             }
         }
-
-        private void InfToolBrowseButton_Click(object sender, RoutedEventArgs e)
-        {
-            var folderPath = OpenFolderDialog(InfToolOutputDirectoryTextBox.Text);
-            if (folderPath != null)
-            {
-                InfToolOutputDirectoryTextBox.Text = folderPath;
-            }
-        }
-
-        private void InfToolOpenButton_Click(object sender, RoutedEventArgs e)
-        {
-            string outputDirectory = InfToolOutputDirectoryTextBox.Text;
-
-            try
-            {
-                // Check if the directory exists
-                if (!Directory.Exists(outputDirectory))
-                {
-                    // Create the directory if it does not exist
-                    Directory.CreateDirectory(outputDirectory);
-                    MessageBox.Show($"Directory created: {outputDirectory}");
-                }
-
-                // Open the directory in File Explorer
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                {
-                    FileName = outputDirectory,
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            }
-            catch (Exception ex)
-            {
-                // Handle any exceptions (e.g., invalid path or lack of permissions)
-                MessageBox.Show($"Error opening directory: {ex.Message}");
-            }
-        }
-
-        private void CacheBrowseButton_Click(object sender, RoutedEventArgs e)
-        {
-            var folderPath = OpenFolderDialog(CacheOutputDirectoryTextBox.Text);
-            if (folderPath != null)
-            {
-                CacheOutputDirectoryTextBox.Text = folderPath;
-            }
-        }
-
-        private void CacheOpenButton_Click(object sender, RoutedEventArgs e)
-        {
-            string outputDirectory = CacheOutputDirectoryTextBox.Text;
-
-            try
-            {
-                // Check if the directory exists
-                if (!Directory.Exists(outputDirectory))
-                {
-                    // Create the directory if it does not exist
-                    Directory.CreateDirectory(outputDirectory);
-                    MessageBox.Show($"Directory created: {outputDirectory}");
-                }
-
-                // Open the directory in File Explorer
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                {
-                    FileName = outputDirectory,
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            }
-            catch (Exception ex)
-            {
-                // Handle any exceptions (e.g., invalid path or lack of permissions)
-                MessageBox.Show($"Error opening directory: {ex.Message}");
-            }
-        }
-
+     
         private void VideoOpenButton_Click(object sender, RoutedEventArgs e)
         {
             string outputDirectory = VideoOutputDirectoryTextBox.Text;
@@ -6929,6 +7003,45 @@ namespace NautilusXP2024
                 MessageBox.Show($"Error opening directory: {ex.Message}");
             }
         }
+
+        private void AudioBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var folderPath = OpenFolderDialog(AudioOutputDirectoryTextBox.Text);
+            if (folderPath != null)
+            {
+                AudioOutputDirectoryTextBox.Text = folderPath;
+            }
+        }
+
+        private void AudioOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            string outputDirectory = AudioOutputDirectoryTextBox.Text;
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(outputDirectory))
+                {
+                    // Create the directory if it does not exist
+                    Directory.CreateDirectory(outputDirectory);
+                    MessageBox.Show($"Directory created: {outputDirectory}");
+                }
+
+                // Open the directory in File Explorer
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = outputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions (e.g., invalid path or lack of permissions)
+                MessageBox.Show($"Error opening directory: {ex.Message}");
+            }
+        }
+
 
         private void TicketListBrowseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -8632,163 +8745,6 @@ namespace NautilusXP2024
             }
         }
 
-        private void ArchiveUnpackerFastMapCacheButtonClick(object sender, RoutedEventArgs e)
-        {
-            // Open a folder browser dialog to select a folder
-            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string selectedFolder = folderDialog.SelectedPath;
-                // Read the text file next to the exe in the dependencies folder
-                string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                string logFilePath = Path.Combine(Path.GetDirectoryName(exeLocation), "dependencies", "logs_ALL.txt");
-                Dictionary<string, string> fileMappings = new Dictionary<string, string>();
-
-                if (File.Exists(logFilePath))
-                {
-                    foreach (string line in File.ReadAllLines(logFilePath))
-                    {
-                        var parts = line.Split('|');
-                        if (parts.Length == 2)
-                        {
-                            fileMappings[parts[0]] = parts[1];
-                        }
-                    }
-
-                    // Scan the selected folder for _DAT.* files and process them
-                    foreach (string filePath in Directory.GetFiles(selectedFolder, "*_DAT.*", SearchOption.AllDirectories))
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        string id = fileName.Split('_')[0];
-
-                        if (fileMappings.TryGetValue(id, out string mappedPath))
-                        {
-                            string outputDirectory = CacheOutputDirectoryTextBox.Text;
-                            string newFileName = Path.Combine(outputDirectory, mappedPath.Replace('/', Path.DirectorySeparatorChar));
-                            string newFileDirectory = Path.GetDirectoryName(newFileName);
-
-                            if (!Directory.Exists(newFileDirectory))
-                            {
-                                Directory.CreateDirectory(newFileDirectory);
-                            }
-
-                            File.Copy(filePath, newFileName, overwrite: true);
-                        }
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Log file not found.");
-                }
-            }
-        }
-
-        private (byte[]?, string)? ProcessLocalFileDirectly(string filePath)
-        {
-            try
-            {
-                Console.WriteLine($"Starting processing for file: {filePath}");
-
-                // Read the file into a byte array
-                byte[] buffer = File.ReadAllBytes(filePath);
-                Console.WriteLine($"Read {buffer.Length} bytes from file.");
-
-                string filename = Path.GetFileName(filePath);
-                Console.WriteLine($"Filename: {filename}");
-
-                // Initialize the result list
-                List<(byte[]?, string)?> tasksResult = new List<(byte[]?, string)?>();
-
-                // Check the first few bytes to determine if the file should be decrypted
-                if (buffer.Length >= 4)
-                {
-                    Console.WriteLine("File is long enough to process.");
-
-                    if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0x00 && buffer[3] == 0x01)
-                    {
-                        Console.WriteLine("File identified as needing decryption.");
-
-                        // Remove padding prefix
-                        buffer = ToolsImpl.RemovePaddingPrefix(buffer);
-                        Console.WriteLine("Padding prefix removed.");
-
-                        // Decrypt using Blowfish
-                        byte[]? decryptedFileBytes = LIBSECURE.InitiateBlowfishBuffer(buffer, ToolsImpl.MetaDataV1Key, ToolsImpl.MetaDataV1IV, "CTR");
-                        Console.WriteLine(decryptedFileBytes != null ? "Decryption successful." : "Decryption failed.");
-
-                        if (decryptedFileBytes != null)
-                        {
-                            tasksResult.Add((decryptedFileBytes, $"{filename}_Decrypted.bin"));
-                        }
-                    }
-                    else
-                    {
-                        // Unrecognized file format
-                        Console.WriteLine("Unrecognized file format.");
-                    }
-                }
-                else
-                {
-                    // File too short to process
-                    Console.WriteLine("File is too short to process.");
-                }
-
-                // Return the result
-                if (tasksResult.Count > 0 && tasksResult[0].HasValue)
-                {
-                    Console.WriteLine("File processed successfully.");
-                    return tasksResult[0];
-                }
-                else
-                {
-                    Console.WriteLine("No valid task result. Processing failed.");
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred while processing the file: {ex.Message}");
-                return null;
-            }
-        }
-
-        private void ProcessINFFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Open file dialog to select a file
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "All files (*.*)|*.*"; // Allows all file types
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    string inputFilePath = openFileDialog.FileName;
-                    Console.WriteLine($"Selected file: {inputFilePath}");
-
-                    var result = ProcessLocalFileDirectly(inputFilePath);
-
-                    if (result.HasValue)
-                    {
-                        string outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath), result.Value.Item2);
-                        File.WriteAllBytes(outputFilePath, result.Value.Item1);
-                        MessageBox.Show($"File processed successfully. Output saved to {outputFilePath}");
-                        Console.WriteLine($"Output saved to {outputFilePath}");
-                    }
-                    else
-                    {
-                        MessageBox.Show("File processing failed. Please check the console for more details.");
-                        Console.WriteLine("File processing failed. No result returned.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred: {ex.Message}");
-                Console.WriteLine($"An error occurred in ProcessINFFileButton_Click: {ex.Message}");
-            }
-        }
-
         private void ArchiveUnpackerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Get the text from the MappedOutputDirectoryTextBox
@@ -8909,24 +8865,203 @@ namespace NautilusXP2024
             });
         }
 
-        private void CheckBoxArchiveMapperOfflineMode_Checked(object sender, RoutedEventArgs e)
+      
+        // BNKUnpacker Handlers
+        private void BNKUnpackerDragDropHandler(object sender, DragEventArgs e)
         {
-            CheckBoxArchiveMapperAddExtras.IsEnabled = true;
-            CheckBoxArchiveMapperAddExtras.Style = (Style)FindResource("ModernToggleSwitchStyle");
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] droppedItems = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var validFiles = droppedItems.Where(item => File.Exists(item) && Path.GetExtension(item).Equals(".bnk", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            CheckBoxArchiveMapperCreateBuild.IsEnabled = true;
-            CheckBoxArchiveMapperCreateBuild.Style = (Style)FindResource("ModernToggleSwitchStyle");
+                if (validFiles.Any())
+                {
+                    BNKUnpackerTextBox.Text = string.Join(Environment.NewLine, validFiles);
+                    TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, $"{validFiles.Count} items added", 2000);
+                }
+                else
+                {
+                    TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "No valid BNK files found", 2000);
+                }
+            }
         }
 
-        private void CheckBoxArchiveMapperOfflineMode_Unchecked(object sender, RoutedEventArgs e)
+        private void ClickToBrowseHandlerBNKUnpacker(object sender, MouseButtonEventArgs e)
         {
-            CheckBoxArchiveMapperAddExtras.IsEnabled = false;
-            CheckBoxArchiveMapperAddExtras.Style = (Style)FindResource("ModernToggleSwitchStyleGrey");
+            var openFileDialog = new VistaOpenFileDialog
+            {
+                Filter = "BNK files (*.bnk)|*.bnk",
+                Multiselect = true
+            };
 
-            CheckBoxArchiveMapperCreateBuild.IsEnabled = false;
-            CheckBoxArchiveMapperCreateBuild.Style = (Style)FindResource("ModernToggleSwitchStyleGrey");
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var selectedFiles = openFileDialog.FileNames.ToList();
+                if (selectedFiles.Any())
+                {
+                    BNKUnpackerTextBox.Text = string.Join(Environment.NewLine, selectedFiles);
+                    TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, $"{selectedFiles.Count} items added", 2000);
+                }
+                else
+                {
+                    TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "No files selected", 2000);
+                }
+            }
         }
 
+        private async void BNKUnpackerExecuteButtonClick(object sender, RoutedEventArgs e)
+        {
+            LogDebugInfo("BNK Unpacker: Process Started");
+
+            var inputFiles = BNKUnpackerTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (!inputFiles.Any())
+            {
+                TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "No files to unpack", 2000);
+                return;
+            }
+
+            string outputDirectory = AudioOutputDirectoryTextBox.Text;
+            if (string.IsNullOrWhiteSpace(outputDirectory))
+            {
+                TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "Invalid output directory", 2000);
+                return;
+            }
+
+            // Create the output directory if it doesn't exist
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+                TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, $"Created output directory: {outputDirectory}", 2000);
+            }
+
+            foreach (var inputFile in inputFiles)
+            {
+                await UnpackBNKFile(inputFile, outputDirectory);
+            }
+
+            LogDebugInfo("BNK Unpacker: Process Completed");
+            TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "Unpacking completed", 2000);
+        }
+
+        private void ClearBNKUnpackerListHandler(object sender, RoutedEventArgs e)
+        {
+            BNKUnpackerTextBox.Clear();
+            TemporaryMessageHelper.ShowTemporaryMessage(BNKUnpackerDragAreaText, "List cleared", 2000);
+        }
+
+        private void BNKUnpackerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            string outputDirectory = AudioOutputDirectoryTextBox.Text;
+
+            if (!string.IsNullOrEmpty(outputDirectory) && Directory.Exists(outputDirectory))
+            {
+                try
+                {
+                    // Open the directory in File Explorer
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                    {
+                        FileName = outputDirectory,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                    LogDebugInfo($"BNK Unpacker: Opened output directory {outputDirectory}");
+                }
+                catch (Exception ex)
+                {
+                    // Handle any exceptions
+                    LogDebugInfo($"BNK Unpacker: ERROR: Unable to open directory - {ex.Message}");
+                    MessageBox.Show($"Unable to open directory: {ex.Message}");
+                }
+            }
+            else
+            {
+                LogDebugInfo($"BNK Unpacker: ERROR: Directory {outputDirectory} is not set or does not exist.");
+                MessageBox.Show("Output directory is not set or does not exist.");
+            }
+        }
+
+        private async Task UnpackBNKFile(string inputFile, string outputDirectory)
+        {
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFile);
+            string outputSubDirectory = Path.Combine(outputDirectory, fileNameWithoutExtension);
+            Directory.CreateDirectory(outputSubDirectory);
+
+            string vgmstreamCliPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dependencies", "vgmstream", "vgmstream-cli.exe");
+            if (!File.Exists(vgmstreamCliPath))
+            {
+                LogDebugInfo("Error: vgmstream-cli.exe not found");
+                return;
+            }
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = vgmstreamCliPath,
+                Arguments = $"-o \"{Path.Combine(outputSubDirectory, $"{fileNameWithoutExtension}_?s_?n.wav")}\" -i \"{inputFile}\" -S 0",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using (Process process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+
+                AppendTextToBNKUnpackerTextBox($"Output for {Path.GetFileName(inputFile)}:");
+                AppendTextToBNKUnpackerTextBox(output);
+                AppendTextToBNKUnpackerTextBox(error);
+
+                if (process.ExitCode == 0)
+                {
+                    LogDebugInfo($"Unpacked: {inputFile} to {outputSubDirectory}");
+                }
+                else
+                {
+                    LogDebugInfo($"Error unpacking {inputFile}: {error}");
+                }
+            }
+        }
+
+        private void AppendTextToBNKUnpackerTextBox(string text)
+        {
+            // If called from a non-UI thread, use Dispatcher
+            Dispatcher.Invoke(() =>
+            {
+                BNKUnpackerTextBox.AppendText(text + Environment.NewLine);
+
+                // Scrolls the text box to the end after appending text
+                BNKUnpackerTextBox.ScrollToEnd();
+            });
+        }
+
+        private void CheckBoxArchiveCreatorRenameCDN_Checked(object sender, RoutedEventArgs e)
+        {
+            if (CheckBoxArchiveCreatorRenameLocal.IsChecked == true)
+            {
+                CheckBoxArchiveCreatorRenameLocal.IsChecked = false;
+            }
+        }
+
+        private void CheckBoxArchiveCreatorRenameCDN_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Optionally handle when the CDN checkbox is unchecked
+        }
+
+        private void CheckBoxArchiveCreatorRenameLocal_Checked(object sender, RoutedEventArgs e)
+        {
+            if (CheckBoxArchiveCreatorRenameCDN.IsChecked == true)
+            {
+                CheckBoxArchiveCreatorRenameCDN.IsChecked = false;
+            }
+        }
+
+        private void CheckBoxArchiveCreatorRenameLocal_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Optionally handle when the Local checkbox is unchecked
+        }
 
 
     }

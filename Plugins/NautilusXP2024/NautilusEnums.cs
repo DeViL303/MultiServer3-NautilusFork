@@ -29,7 +29,7 @@ namespace NautilusXP2024
         Path2Hash,
         EbootPatcher,
         SHAChecker,
-        Video
+        MediaTool
     }
 
     public enum ArchiveMapperSetting
