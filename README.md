@@ -5,8 +5,8 @@
 This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
 <div align="center">
    
-Download the latest Nautilus Beta Release Here (v1.00 Build 00022) 
-https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip
+Download the latest Nautilus Beta Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip) (v1.00 Build 00022) 
+
 </div>
 
 <div align="center">
