@@ -6,11 +6,11 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 
 <h1 align="center">
-   Latest Compiled Version
+   Latest Nautilus Release
 </h1>
 <div align="center">
    
-Download the latest Nautilus Beta Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip) (v1.00 Build 00022) 
+Download the latest compiled ready to go beta release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip) (v1.00 Build 00022) 
 
 </div>
 
