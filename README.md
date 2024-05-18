@@ -2,16 +2,16 @@
    Multiserver 3 - Nautilus Fork
    </h1>
 
-This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
 
 
 <h1 align="center">
-   Latest Nautilus Toolset Release v1.00 Beta Build 00022
+   Nautilus Toolset Release v1.00 Beta Build 00022
 </h1>
 
 <h2 align="center">
    
-Download [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
+Download Latest [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
 
 </h2>
 
