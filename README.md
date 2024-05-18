@@ -6,11 +6,11 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 
 
 <h1 align="center">
-   Latest Nautilus Release
+   Latest Nautilus Toolset Release
 </h1>
 <div align="center">
    
-Download the latest compiled ready to go beta release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip) (v1.00 Build 00022) 
+Nautilus Toolset is a Windows PC application for interacting with Playstation Home files. Download the latest compiled version [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip) (v1.00 Build 00022) 
 
 </div>
 
