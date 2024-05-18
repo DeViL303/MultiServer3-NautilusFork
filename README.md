@@ -10,9 +10,7 @@ This repository is a fork of AgentDarks447's awesome project, Multiserver3. It s
 </h1>
 
 <h2 align="center">
-   
-# Download [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
-
+Download [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
 </h2>
 
 <div align="center">
