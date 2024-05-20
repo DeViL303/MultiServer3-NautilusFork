@@ -174,7 +174,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 ### Note:
 - The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
 - Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe.
 
 <h2 align="center">
    CDS Decrypter Tool
@@ -190,7 +190,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - This exploit will work as long as the header of the xml has one of several expected byte sequences. 
 - In rare cases where there is a modified header you will need to supply a sha1 for decryption, this can be supplied either in the filename, or typed into SHA1 input box.
 - If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
-- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSDecrypt/ next to the exe.
 
 
 <div align="center">
