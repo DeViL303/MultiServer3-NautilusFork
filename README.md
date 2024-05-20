@@ -77,7 +77,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR or CORE SHARC.
-     - If those conditions are met it will rename the output to suit online CDN use:
+     - If those conditions are met it will rename the output to suit OFFLINE and "Semi Online" use :)
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
 
