@@ -479,6 +479,10 @@ This tab is currently not working fully. Just the sha1 checker portion works
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
 
+### BNK Unpacker
+- Many Home assets used Sonys BNK format to store sound effects. This tool extracts them to WAV. 
+- Basic initial support only at this stage. MP3 mode WIP.
+
 <div align="center">
 
 
