@@ -2,11 +2,24 @@
    Multiserver 3 - Nautilus Fork
    </h1>
 
-This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses on adjustments to the Nautilus plugin and the exploration of experimental features, which may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is recommended and is available [here](https://github.com/GitHubProUser67/MultiServer3).
-<div align="center">
+This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses the development of an addon I call Nautilus, The changes made during the development of Nautilus may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+
+<h1 align="center">
+   What is Nautilus?
+   </h1>
+   
+Nautilus is a Windows GUI that I designed from scratch to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. Due to the nature of Homes millions of files and the many edge cases this application will most likely never be "finished".
 
 
-</div>
+<h1 align="center">
+   Nautilus Toolset Release v1.00 Beta Build 00022
+</h1>
+
+<h2 align="center">
+   
+Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
+
+</h2>
 
 <div align="center">
 
@@ -63,21 +76,19 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
-     - eg: 00000000-00000000-00000000-0000000B/object_T037.sdat
-     - eg: 00000000-00000000-00000000-0000000B/object_T037.bar
-
-
+     - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.sdat
+     - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.bar
 
 #### Rename Objects For Local
 - This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR or CORE SHARC.
-     - If those conditions are met it will rename the output to suit online CDN use:
-     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
-     - eg: 00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
+     - If those conditions are met it will rename the output to suit OFFLINE and "Semi Online" use :)
+     - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
+     - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
 
 #### Ignore Timestamp.txt
-   - Use this setting to force every archive packed in in the current task to take its timestamp from the field above.
+   - Use this setting to force every archive packed in the current task to take its timestamp from the GUI field above.
    - Only really useful if you plan to use FFFFFFF for everything.
    - This setting simply saves the bother of deleting all the timestamp.txt files.   
 
@@ -169,7 +180,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 ### Note:
 - The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
 - Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe.
 
 <h2 align="center">
    CDS Decrypter Tool
@@ -185,7 +196,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - This exploit will work as long as the header of the xml has one of several expected byte sequences. 
 - In rare cases where there is a modified header you will need to supply a sha1 for decryption, this can be supplied either in the filename, or typed into SHA1 input box.
 - If any SHA1 is typed into input box it will override the SHA1 found in filename if one exists.
-- CDS Encrypter tool by default will output to Output/CDS/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSDecrypt/ next to the exe.
 
 
 <div align="center">
@@ -473,6 +484,10 @@ This tab is currently not working fully. Just the sha1 checker portion works
 - Audio bitrate, 160kbps recommended for best balance between filesize and quality. 
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
+
+### BNK Unpacker
+- Many Home assets used Sonys BNK format to store sound effects. This tool extracts them to WAV. 
+- Basic initial support only at this stage. MP3 mode WIP.
 
 <div align="center">
 
