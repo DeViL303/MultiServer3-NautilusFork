@@ -49,6 +49,10 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
+using System.Net.NetworkInformation;
+using Newtonsoft.Json.Linq;
 
 
 namespace NautilusXP2024
@@ -78,6 +82,7 @@ namespace NautilusXP2024
         {
             InitializeComponent();
 
+            InitializeWebView2();
 
             LoggerAccessor.SetupLogger("NautilusXP2024");
 
@@ -103,6 +108,8 @@ namespace NautilusXP2024
 
             logFlushTimer = new System.Threading.Timer(_ => FlushLogBuffer(), null, Timeout.Infinite, Timeout.Infinite);
 
+            PS3IPforFTPTextBox.TextChanged += PS3IPforFTPTextBox_TextChanged;
+
         }
 
         public Color ThemeColor
@@ -119,7 +126,6 @@ namespace NautilusXP2024
             }
         }
 
-
         private void ApplySettingsToUI()
         {
             // Applying settings to UI elements
@@ -128,27 +134,16 @@ namespace NautilusXP2024
             BarSdatSharcOutputDirectoryTextBox.Text = _settings.BarSdatSharcOutputDirectory;
             MappedOutputDirectoryTextBox.Text = _settings.MappedOutputDirectory;
             HcdbOutputDirectoryTextBox.Text = _settings.HcdbOutputDirectory;
-            sqlOutputDirectoryTextBox.Text = _settings.SqlOutputDirectory;
+            SqlOutputDirectoryTextBox.Text = _settings.SqlOutputDirectory;
             TicketListOutputDirectoryTextBox.Text = _settings.TicketListOutputDirectory;
-            LUACOutputDirectoryTextBox.Text = _settings.LuacOutputDirectory;
-            LUAOutputDirectoryTextBox.Text = _settings.LuaOutputDirectory;
+            LuacOutputDirectoryTextBox.Text = _settings.LuacOutputDirectory;
+            LuaOutputDirectoryTextBox.Text = _settings.LuaOutputDirectory;
             VideoOutputDirectoryTextBox.Text = _settings.VideoOutputDirectory;
             AudioOutputDirectoryTextBox.Text = _settings.AudioOutputDirectory;
-            cpuPercentageTextBox.Text = _settings.CpuPercentage.ToString();
-            MappingThreadsTextbox.Text = _settings.MappingThreads.ToString();
+            Rpcs3Dev_hdd0_DirectoryTextBox.Text = _settings.RPCS3OutputDirectory;
+            PS3IPforFTPTextBox.Text = _settings.PS3IPforFTP;
+            PS3TitleIDTextBox.Text = _settings.PS3TitleID;
             ThemeColorPicker.SelectedColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(_settings.ThemeColor);
-            switch (_settings.FileOverwriteBehavior)
-            {
-                case OverwriteBehavior.Skip:
-                    RadioButtonFileSkip.IsChecked = true;
-                    break;
-                case OverwriteBehavior.Rename:
-                    RadioButtonFileRename.IsChecked = true;
-                    break;
-                case OverwriteBehavior.Overwrite:
-                    RadioButtonFileOverwrite.IsChecked = true;
-                    break;
-            };
             switch (_settings.ArchiveTypeSettingRem)
             {
                 case ArchiveTypeSetting.BAR:
@@ -196,8 +191,575 @@ namespace NautilusXP2024
                     break;
             }
 
+            ToggleSwitchOfflinePshome.IsChecked = _settings.IsOfflineMode; // Apply offline mode setting
+
             SelectLastUsedTab(_settings.LastTabUsed);
         }
+
+        private async void InitializeWebView2()
+        {
+            var environment = await CoreWebView2Environment.CreateAsync(null, null, new CoreWebView2EnvironmentOptions("--disable-web-security --user-data-dir=C:\\temp"));
+            await WebView2Control.EnsureCoreWebView2Async(environment);
+
+            if (ToggleSwitchOfflinePshome.IsChecked == false)
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string htmlFilePath = Path.Combine(exeDirectory, "dependencies", "psho.me", "pshome_index.html");
+
+                if (File.Exists(htmlFilePath))
+                {
+                    string htmlFileUri = new Uri(htmlFilePath).AbsoluteUri;
+                    WebView2Control.Source = new Uri(htmlFileUri);
+                }
+                else
+                {
+                    string customHtml = @"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {
+                        background-color: #111111;
+                        color: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        font-family: Arial, sans-serif;
+                        text-align: center;
+                        margin: 0;
+                    }
+                    .container {
+                        max-width: 600px;
+                        padding: 20px;
+                        border: 2px solid #fff;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+                    }
+                    h1 {
+                        font-size: 24px;
+                        margin-bottom: 10px;
+                    }
+                    p {
+                        font-size: 16px;
+                        line-height: 1.5;
+                    }
+                    a {
+                        color: #00f;
+                        text-decoration: underline;
+                        cursor: pointer;
+                    }
+                </style>
+                <script>
+                    function openGoogleDrive() {
+                        window.chrome.webview.postMessage('openGoogleDrive');
+                    }
+                    function openGithub() {
+                        window.chrome.webview.postMessage('openGithub');
+                    }
+                </script>
+            </head>
+            <body>
+                <div class='container'>
+                    <h1>Files Not Found!</h1>
+                    <p>Local database files could not be found.</p>
+                    <p>To use a local catalogue, you can download <a onclick='openGoogleDrive()'>THIS</a> 2.3GB database addon first or provide your own database.</p>
+                    <p>Please ensure the extracted files are placed in the 'dependencies/psho.me/' directory.</p>
+                    <p>For information on how to create your own database, See Multiserver 3 Nautilus Fork on Gihub <a onclick='openGithub()'>HERE</a></p>
+                </div>
+            </body>
+            </html>";
+
+                    WebView2Control.NavigateToString(customHtml);
+                }
+            }
+            else
+            {
+                WebView2Control.Source = new Uri("http://psho.me/pshome_index.html");
+            }
+
+            WebView2Control.ZoomFactor = 0.80;
+            WebView2Control.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+        }
+
+        private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            var message = e.TryGetWebMessageAsString();
+            if (message == "openGoogleDrive")
+            {
+                OpenUrlInDefaultBrowser("https://drive.google.com/file/d/1PLTA0MLximW84DQmZhep8vZpnHiQbT4R/view?usp=sharing");
+            }
+            else if (message == "openGithub")
+            {
+                OpenUrlInDefaultBrowser("https://github.com/DeViL303/MultiServer3-NuatilusFork");
+            }
+            else
+            {
+                try
+                {
+                    var jsonMessage = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
+                    if (jsonMessage != null && jsonMessage.ContainsKey("action"))
+                    {
+                        if (jsonMessage["action"].ToString() == "sendToPS3" && jsonMessage.ContainsKey("data") && jsonMessage.ContainsKey("index"))
+                        {
+                            var listToSend = JsonConvert.SerializeObject(jsonMessage["data"]);
+                            int listNumber = Convert.ToInt32(jsonMessage["index"]);
+                            SaveListToFileAsync(listToSend, listNumber);
+
+                            // Send notification to web content
+                            var notificationMessage = JsonConvert.SerializeObject(new { action = "showNotification", text = "List sent to PS3" });
+                            WebView2Control.CoreWebView2.PostWebMessageAsString(notificationMessage);
+                        }
+                        else if (jsonMessage["action"].ToString() == "saveAsSQL" && jsonMessage.ContainsKey("data") && jsonMessage.ContainsKey("index"))
+                        {
+                            var listToSend = JsonConvert.SerializeObject(jsonMessage["data"]);
+                            int listNumber = Convert.ToInt32(jsonMessage["index"]);
+                            SaveListToFileAsSQL(listToSend, listNumber);
+                        }
+                        else if (jsonMessage["action"].ToString() == "sendToRPCS3" && jsonMessage.ContainsKey("data") && jsonMessage.ContainsKey("index"))
+                        {
+                            var listToSend = JsonConvert.SerializeObject(jsonMessage["data"]);
+                            int listNumber = Convert.ToInt32(jsonMessage["index"]);
+                            SaveListToFileRPCS3Async(listToSend, listNumber);
+
+                            // Send notification to web content
+                            var notificationMessage = JsonConvert.SerializeObject(new { action = "showNotification", text = "List sent to RPCS3" });
+                            WebView2Control.CoreWebView2.PostWebMessageAsString(notificationMessage);
+                        }
+                        else if (jsonMessage["action"].ToString() == "saveAsXML" && jsonMessage.ContainsKey("data") && jsonMessage.ContainsKey("index"))
+                        {
+                            var listToSend = JsonConvert.SerializeObject(jsonMessage["data"]);
+                            int listNumber = Convert.ToInt32(jsonMessage["index"]);
+                            SaveListToFileAsXML(listToSend, listNumber);
+                        }
+                        else if (jsonMessage["action"].ToString() == "saveAsPKG" && jsonMessage.ContainsKey("data") && jsonMessage.ContainsKey("index"))
+                        {
+                            var listToSend = JsonConvert.SerializeObject(jsonMessage["data"]);
+                            int listNumber = Convert.ToInt32(jsonMessage["index"]);
+                            SaveListToFileAsPKG(listToSend, listNumber);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to process message: {ex.Message}");
+                }
+            }
+        }
+        private async void SaveListToFileAsPKG(string listJson, int listNumber)
+        {
+            try
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string outputDir = Path.Combine(exeDirectory, "Output", "Catalogue");
+                ShowNotification("Creating pkg!", 2);
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                string filePath = Path.Combine(outputDir, $"UserList_{listNumber}.json");
+
+                var updatedJson = ProcessJsonAndAddRewardType(listJson);
+
+                File.WriteAllText(filePath, updatedJson);
+
+                GenerateSqlFromJson(updatedJson, outputDir);
+
+                string sqlFilePath = Path.Combine(outputDir, "POSTINSTALL.SQL");
+
+                // Retrieve the dynamic value from the TextBox
+                string ps3TitleID = PS3TitleIDTextBox.Text;
+
+                // Copy the SQL file to the designated directory
+                string pkgDirectory = Path.Combine(exeDirectory, "dependencies", "create_pkg", "temp", "dev_hdd0", "game", ps3TitleID, "USRDIR", "OBJECTCATALOGUE");
+                if (!Directory.Exists(pkgDirectory))
+                {
+                    Directory.CreateDirectory(pkgDirectory);
+                }
+
+                string destinationSqlFilePath = Path.Combine(pkgDirectory, "POSTINSTALL.SQL");
+                File.Copy(sqlFilePath, destinationSqlFilePath, true);
+
+                // Run the executable to create the PKG file
+                string exePath = Path.Combine(exeDirectory, "dependencies", "create_pkg", "pkg_custom.exe");
+                string contentId = $"EP9000-{ps3TitleID}_00-HOME000000000001";
+                string pkgFileName = $"PSHOME_ITEM_LIST_{listNumber}.pkg";
+                string pkgOutputPath = Path.Combine(outputDir, pkgFileName);
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = $"--contentid {contentId} \"{Path.Combine(exeDirectory, "dependencies", "create_pkg", "temp")}\" \"{pkgOutputPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                var process = new Process { StartInfo = processStartInfo };
+                process.Start();
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    MessageBox.Show($"Failed to create PKG file: {error}");
+                    return;
+                }
+
+                // Read the PKG file and encode it as base64
+                byte[] pkgFileBytes = File.ReadAllBytes(pkgOutputPath);
+                string base64PkgFile = Convert.ToBase64String(pkgFileBytes);
+                var downloadMessage = new { action = "downloadPkgFile", fileName = pkgFileName, fileContent = base64PkgFile };
+                var downloadMessageJson = JsonConvert.SerializeObject(downloadMessage);
+
+                WebView2Control.CoreWebView2.PostWebMessageAsString(downloadMessageJson);
+                ShowNotification("Pkg Created!", 2);
+                Console.WriteLine($"Successfully created the PKG file at {pkgOutputPath}");
+
+                // Rename the POSTINSTALL.SQL file to include the list number
+                string renamedSqlFilePath = Path.Combine(outputDir, $"POSTINSTALL_{listNumber}.SQL");
+                if (File.Exists(renamedSqlFilePath))
+                {
+                    File.Delete(renamedSqlFilePath);
+                }
+                File.Move(sqlFilePath, renamedSqlFilePath);
+
+                // Delete the temp folder after PKG creation
+                string tempFolderPath = Path.Combine(exeDirectory, "dependencies", "create_pkg", "temp");
+                if (Directory.Exists(tempFolderPath))
+                {
+                    Directory.Delete(tempFolderPath, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save the list as PKG: {ex.Message}");
+            }
+        }
+
+
+
+        private async void SaveListToFileAsSQL(string listJson, int listNumber)
+        {
+            try
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string outputDir = Path.Combine(exeDirectory, "Output", "Catalogue");
+
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                string filePath = Path.Combine(outputDir, $"UserList_{listNumber}.json");
+
+                var updatedJson = ProcessJsonAndAddRewardType(listJson);
+
+                File.WriteAllText(filePath, updatedJson);
+
+                GenerateSqlFromJson(updatedJson, outputDir);
+
+                string sqlFilePath = Path.Combine(outputDir, "POSTINSTALL.SQL");
+
+                // Read the SQL file and encode it as base64
+                byte[] sqlFileBytes = File.ReadAllBytes(sqlFilePath);
+                string base64SqlFile = Convert.ToBase64String(sqlFileBytes);
+                var downloadMessage = new { action = "downloadSqlFile", fileName = "POSTINSTALL.SQL", fileContent = base64SqlFile };
+                var downloadMessageJson = JsonConvert.SerializeObject(downloadMessage);
+
+                WebView2Control.CoreWebView2.PostWebMessageAsString(downloadMessageJson);
+
+                // Rename the POSTINSTALL.SQL file to include the list number after download
+                string renamedSqlFilePath = Path.Combine(outputDir, $"POSTINSTALL_{listNumber}.SQL");
+                if (File.Exists(renamedSqlFilePath))
+                {
+                    File.Delete(renamedSqlFilePath);
+                }
+                File.Move(sqlFilePath, renamedSqlFilePath);
+                ShowNotification("Created SQL!", 2); // Show notification for 5 seconds
+                Console.WriteLine($"Successfully saved the list to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save the list: {ex.Message}");
+            }
+        }
+
+        private void OpenUrlInDefaultBrowser(string url)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open URL: {ex.Message}");
+            }
+        }
+
+        private async void SaveListToFileAsync(string listJson, int listNumber)
+        {
+            try
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string outputDir = Path.Combine(exeDirectory, "Output", "Catalogue");
+
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                string filePath = Path.Combine(outputDir, $"UserList_{listNumber}.json");
+
+                var updatedJson = ProcessJsonAndAddRewardType(listJson);
+
+                File.WriteAllText(filePath, updatedJson);
+
+                GenerateSqlFromJson(updatedJson, outputDir);
+
+                string sqlFilePath = Path.Combine(outputDir, "POSTINSTALL.SQL");
+
+                string ipAddress = PS3IPforFTPTextBox.Text;
+                if (!string.IsNullOrEmpty(ipAddress))
+                {
+                    // Use the text from the GUI textbox to set the folder name dynamically
+                    string titleID = PS3TitleIDTextBox.Text;
+                    string ftpUploadUri = $"ftp://{ipAddress}/dev_hdd0/game/{titleID}/USRDIR/OBJECTCATALOGUE/POSTINSTALL.SQL";
+                    await UploadFileToFtpAsync(ftpUploadUri, sqlFilePath);
+                }
+
+                // Rename the POSTINSTALL.SQL file to include the list number after sending to FTP
+                string renamedSqlFilePath = Path.Combine(outputDir, $"POSTINSTALL_{listNumber}.SQL");
+                if (File.Exists(renamedSqlFilePath))
+                {
+                    File.Delete(renamedSqlFilePath);  // Delete the existing file if it already exists
+                }
+                if (File.Exists(sqlFilePath))
+                {
+                    File.Move(sqlFilePath, renamedSqlFilePath);
+                }
+                ShowNotification("Sent to PS3!", 2); // Show notification for 5 seconds
+                Console.WriteLine($"Successfully saved the list to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save the list: {ex.Message}");
+            }
+        }
+
+        private async void SaveListToFileRPCS3Async(string listJson, int listNumber)
+        {
+            try
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string outputDir = Path.Combine(exeDirectory, "Output", "Catalogue");
+
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                string filePath = Path.Combine(outputDir, $"UserList_{listNumber}.json");
+
+                var updatedJson = ProcessJsonAndAddRewardType(listJson);
+
+                File.WriteAllText(filePath, updatedJson);
+
+                GenerateSqlFromJson(updatedJson, outputDir);
+
+                string sqlFilePath = Path.Combine(outputDir, "POSTINSTALL.SQL");
+
+                // Get the PS3TitleID from the TextBox
+                string ps3TitleID = PS3TitleIDTextBox.Text;
+
+                string rpcs3Dir = Rpcs3Dev_hdd0_DirectoryTextBox.Text;
+                if (!string.IsNullOrEmpty(rpcs3Dir))
+                {
+                    string destinationFilePath = Path.Combine(rpcs3Dir, "game", ps3TitleID, "USRDIR", "OBJECTCATALOGUE", "POSTINSTALL.SQL");
+
+                    // Ensure the directory exists
+                    string destinationDir = Path.GetDirectoryName(destinationFilePath);
+                    if (!Directory.Exists(destinationDir))
+                    {
+                        Directory.CreateDirectory(destinationDir);
+                    }
+
+                    // Copy the SQL file to the destination directory
+                    File.Copy(sqlFilePath, destinationFilePath, true);
+                    ShowNotification("Sent to RPCS3!", 2); // Show notification for 5 seconds
+                    Console.WriteLine($"Successfully copied POSTINSTALL.SQL to {destinationFilePath}");
+                }
+
+                // Rename the POSTINSTALL.SQL file to include the list number after copying to RPCS3 folder
+                string renamedSqlFilePath = Path.Combine(outputDir, $"POSTINSTALL_{listNumber}.SQL");
+                if (File.Exists(renamedSqlFilePath))
+                {
+                    File.Delete(renamedSqlFilePath);  // Delete the existing file if it already exists
+                }
+                if (File.Exists(sqlFilePath))
+                {
+                    File.Move(sqlFilePath, renamedSqlFilePath);
+                }
+
+                Console.WriteLine($"Successfully saved the list to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save the list: {ex.Message}");
+            }
+        }
+
+
+        private string ProcessJsonAndAddRewardType(string listJson)
+        {
+            var folderNames = ExtractFolderNames(listJson);
+            var rewardAndCategories = GetRewardTypesAndCategoriesFromXml(folderNames);
+            var jsonArray = JArray.Parse(listJson);
+
+            foreach (var item in jsonArray)
+            {
+                var folderName = item["folderName"]?.ToString();
+                if (folderName != null && rewardAndCategories.TryGetValue(folderName, out var rewardAndCategory))
+                {
+                    item["rewardType"] = rewardAndCategory.RewardType;
+                    item["category"] = rewardAndCategory.Category;
+                }
+            }
+
+            return jsonArray.ToString();
+        }
+
+
+        private List<string> ExtractFolderNames(string listJson)
+        {
+            var folderNames = new List<string>();
+            var jsonArray = JArray.Parse(listJson);
+
+            foreach (var item in jsonArray)
+            {
+                var folderName = item["folderName"]?.ToString();
+                if (!string.IsNullOrEmpty(folderName))
+                {
+                    folderNames.Add(folderName);
+                }
+            }
+
+            return folderNames;
+        }
+
+        private Dictionary<string, (string RewardType, string Category)> GetRewardTypesAndCategoriesFromXml(List<string> folderNames)
+        {
+            var rewardAndCategories = new Dictionary<string, (string RewardType, string Category)>();
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string xmlFilePath = Path.Combine(exeDirectory, "dependencies", "psho.me", "categories", "All_Items.xml");
+
+            if (File.Exists(xmlFilePath))
+            {
+                var lines = File.ReadAllLines(xmlFilePath);
+
+                foreach (var line in lines)
+                {
+                    var parts = line.Split('|');
+                    if (parts.Length >= 9)
+                    {
+                        var folderName = parts[0].Trim();
+                        if (folderNames.Contains(folderName))
+                        {
+                            var category = parts[5].Trim();  // Assuming the 6th part is the category
+                            var rewardType = parts[8].Trim(); // Assuming the 9th part is the reward type
+                            rewardAndCategories[folderName] = (rewardType, category);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("All_Items.xml file not found.");
+            }
+
+            return rewardAndCategories;
+        }
+
+        private void GenerateSqlFromJson(string listJson, string outputDir)
+        {
+            var jsonArray = JArray.Parse(listJson);
+            var premiumUuids = new List<string>();
+            var rewardUuids = new List<string>();
+
+            foreach (var item in jsonArray)
+            {
+                var folderName = item["folderName"]?.ToString();
+                var rewardType = item["rewardType"]?.ToString();
+
+                if (!string.IsNullOrEmpty(folderName) && !string.IsNullOrEmpty(rewardType))
+                {
+                    if (rewardType == "NOT-RWRD")
+                    {
+                        premiumUuids.Add(folderName);
+                    }
+                    else if (rewardType == "LUA-REWARD" || rewardType == "AUTO-REWARD")
+                    {
+                        rewardUuids.Add(folderName);
+                    }
+                }
+            }
+
+            var sqlScript = new StringBuilder();
+            sqlScript.AppendLine("-- To support the new heat fields in furniture items, we must patch old active items so that their heat is 22 for all heat fields. --");
+            sqlScript.AppendLine("-- This is required for sorting furniture items by heat value. --");
+            sqlScript.AppendLine("CREATE TEMPORARY TABLE TempActives");
+            sqlScript.AppendLine("(");
+            sqlScript.AppendLine("\tObjectIndex\tINTEGER");
+            sqlScript.AppendLine(");");
+            sqlScript.AppendLine("INSERT INTO TempActives SELECT ObjectIndex FROM Metadata WHERE KeyName == 'ACTIVE' EXCEPT SELECT ObjectIndex FROM Metadata WHERE KeyName == 'MAIN_HEAT';");
+            sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"MAIN_HEAT\", 22 FROM TempActives;");
+            sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"HOST_HEAT\", 22 FROM TempActives;");
+            sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"VRAM_HEAT\", 22 FROM TempActives;");
+            sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"PPU_HEAT\", 22 FROM TempActives;");
+            sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"NET_HEAT\", 22 FROM TempActives;");
+            sqlScript.AppendLine("DROP TABLE TempActives;");
+            sqlScript.AppendLine("-- DO NOT EDIT ANYTHING ABOVE THIS LINE --");
+            sqlScript.AppendLine("-- ALL ITEMS GO INTO STORAGE. YOU CAN TAKE THEM OUT OF STORAGE IN-GAME AND WILL REMAIN LIKE THAT. --");
+            sqlScript.AppendLine("-- PREMIUM TABLE --");
+
+            int entitlementIndex = 1;
+            foreach (var uuid in premiumUuids)
+            {
+                sqlScript.AppendLine($"UPDATE Objects SET EntitlementIndex = (SELECT MAX(EntitlementIndex) FROM Entitlements) + {entitlementIndex}, InventoryEntryType = '2', UserLocation = '1' WHERE ObjectId = '{uuid}';");
+                entitlementIndex++;
+            }
+
+            sqlScript.AppendLine("-- REWARD TABLE --");
+            int rewardIndex = 1;
+            foreach (var uuid in rewardUuids)
+            {
+                sqlScript.AppendLine($"UPDATE Objects SET RewardIndex = (SELECT MAX(RewardIndex) FROM Rewards) + {rewardIndex}, InventoryEntryType = '1', UserLocation = '1' WHERE ObjectId = '{uuid}';");
+                rewardIndex++;
+            }
+
+            string sqlFilePath = Path.Combine(outputDir, "POSTINSTALL.SQL");
+            File.WriteAllText(sqlFilePath, sqlScript.ToString());
+
+            Console.WriteLine($"Successfully generated the SQL script to {sqlFilePath}");
+        }
+
+
+
+        private void ToggleSwitchOfflinePshome_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            // Update the setting based on the toggle switch state
+            _settings.IsOfflineMode = ToggleSwitchOfflinePshome.IsChecked == true;
+
+            // Save settings to persist the change
+            SettingsManager.SaveSettings(_settings);
+
+        }
+
+
+
 
         public static Dictionary<string, string> SceneFileMappings { get; private set; } = new Dictionary<string, string>();
 
@@ -241,7 +803,7 @@ namespace NautilusXP2024
 
         private void HcdbOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && HcdbOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
                 _settings.HcdbOutputDirectory = HcdbOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
@@ -250,16 +812,16 @@ namespace NautilusXP2024
 
         private void SqlOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && sqlOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
-                _settings.SqlOutputDirectory = sqlOutputDirectoryTextBox.Text;
+                _settings.SqlOutputDirectory = SqlOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
 
         private void TicketListOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && TicketListOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
                 _settings.TicketListOutputDirectory = TicketListOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
@@ -268,30 +830,67 @@ namespace NautilusXP2024
 
         private void LuacOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && LUACOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
-                _settings.LuacOutputDirectory = LUACOutputDirectoryTextBox.Text;
+                _settings.LuacOutputDirectory = LuacOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
 
         private void LuaOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && LUAOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
-                _settings.LuaOutputDirectory = LUAOutputDirectoryTextBox.Text;
+                _settings.LuaOutputDirectory = LuaOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
 
         private void VideoOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_settings != null && VideoOutputDirectoryTextBox != null)
+            if (_settings != null)
             {
                 _settings.VideoOutputDirectory = VideoOutputDirectoryTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
             }
         }
+
+        private void AudioOutputDirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.AudioOutputDirectory = AudioOutputDirectoryTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void Rpcs3Dev_hdd0_DirectoryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.RPCS3OutputDirectory = Rpcs3Dev_hdd0_DirectoryTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void PS3IPforFTPTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.PS3IPforFTP = PS3IPforFTPTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void PS3TitleIDTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.PS3TitleID = PS3TitleIDTextBox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
 
         private void RadioButtonFileSkip_Checked(object sender, RoutedEventArgs e)
         {
@@ -562,27 +1161,6 @@ namespace NautilusXP2024
 
             return bImg;
         }
-
-
-
-        private void CpuPercentageTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_settings != null && int.TryParse(cpuPercentageTextBox.Text, out int cpuPercentage))
-            {
-                _settings.CpuPercentage = cpuPercentage;
-                SettingsManager.SaveSettings(_settings);
-            }
-        }
-
-        private void MappingThreadsTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_settings != null && int.TryParse(MappingThreadsTextbox.Text, out int MappingThreads))
-            {
-                _settings.MappingThreads = MappingThreads;
-                SettingsManager.SaveSettings(_settings);
-            }
-        }
-
 
         private void ClearListHandler(object sender, RoutedEventArgs e)
         {
@@ -2042,10 +2620,61 @@ namespace NautilusXP2024
                 }
             }
 
-            File.Delete(Path.Combine(directoryPath, "1BA97CA6"));
-            File.Delete(Path.Combine(directoryPath, "7AB93954"));
-            File.Delete(Path.Combine(directoryPath, "files.txt"));
-            File.Delete(Path.Combine(directoryPath, "__$manifest$__"));
+            string file1 = Path.Combine(directoryPath, "1BA97CA6");
+            string file2 = Path.Combine(directoryPath, "7AB93954");
+            string targetFile1 = Path.Combine(directoryPath, "__$manifest$__");
+            string targetFile2 = Path.Combine(directoryPath, "files.txt");
+
+            if (CheckBoxArchiveMapperDeleteFilestxt.IsChecked == true)
+            {
+                // Delete the files if the checkbox is checked
+                if (File.Exists(file1)) File.Delete(file1);
+                if (File.Exists(file2)) File.Delete(file2);
+                if (File.Exists(targetFile1)) File.Delete(targetFile1);
+                if (File.Exists(targetFile2)) File.Delete(targetFile2);
+            }
+            else
+            {
+                // Rename the files if the checkbox is not checked and they exist
+                if (File.Exists(file1))
+                {
+                    if (File.Exists(targetFile1)) File.Delete(targetFile1); // Overwrite if it exists
+                    File.Move(file1, targetFile1);
+                }
+                if (File.Exists(file2))
+                {
+                    if (File.Exists(targetFile2)) File.Delete(targetFile2); // Overwrite if it exists
+                    File.Move(file2, targetFile2);
+                }
+            }
+
+            // New feature: Patch .MDL files if CheckBoxArchiveMapperPatchMDLs is enabled
+            if (CheckBoxArchiveMapperPatchMDLs.IsChecked == true)
+            {
+                // Patch .MDL files
+                var mdlFiles = Directory.GetFiles(directoryPath, "*.MDL", SearchOption.AllDirectories);
+                foreach (var mdlFile in mdlFiles)
+                {
+                    byte[] fileBytes = File.ReadAllBytes(mdlFile);
+                    if (fileBytes.Length > 4 && fileBytes[3] == 0x04) // 4th byte index is 3 (0-based)
+                    {
+                        fileBytes[3] = 0x03;
+                        File.WriteAllBytes(mdlFile, fileBytes);
+                    }
+                }
+
+                // Patch .scene files
+                var sceneFiles = Directory.GetFiles(directoryPath, "*.scene", SearchOption.AllDirectories);
+                foreach (var sceneFile in sceneFiles)
+                {
+                    string fileContent = File.ReadAllText(sceneFile);
+                    if (fileContent.Contains("file:///"))
+                    {
+                        fileContent = fileContent.Replace("file:///", "file://");
+                        File.WriteAllText(sceneFile, fileContent);
+                    }
+                }
+            }
 
             // Remaining logic for scanning and moving directory to "checked" folder
             if (CheckBoxArchiveMapperVerify.IsChecked ?? false)
@@ -2056,7 +2685,6 @@ namespace NautilusXP2024
                 scanStopwatch.Stop();
                 LogDebugInfo($"FileScanner: Scanned directory {directoryPath} (Time Taken: {scanStopwatch.ElapsedMilliseconds}ms)");
             }
-
 
             // Handle directory naming conflicts in 'checked' folder
             bool hasUnmappedFiles = CheckForUnmappedFiles(directoryPath);
@@ -2092,6 +2720,7 @@ namespace NautilusXP2024
                 await CreateHDKFolderStructure(finalDirectoryPath);
             }
         }
+
 
 
 
@@ -3572,7 +4201,7 @@ namespace NautilusXP2024
             LogDebugInfo("HCDB Decryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(HCDBDecrypterDragAreaText, "Processing...", 2000);
 
-            string outputDirectory = sqlOutputDirectoryTextBox.Text;
+            string outputDirectory = SqlOutputDirectoryTextBox.Text;
             if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
@@ -4961,7 +5590,7 @@ namespace NautilusXP2024
         private void LUACompilerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Assuming LUACOutputDirectoryTextBox is the name of your TextBox containing the output directory path
-            string outputDirectory = LUACOutputDirectoryTextBox.Text;
+            string outputDirectory = LuacOutputDirectoryTextBox.Text;
 
             if (!string.IsNullOrEmpty(outputDirectory) && Directory.Exists(outputDirectory))
             {
@@ -5456,7 +6085,7 @@ namespace NautilusXP2024
         private void LUACDecompilerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Assuming LUAOutputDirectoryTextBox is the name of your TextBox containing the output directory path
-            string outputDirectory = LUAOutputDirectoryTextBox.Text;
+            string outputDirectory = LuaOutputDirectoryTextBox.Text;
 
             if (!string.IsNullOrEmpty(outputDirectory) && Directory.Exists(outputDirectory))
             {
@@ -6434,7 +7063,7 @@ namespace NautilusXP2024
             string outputFilePath = $"{outputDirectory}\\{fileNameWithoutExtension}_{selectedResolution.Replace(':', 'x')}.mp4";
 
             string audioBitrate = "160k"; // Default audio bitrate
-            
+
             if (Audio160kRadioButton.IsChecked == true)
                 audioBitrate = "160k";
             else if (Audio256kRadioButton.IsChecked == true)
@@ -6447,8 +7076,9 @@ namespace NautilusXP2024
             if (VideoAudioBoost6CheckBox.IsChecked == true) audioBoost += 6;
             string audioFilter = audioBoost > 0 ? $",volume={audioBoost}dB" : "";
 
-            string videoCodec = VideoAVCh264CheckBox.IsChecked ?? false ? "libx264" : "mpeg4";
-            string additionalArgs = VideoAVCh264CheckBox.IsChecked ?? false ? "-profile:v high -preset slow" : "";
+            // Set video codec and additional arguments for MPEG-4
+            string videoCodec = "mpeg4";
+            string additionalArgs = "";
             string aspectRatio = AspectRatioFourThreeCheckBox.IsChecked ?? false ? "4/3" : "16/9";
 
             string ffmpegArguments = $"-i \"{filePath}\" " +
@@ -6501,7 +7131,7 @@ namespace NautilusXP2024
         }
 
 
-        
+
 
         private (string resolution, string bitrate) GetResolutionAndBitrate()
         {
@@ -6937,18 +7567,18 @@ namespace NautilusXP2024
             }
         }
 
-        private void sqlBrowseButton_Click(object sender, RoutedEventArgs e)
+        private void SqlBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var folderPath = OpenFolderDialog(sqlOutputDirectoryTextBox.Text);
+            var folderPath = OpenFolderDialog(SqlOutputDirectoryTextBox.Text);
             if (folderPath != null)
             {
-                sqlOutputDirectoryTextBox.Text = folderPath;
+                SqlOutputDirectoryTextBox.Text = folderPath;
             }
         }
 
-        private void sqlOpenButton_Click(object sender, RoutedEventArgs e)
+        private void SqlOpenButton_Click(object sender, RoutedEventArgs e)
         {
-            string outputDirectory = sqlOutputDirectoryTextBox.Text;
+            string outputDirectory = SqlOutputDirectoryTextBox.Text;
 
             try
             {
@@ -7042,6 +7672,44 @@ namespace NautilusXP2024
             }
         }
 
+        private void RPCS3BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var folderPath = OpenFolderDialog(Rpcs3Dev_hdd0_DirectoryTextBox.Text);
+            if (folderPath != null)
+            {
+                Rpcs3Dev_hdd0_DirectoryTextBox.Text = folderPath;
+            }
+        }
+
+        private void RPCS3OpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            string outputDirectory = Rpcs3Dev_hdd0_DirectoryTextBox.Text;
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(outputDirectory))
+                {
+                    // Create the directory if it does not exist
+                    Directory.CreateDirectory(outputDirectory);
+                    MessageBox.Show($"Directory created: {outputDirectory}");
+                }
+
+                // Open the directory in File Explorer
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = outputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions (e.g., invalid path or lack of permissions)
+                MessageBox.Show($"Error opening directory: {ex.Message}");
+            }
+        }
+
 
         private void TicketListBrowseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -7081,18 +7749,18 @@ namespace NautilusXP2024
             }
         }
 
-        private void LUACBrowseButton_Click(object sender, RoutedEventArgs e)
+        private void LuacBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var folderPath = OpenFolderDialog(LUACOutputDirectoryTextBox.Text);
+            var folderPath = OpenFolderDialog(LuacOutputDirectoryTextBox.Text);
             if (folderPath != null)
             {
-                LUACOutputDirectoryTextBox.Text = folderPath;
+                LuacOutputDirectoryTextBox.Text = folderPath;
             }
         }
 
-        private void LUACOpenButton_Click(object sender, RoutedEventArgs e)
+        private void LuacOpenButton_Click(object sender, RoutedEventArgs e)
         {
-            string outputDirectory = LUACOutputDirectoryTextBox.Text;
+            string outputDirectory = LuacOutputDirectoryTextBox.Text;
 
             try
             {
@@ -7119,18 +7787,18 @@ namespace NautilusXP2024
             }
         }
 
-        private void LUABrowseButton_Click(object sender, RoutedEventArgs e)
+        private void LuaBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var folderPath = OpenFolderDialog(LUAOutputDirectoryTextBox.Text);
+            var folderPath = OpenFolderDialog(LuaOutputDirectoryTextBox.Text);
             if (folderPath != null)
             {
-                LUAOutputDirectoryTextBox.Text = folderPath;
+                LuaOutputDirectoryTextBox.Text = folderPath;
             }
         }
 
-        private void LUAOpenButton_Click(object sender, RoutedEventArgs e)
+        private void LuaOpenButton_Click(object sender, RoutedEventArgs e)
         {
-            string outputDirectory = LUAOutputDirectoryTextBox.Text;
+            string outputDirectory = LuaOutputDirectoryTextBox.Text;
 
             try
             {
@@ -7179,42 +7847,7 @@ namespace NautilusXP2024
 #pragma warning restore CS8603 // Possible null reference return.
         }
 
-        private void IncreaseCpuPercentage_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(cpuPercentageTextBox.Text, out int value))
-            {
-                value = Math.Min(value + 1, 90); // Assuming 90 is the max value
-                cpuPercentageTextBox.Text = value.ToString();
-            }
-        }
-
-        private void DecreaseCpuPercentage_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(cpuPercentageTextBox.Text, out int value))
-            {
-                value = Math.Max(value - 1, 25); // Assuming 25 is the min value
-                cpuPercentageTextBox.Text = value.ToString();
-            }
-        }
-
-        private void IncreaseMappingThreads_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(MappingThreadsTextbox.Text, out int value))
-            {
-                value = Math.Min(value + 1, 64); // Assuming 90 is the max value
-                MappingThreadsTextbox.Text = value.ToString();
-            }
-        }
-
-        private void DecreaseMappingThreads_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(MappingThreadsTextbox.Text, out int value))
-            {
-                value = Math.Max(value - 1, 1); // Assuming 25 is the min value
-                MappingThreadsTextbox.Text = value.ToString();
-            }
-        }
-
+     
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -8848,7 +9481,7 @@ namespace NautilusXP2024
         private void HCDBDecrypterTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Get the text from the sqlOutputDirectoryTextBox
-            string path = sqlOutputDirectoryTextBox.Text;
+            string path = SqlOutputDirectoryTextBox.Text;
 
             // Check if the path is a valid directory, if not create it
             if (!Directory.Exists(path))
@@ -9063,6 +9696,271 @@ namespace NautilusXP2024
             // Optionally handle when the Local checkbox is unchecked
         }
 
+
+        private async void PS3PingButton_Click(object sender, RoutedEventArgs e)
+        {
+            async Task<bool> PingIpAddressAsync(string ipAddress)
+            {
+                try
+                {
+                    using (Ping ping = new Ping())
+                    {
+                        PingReply reply = await ping.SendPingAsync(ipAddress, 1000); // Timeout set to 1000 ms (1 second)
+                        return reply.Status == IPStatus.Success;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            void ShowPingResult(string message, Color color)
+            {
+                PingResultTextBlock.Text = message;
+                PingResultTextBlock.Foreground = new SolidColorBrush(color);
+            }
+
+            async Task ShowPingResultForDurationAsync(string message, Color color, int durationInMilliseconds)
+            {
+                ShowPingResult(message, color);
+                await Task.Delay(durationInMilliseconds);
+            }
+
+            async Task<bool> CheckFileExistsOnFtpAsync(string ftpUri)
+            {
+                try
+                {
+                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
+                    request.Method = WebRequestMethods.Ftp.GetFileSize;
+                    request.Credentials = new NetworkCredential("anonymous", "anonymous@example.com"); // Use anonymous credentials
+
+                    using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                    {
+                        return true;
+                    }
+                }
+                catch (WebException ex)
+                {
+                    if (ex.Response != null)
+                    {
+                        var response = (FtpWebResponse)ex.Response;
+                        if (response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
+                        {
+                            return false;
+                        }
+                    }
+                    throw;
+                }
+            }
+
+            async Task<byte[]> DownloadFileFromFtpAsync(string ftpUri)
+            {
+                try
+                {
+                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
+                    request.Method = WebRequestMethods.Ftp.DownloadFile;
+                    request.Credentials = new NetworkCredential("anonymous", "anonymous@example.com"); // Use anonymous credentials
+
+                    using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                    using (Stream responseStream = response.GetResponseStream())
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        await responseStream.CopyToAsync(memoryStream);
+                        return memoryStream.ToArray();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowPingResult($"Error downloading file: {ex.Message}", Colors.Red);
+                    return null;
+                }
+            }
+
+            string ExtractVersionString(byte[] fileContent)
+            {
+                byte[] versionPattern = Encoding.ASCII.GetBytes("VERSION");
+                int index = SearchPatternInBytes(fileContent, versionPattern);
+                if (index != -1)
+                {
+                    int startIndex = index + versionPattern.Length;
+                    // Skip null bytes after VERSION to find the version string in 00.00 format
+                    while (startIndex < fileContent.Length && fileContent[startIndex] == 0x00)
+                    {
+                        startIndex++;
+                    }
+                    if (startIndex + 4 < fileContent.Length)
+                    {
+                        return Encoding.ASCII.GetString(fileContent, startIndex, 5); // Extract version number in 00.00 format
+                    }
+                }
+                return null;
+            }
+
+            int SearchPatternInBytes(byte[] data, byte[] pattern)
+            {
+                for (int i = 0; i <= data.Length - pattern.Length; i++)
+                {
+                    bool match = true;
+                    for (int j = 0; j < pattern.Length; j++)
+                    {
+                        if (data[i + j] != pattern[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            string ipAddress = PS3IPforFTPTextBox.Text;
+            string ps3TitleID = PS3TitleIDTextBox.Text;
+
+            if (string.IsNullOrEmpty(ipAddress))
+            {
+                await ShowPingResultForDurationAsync("Invalid IP!", Colors.Red, 1000);
+                return;
+            }
+
+            bool pingResult = await PingIpAddressAsync(ipAddress);
+            if (pingResult)
+            {
+                await ShowPingResultForDurationAsync("Stage 1: Success - Device Found!", Colors.LimeGreen, 800);
+
+                // FTP connection details
+                string ftpUri = $"ftp://{ipAddress}/dev_hdd0/game/{ps3TitleID}/PARAM.SFO";
+
+                bool fileExists = await CheckFileExistsOnFtpAsync(ftpUri);
+                if (fileExists)
+                {
+                    await ShowPingResultForDurationAsync("Stage 2: Success - This is a PS3!", Colors.LimeGreen, 800);
+
+                    byte[] fileContent = await DownloadFileFromFtpAsync(ftpUri);
+                    if (fileContent != null)
+                    {
+                        string versionString = ExtractVersionString(fileContent);
+                        if (!string.IsNullOrEmpty(versionString))
+                        {
+                            ShowPingResult($"Stage 3: Success - Home Version: {versionString} Found!", Colors.LimeGreen);
+                        }
+                        else
+                        {
+                            ShowPingResult("Version string not found!", Colors.Orange);
+                        }
+                    }
+                }
+                else
+                {
+                    await ShowPingResultForDurationAsync("File not found on FTP!", Colors.Orange, 1000);
+                }
+            }
+            else
+            {
+                await ShowPingResultForDurationAsync("Failed!", Colors.Red, 1000);
+            }
+        }
+
+
+        private async Task UploadFileToFtpAsync(string ftpUri, string localFilePath)
+        {
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = new NetworkCredential("anonymous", "anonymous@example.com"); // Use anonymous credentials
+
+                byte[] fileContents = await File.ReadAllBytesAsync(localFilePath);
+                request.ContentLength = fileContents.Length;
+
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    await requestStream.WriteAsync(fileContents, 0, fileContents.Length);
+                }
+
+                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                {
+                    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to upload file, Make sure PS3 IP is set correctly in Nautilus settings and that FTP is running on your PS3 console., Webman MOD recommended for background FTP, Multiman works fine too: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private async void SaveListToFileAsXML(string listJson, int listNumber)
+        {
+            try
+            {
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string outputDir = Path.Combine(exeDirectory, "Output", "Catalogue");
+
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                string filePath = Path.Combine(outputDir, $"UserList_{listNumber}.json");
+
+                var updatedJson = ProcessJsonAndAddRewardType(listJson);
+
+                File.WriteAllText(filePath, updatedJson);
+
+                string xmlFilePath = GenerateXmlFromJson(updatedJson, outputDir);
+
+                // Read the XML file and encode it as base64
+                byte[] xmlFileBytes = File.ReadAllBytes(xmlFilePath);
+                string base64XmlFile = Convert.ToBase64String(xmlFileBytes);
+                var downloadMessage = new { action = "downloadSqlFile", fileName = "UserList.xml", fileContent = base64XmlFile };
+                var downloadMessageJson = JsonConvert.SerializeObject(downloadMessage);
+
+                WebView2Control.CoreWebView2.PostWebMessageAsString(downloadMessageJson);
+
+                Console.WriteLine($"Successfully saved the list to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save the list: {ex.Message}");
+            }
+        }
+
+        private string GenerateXmlFromJson(string listJson, string outputDir)
+        {
+            var jsonArray = JArray.Parse(listJson);
+            var xmlDocument = new XDocument(new XElement("inventory"));
+
+            foreach (var item in jsonArray)
+            {
+                var folderName = item["folderName"]?.ToString();
+                if (!string.IsNullOrEmpty(folderName))
+                {
+                    xmlDocument.Root.Add(new XElement("object", new XAttribute("uuid", folderName)));
+                }
+            }
+
+            string xmlFilePath = Path.Combine(outputDir, "UserList.xml");
+            xmlDocument.Save(xmlFilePath);
+
+            Console.WriteLine($"Successfully generated the XML to {xmlFilePath}");
+
+            return xmlFilePath;
+        }
+
+        private async void ShowNotification(string message, int durationInSeconds)
+        {
+            NotificationTextBlock.Text = message;
+            NotificationPopup.IsOpen = true;
+
+            await Task.Delay(durationInSeconds * 1000);
+
+            NotificationPopup.IsOpen = false;
+        }
 
     }
 }
