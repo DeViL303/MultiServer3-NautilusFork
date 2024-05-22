@@ -12,7 +12,7 @@ Nautilus is a Windows GUI that I designed from scratch to work on Playstation Ho
 
 
 <h1 align="center">
-   Nautilus Toolset Release v1.00 Beta Build 00022
+   Nautilus Toolset Release v1.00 Beta Build 00023
 </h1>
 
 <h2 align="center">
