@@ -467,6 +467,9 @@ This tab is currently not working fully. Just the sha1 checker portion works
    Tab 10: Content Catalogue
 </h1>
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6090f2a6-d709-4d59-9541-22b93af68975)
+
+
 #### Catalogue Usage
 - New feature allow the user to store 5 managed lists - Right click any item to add or remove it from any list.
 - These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
@@ -477,6 +480,9 @@ This tab is currently not working fully. Just the sha1 checker portion works
   - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
   - Upload SQL/XML/TXT: Use this to upload and visualize, edit, resave a previously created SQL
   - Clear this List: Clear this list completely
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/30ab6577-bc39-447a-8de0-0f7c83ad675b)
+
 
 
 <h1 align="center">
