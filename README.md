@@ -33,7 +33,8 @@ Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-Nuatilu
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a78b8fb-cf3d-46ff-9947-9d0aa3f2e381)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d6683e1b-5494-4f0f-a88a-403c0c58c885)
+
 
 
 </div>
@@ -161,7 +162,8 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/917aec61-c00b-49e8-813f-c10d4b218962)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/eb18af83-a54d-4c64-8619-0964fb32f243)
+
 
 
 </div>
@@ -215,7 +217,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/ce70fbf6-f845-41b7-a3d5-7ef738194ad0)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6028c426-f9b7-4ce9-8041-f507176f60a5)
+
 
 
 </div>
@@ -234,7 +237,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d06a82b7-3a73-4079-9d0d-7a5345555279)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94ebe836-6b6a-4569-9944-d4c415ef77bb)
+
 
 
 </div>
@@ -294,7 +298,8 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/9b49c355-ac71-4662-9041-f18459cfa797)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0915629a-b85b-4a15-b993-f237f39f85a5)
+
 
 
 </div>
@@ -365,7 +370,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1f5f8223-681c-46ba-9ecd-545964d4f1d4)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/63776b62-6002-4b58-9f4c-2d876987fa35)
+
 
 
 </div>
@@ -389,7 +395,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94384bf1-eb52-444b-b639-7b3dc33fcb85)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/79c8f10e-f22b-4975-a804-e16eded39d8d)
+
 
 
 </div>
@@ -414,7 +421,8 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/22499105-6931-4ad6-a34b-32e8d31b73c5)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/900dba64-b5e5-491b-aa45-acf0b9201a95)
+
 
 
 </div>
@@ -439,7 +447,8 @@ View and or Patch various fields in Home EBOOTS.
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6920a64f-3c3f-413e-ac30-aef56488447c)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a95cad13-cdbb-448e-89fe-5f61f65cf6b8)
+
 
 
 </div>
@@ -467,7 +476,9 @@ This tab is currently not working fully. Just the sha1 checker portion works
    Tab 10: Content Catalogue
 </h1>
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6090f2a6-d709-4d59-9541-22b93af68975)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7ef1604a-858b-42fb-8b92-2c38abdd4dbb)
+
+
 
 
 #### Catalogue Usage
@@ -491,7 +502,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/371aba2d-a068-43e8-9f56-08702eb7c89c)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d72e4f73-abaf-4387-87ae-1e698f1b2229)
+
 
 
 </div>
@@ -527,7 +539,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/192d7ca5-8478-4da0-ac57-907640712f9b)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/43ba5dc1-ef5f-4b36-a52b-1c8085761712)
+
 
 
 </div>
