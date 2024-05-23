@@ -3263,13 +3263,21 @@ namespace NautilusXP2024
                     using (SHA1 sha1 = SHA1.Create())
                     {
                         byte[] SHA1Data = sha1.ComputeHash(fileContent);
-                        inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", ""); // Full SHA1 of input content
+                        inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", "").ToLowerInvariant(); // Full SHA1 of input content
                         LogDebugInfo($"Input SHA1 for {filename}: {inputSHA1}");
 
                         // Encrypt the file content
                         string computedSha1 = inputSHA1.Substring(0, 16); // Use first 16 characters for some process, if needed
                         encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
                     }
+
+                    // Log the success message and the SHA1 of the input file
+                    Dispatcher.Invoke(() =>
+                    {
+                        CDSEncrypterTextBox.Text += $"{Environment.NewLine}CDS: Success file encrypted for {filename}";
+                        CDSEncrypterTextBox.Text += $"{Environment.NewLine}File: {filename} SHA1: {inputSHA1}";
+                        CDSEncrypterTextBox.ScrollToEnd();
+                    });
 
                     // Append SHA1 of the original content to filename if requested
                     if (addSha1ToFilename && encryptedContent != null)
@@ -3279,7 +3287,26 @@ namespace NautilusXP2024
                         filename = $"{filenameWithoutExtension}_{inputSHA1}{extension}"; // Using inputSHA1 for naming
                     }
 
-                    if (encryptedContent != null)
+                    // Rename for CDN if the checkbox is checked and conditions are met
+                    if (CDSRenameForCDNCheckBox.IsChecked == true && Path.GetExtension(filename).ToLower() == ".odc" &&
+                        System.Text.RegularExpressions.Regex.IsMatch(filename, @"^[a-fA-F0-9]{8}-[a-fA-F0-9]{8}-[a-fA-F0-9]{8}-[a-fA-F0-9]{8}"))
+                    {
+                        string uuidPart = filename.Substring(0, 35); // Extract the 35-character UUID part
+                        string extraPart = filename.Substring(35); // Extract the rest of the filename after the UUID
+                        string newFolderName = uuidPart;
+                        string newFileName = $"object{extraPart}";
+
+                        string outputDirectory = Path.Combine(baseOutputDirectory, "Objects", newFolderName);
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                            LogDebugInfo($"Output directory {outputDirectory} created.");
+                        }
+                        string outputPath = Path.Combine(outputDirectory, newFileName);
+                        await File.WriteAllBytesAsync(outputPath, encryptedContent);
+                        LogDebugInfo($"File {newFileName} encrypted and written to {outputPath}.");
+                    }
+                    else if (encryptedContent != null)
                     {
                         string outputDirectory = Path.Combine(baseOutputDirectory, Path.GetFileName(Path.GetDirectoryName(filePath)));
                         if (!Directory.Exists(outputDirectory))
@@ -3305,11 +3332,6 @@ namespace NautilusXP2024
             }
             return allFilesProcessed;
         }
-
-
-
-
-
 
         // TAB 2: Logic for CDS Decryption
 
@@ -3565,9 +3587,15 @@ namespace NautilusXP2024
                 {
                     string elementValue = nameElement.Value;
                     LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <NAME> element with value {elementValue}.");
+
+                    // Calculate SHA1 hash
+                    string sha1Hash = CalculateSha1Hash(filePath);
+                    string fileName = Path.GetFileName(filePath);
+
                     Dispatcher.Invoke(() =>
                     {
                         CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SDC Decrypted for {elementValue}";
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
                         CDSDecrypterTextBox.ScrollToEnd();
                     });
 
@@ -3614,6 +3642,19 @@ namespace NautilusXP2024
             }
         }
 
+        private string CalculateSha1Hash(string filePath)
+        {
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    var hash = sha1.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
+            }
+        }
+
+
 
 
         private bool ValidateOdcFile(string filePath)
@@ -3626,9 +3667,15 @@ namespace NautilusXP2024
                 {
                     string uuidValue = uuidElement.Value;
                     LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <uuid> element with value {uuidValue}.");
+
+                    // Calculate SHA1 hash
+                    string sha1Hash = CalculateSha1Hash(filePath);
+                    string fileName = Path.GetFileName(filePath);
+
                     Dispatcher.Invoke(() =>
                     {
                         CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success ODC Decrypted for {uuidValue}";
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
                         CDSDecrypterTextBox.ScrollToEnd();
                     });
 
@@ -3685,7 +3732,6 @@ namespace NautilusXP2024
             }
         }
 
-
         private bool ValidateXmlFile(string filePath)
         {
             try
@@ -3698,9 +3744,15 @@ namespace NautilusXP2024
                     int sceneCount = sceneListElement.Descendants("SCENE").Count();
                     string elementValue = sceneListElement.Value;
                     LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <SCENELIST> element with {sceneCount} <SCENE> elements.");
+
+                    // Calculate SHA1 hash
+                    string sha1Hash = CalculateSha1Hash(filePath);
+                    string fileName = Path.GetFileName(filePath);
+
                     Dispatcher.Invoke(() =>
                     {
                         CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SceneList.xml Decrypted (Contains {sceneCount} Scene entries)";
+                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
                         CDSDecrypterTextBox.ScrollToEnd();
                     });
                     return true;
@@ -3724,8 +3776,6 @@ namespace NautilusXP2024
                 return false;
             }
         }
-
-
 
 
         private void CDSDecrypterDragDropHandler(object sender, DragEventArgs e)
@@ -6137,6 +6187,12 @@ namespace NautilusXP2024
             string smallImage = $"[THUMBNAIL_ROOT]small{smallImageSuffix}.png";
             string largeImage = $"[THUMBNAIL_ROOT]large{largeImageSuffix}.png";
 
+            // Extract the SDC file name from the archive path
+            string archiveFileName = System.IO.Path.GetFileNameWithoutExtension(archivePath);
+            string sdcFileName = string.IsNullOrEmpty(thumbnailSuffix)
+                ? $"{archiveFileName}.sdc"
+                : $"{archiveFileName}_T{thumbnailSuffix}.sdc";
+
             // Create the XML document
             XDocument sdcXml = new XDocument(
                 new XElement("XML", new XAttribute("hdk_version", hdkVersion),
@@ -6170,17 +6226,8 @@ namespace NautilusXP2024
                     AddDuplicatedLanguageSection("zh-TW", name, description, archivePath, archiveSize, timestamp),
                     AddDuplicatedLanguageSection("zh-HK", name, description, archivePath, archiveSize, timestamp),
 
-                    // Placeholder languages
-                    // AddLanguagePlaceholder("fr-FR"),
-                    // AddLanguagePlaceholder("de-DE"),
-                    // AddLanguagePlaceholder("it-IT"),
-                    // AddLanguagePlaceholder("es-ES"),
-                    // AddLanguagePlaceholder("ja-JP"),
-                    // AddLanguagePlaceholder("ko-KR"),
-                    // AddLanguagePlaceholder("zh-TW"),
-                    // AddLanguagePlaceholder("zh-HK"),
                     new XElement("age_rating", new XAttribute("minimum_age", "0"), new XAttribute("parental_control_level", "1"))
-                    )
+                )
             );
 
             // Show save file dialog
@@ -6188,7 +6235,7 @@ namespace NautilusXP2024
             {
                 Filter = "SDC files (*.sdc)|*.sdc",
                 DefaultExt = "sdc",
-                FileName = "NewSDCFile"
+                FileName = sdcFileName
             };
 
             if (saveFileDialog.ShowDialog() == true)
@@ -6197,6 +6244,7 @@ namespace NautilusXP2024
                 sdcXml.Save(saveFileDialog.FileName);
             }
         }
+
 
         // Function to add a language placeholder
         private XElement AddLanguagePlaceholder(string languageCode)
@@ -6408,13 +6456,15 @@ namespace NautilusXP2024
                 )
             );
 
+            // Construct the output file name
+            string outputFileName = $"{uuid}{(string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}")}.odc";
+
             // Show save file dialog
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-
-                Filter = "ODC files (.odc)|.odc",
+                Filter = "ODC files (.odc)|*.odc",
                 DefaultExt = "odc",
-                FileName = "NewODCFile"
+                FileName = outputFileName
             };
             if (saveFileDialog.ShowDialog() == true)
             {
@@ -6422,6 +6472,8 @@ namespace NautilusXP2024
                 odcXml.Save(saveFileDialog.FileName);
             }
         }
+
+
 
         private string GenerateUUID()
         {
@@ -6465,11 +6517,6 @@ namespace NautilusXP2024
         }
 
         private void odcTimestampTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
-        private void SDCCreateSDCButton_Click_4(object sender, RoutedEventArgs e)
         {
 
         }
