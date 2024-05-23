@@ -143,6 +143,7 @@ namespace NautilusXP2024
             Rpcs3Dev_hdd0_DirectoryTextBox.Text = _settings.RPCS3OutputDirectory;
             PS3IPforFTPTextBox.Text = _settings.PS3IPforFTP;
             PS3TitleIDTextBox.Text = _settings.PS3TitleID;
+            ToggleSwitchLiteCatalogue.IsChecked = _settings.LiteCatalogueEnabled;
             ThemeColorPicker.SelectedColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(_settings.ThemeColor);
             switch (_settings.ArchiveTypeSettingRem)
             {
@@ -196,6 +197,12 @@ namespace NautilusXP2024
             SelectLastUsedTab(_settings.LastTabUsed);
         }
 
+        private void ToggleSwitchLiteCatalogue_Checked(object sender, RoutedEventArgs e)
+        {
+            _settings.LiteCatalogueEnabled = ToggleSwitchLiteCatalogue.IsChecked == true;
+            SettingsManager.SaveSettings(_settings);
+        }
+
         private async void InitializeWebView2()
         {
             var environment = await CoreWebView2Environment.CreateAsync(null, null, new CoreWebView2EnvironmentOptions("--disable-web-security --user-data-dir=C:\\temp"));
@@ -204,7 +211,8 @@ namespace NautilusXP2024
             if (ToggleSwitchOfflinePshome.IsChecked == false)
             {
                 string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string htmlFilePath = Path.Combine(exeDirectory, "dependencies", "psho.me", "pshome_index.html");
+                string htmlFileName = ToggleSwitchLiteCatalogue.IsChecked == true ? "pshome_index_Lite.html" : "pshome_index.html";
+                string htmlFilePath = Path.Combine(exeDirectory, "dependencies", "psho.me", htmlFileName);
 
                 if (File.Exists(htmlFilePath))
                 {
@@ -214,61 +222,61 @@ namespace NautilusXP2024
                 else
                 {
                     string customHtml = @"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        background-color: #111111;
-                        color: #fff;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        margin: 0;
-                    }
-                    .container {
-                        max-width: 600px;
-                        padding: 20px;
-                        border: 2px solid #fff;
-                        border-radius: 10px;
-                        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-                    }
-                    h1 {
-                        font-size: 24px;
-                        margin-bottom: 10px;
-                    }
-                    p {
-                        font-size: 16px;
-                        line-height: 1.5;
-                    }
-                    a {
-                        color: #00f;
-                        text-decoration: underline;
-                        cursor: pointer;
-                    }
-                </style>
-                <script>
-                    function openGoogleDrive() {
-                        window.chrome.webview.postMessage('openGoogleDrive');
-                    }
-                    function openGithub() {
-                        window.chrome.webview.postMessage('openGithub');
-                    }
-                </script>
-            </head>
-            <body>
-                <div class='container'>
-                    <h1>Files Not Found!</h1>
-                    <p>Local database files could not be found.</p>
-                    <p>To use a local catalogue, you can download <a onclick='openGoogleDrive()'>THIS</a> 2.3GB database addon first or provide your own database.</p>
-                    <p>Please ensure the extracted files are placed in the 'dependencies/psho.me/' directory.</p>
-                    <p>For information on how to create your own database, See Multiserver 3 Nautilus Fork on Gihub <a onclick='openGithub()'>HERE</a></p>
-                </div>
-            </body>
-            </html>";
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {
+                background-color: #111111;
+                color: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin: 0;
+            }
+            .container {
+                max-width: 600px;
+                padding: 20px;
+                border: 2px solid #fff;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            }
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            a {
+                color: #00f;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+        </style>
+        <script>
+            function openGoogleDrive() {
+                window.chrome.webview.postMessage('openGoogleDrive');
+            }
+            function openGithub() {
+                window.chrome.webview.postMessage('openGithub');
+            }
+        </script>
+    </head>
+    <body>
+        <div class='container'>
+            <h1>Files Not Found!</h1>
+            <p>Local database files could not be found.</p>
+            <p>To use a local catalogue, you can download <a onclick='openGoogleDrive()'>THIS</a> 2.3GB database addon first or provide your own database.</p>
+            <p>Please ensure the extracted files are placed in the 'dependencies/psho.me/' directory.</p>
+            <p>For information on how to create your own database, See Multiserver 3 Nautilus Fork on Gihub <a onclick='openGithub()'>HERE</a></p>
+        </div>
+    </body>
+    </html>";
 
                     WebView2Control.NavigateToString(customHtml);
                 }
@@ -281,6 +289,7 @@ namespace NautilusXP2024
             WebView2Control.ZoomFactor = 0.80;
             WebView2Control.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
         }
+
 
         private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
@@ -1906,7 +1915,7 @@ namespace NautilusXP2024
             LogDebugInfo("Archive Creation: Process Success");
             await Dispatcher.InvokeAsync(() =>
             {
-                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Process Success\nArchive Creator: Double click here to open output folder";
+                ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Process Success\nArchive Creator: Double click here to open the output folder";
                 ArchiveCreatorTextBox.ScrollToEnd();
             });
 
@@ -2215,7 +2224,7 @@ namespace NautilusXP2024
             // Log completion of all files to ArchiveUnpackerTextBox
             await Dispatcher.InvokeAsync(() =>
             {
-                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: All files processed successfully.";
+                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: All files processed successfully.\nArchive Unpacker: Double click here to open the output folder.";
                 ArchiveUnpackerTextBox.ScrollToEnd();
             });
 
@@ -3337,14 +3346,12 @@ namespace NautilusXP2024
 
         private async void CDSDecrypterExecuteButtonClick(object sender, RoutedEventArgs e)
         {
-            LogDebugInfo("CDS Decryption: Process Initiated");
             TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "Processing....", 2000);
 
             string baseOutputDirectory = _settings.CdsDecryptOutputDirectory;
             if (!Directory.Exists(baseOutputDirectory))
             {
                 Directory.CreateDirectory(baseOutputDirectory);
-                LogDebugInfo($"CDS Decryption: Output directory created at {baseOutputDirectory}");
             }
 
             string filesToDecrypt = CDSDecrypterTextBox.Text;
@@ -3364,33 +3371,26 @@ namespace NautilusXP2024
 
                     if (manualSha1IsValid)
                     {
-                        LogDebugInfo($"Using manually provided SHA1 for {filename}: {manualSha1}. Overriding any detected SHA1.");
                         decryptionSuccess &= await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, manualSha1);
                     }
                     else if (!string.IsNullOrWhiteSpace(detectedSha1))
                     {
-                        LogDebugInfo($"SHA1 detected in filename for {filename}: {detectedSha1}. Using SHA1-assisted decryption.");
                         decryptionSuccess &= await DecryptFilesSHA1Async(new string[] { filePath }, baseOutputDirectory, detectedSha1);
                     }
                     else
                     {
-                        LogDebugInfo($"No valid SHA1 detected or provided for {filename}. Using CTR Exploit to decrypt.");
                         decryptionSuccess &= await DecryptFilesAsync(new string[] { filePath }, baseOutputDirectory);
                     }
                 }
 
                 string message = decryptionSuccess ? "Success: All files decrypted" : "Decryption Failed for one or more files";
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, message, 2000);
-                LogDebugInfo($"CDS Decryption: Result - {message}");
             }
             else
             {
-                LogDebugInfo("CDS Decryption: Aborted - No files listed for Decryption.");
                 TemporaryMessageHelper.ShowTemporaryMessage(CDSDecrypterDragAreaText, "No files listed for Decryption.", 2000);
             }
         }
-
-
 
         public async Task<bool> DecryptFilesAsync(string[] filePaths, string baseOutputDirectory)
         {
@@ -3402,13 +3402,11 @@ namespace NautilusXP2024
                 try
                 {
                     string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
-                    LogDebugInfo($"Reading file content for {filename}.");
 
                     byte[] fileContent = await File.ReadAllBytesAsync(filePath);
-                    LogDebugInfo($"File content read successfully for {filename}, starting decryption.");
 
-                    BruteforceProcess? proc = new BruteforceProcess(fileContent);
-                    byte[]? decryptedContent = proc.StartBruteForce();
+                    BruteforceProcess proc = new BruteforceProcess(fileContent);
+                    byte[] decryptedContent = proc.StartBruteForce();
 
                     if (decryptedContent != null)
                     {
@@ -3423,36 +3421,23 @@ namespace NautilusXP2024
                         if (!IsValidDecryptedFile(outputPath, extension))
                         {
                             File.Delete(outputPath);
-                            LogDebugInfo($"Validation failed for {filename}. File deleted.");
                             allFilesProcessed = false;
-                        }
-                        else
-                        {
-                            LogDebugInfo($"Validation passed for {filename}. Decryption successful and file is valid.");
                         }
                     }
                     else
                     {
                         allFilesProcessed = false;
-                        LogDebugInfo($"Decryption process returned null for {filename}. No data written.");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    LogDebugInfo($"Error processing {filename}: {ex.Message}");
                     allFilesProcessed = false;
                 }
             }
-            if (allFilesProcessed)
-            {
-                LogDebugInfo("All files processed successfully.");
-            }
-            else
-            {
-                LogDebugInfo("One or more files failed to process correctly.");
-            }
+
             return allFilesProcessed;
         }
+
 
 
         public async Task<bool> DecryptFilesSHA1Async(string[] filePaths, string baseOutputDirectory, string sha1Hash)
@@ -3532,10 +3517,8 @@ namespace NautilusXP2024
 
         private bool IsValidDecryptedFile(string filePath, string extension)
         {
-            // Automatically pass validation for HCDB files
             if (string.Equals(extension, ".hcdb", StringComparison.OrdinalIgnoreCase))
             {
-                LogDebugInfo($"HCDB file validation passed automatically for {Path.GetFileName(filePath)}.");
                 return true;
             }
 
@@ -3554,90 +3537,43 @@ namespace NautilusXP2024
                     return ValidateXmlFile(filePath);
                 }
 
-                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Unsupported file extension.");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Unsupported file extension.";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogDebugInfo($"Failed to validate file {Path.GetFileName(filePath)}: {ex.Message}");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate file {Path.GetFileName(filePath)}: {ex.Message}";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
         }
-
 
         private bool ValidateSdcFile(string filePath)
         {
             try
             {
                 var doc = XDocument.Load(filePath);
-
-                // Main validation via <NAME> element
                 var nameElement = doc.Descendants("NAME").FirstOrDefault();
                 if (nameElement != null)
                 {
                     string elementValue = nameElement.Value;
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <NAME> element with value {elementValue}.");
-
-                    // Calculate SHA1 hash
                     string sha1Hash = CalculateSha1Hash(filePath);
                     string fileName = Path.GetFileName(filePath);
 
-                    Dispatcher.Invoke(() =>
-                    {
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SDC Decrypted for {elementValue}";
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
-                        CDSDecrypterTextBox.ScrollToEnd();
-                    });
-
-                    // Additional check for <ARCHIVE> element if filename contains _DAT.SDC
                     if (Path.GetFileName(filePath).ToUpper().Contains("_DAT.SDC"))
                     {
                         var archiveElement = doc.Descendants("ARCHIVE").FirstOrDefault();
                         if (archiveElement != null)
                         {
                             string archiveValue = archiveElement.Value;
-
-                            // Trim and change the extension
                             string trimmedFileName = archiveValue.Replace("[CONTENT_SERVER_ROOT]", "").Replace(".sdat", ".sdc");
-
-                            // Print the final string to the textbox
-                            Dispatcher.Invoke(() =>
-                            {
-                                CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Real Filename Guess {trimmedFileName}";
-                                CDSDecrypterTextBox.ScrollToEnd();
-                            });
                         }
                     }
 
                     return true;
                 }
 
-                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <NAME> element not found.");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <NAME> element not found.";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogDebugInfo($"Failed to validate SDC file {Path.GetFileName(filePath)}: {ex.Message}");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate SDC file {Path.GetFileName(filePath)}: {ex.Message}";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
         }
@@ -3654,9 +3590,6 @@ namespace NautilusXP2024
             }
         }
 
-
-
-
         private bool ValidateOdcFile(string filePath)
         {
             try
@@ -3666,26 +3599,12 @@ namespace NautilusXP2024
                 if (uuidElement != null)
                 {
                     string uuidValue = uuidElement.Value;
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <uuid> element with value {uuidValue}.");
-
-                    // Calculate SHA1 hash
                     string sha1Hash = CalculateSha1Hash(filePath);
                     string fileName = Path.GetFileName(filePath);
 
-                    Dispatcher.Invoke(() =>
-                    {
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success ODC Decrypted for {uuidValue}";
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
-                        CDSDecrypterTextBox.ScrollToEnd();
-                    });
-
-                    // Check for _DAT.ODC in the filename
                     if (Path.GetFileName(filePath).ToUpper().Contains("_DAT.ODC"))
                     {
-                        // Check for <small_image> element first
                         var imageElement = doc.Descendants("small_image").FirstOrDefault();
-
-                        // If <small_image> is not found, check for <large_image>
                         if (imageElement == null)
                         {
                             imageElement = doc.Descendants("large_image").FirstOrDefault();
@@ -3694,40 +3613,17 @@ namespace NautilusXP2024
                         if (imageElement != null)
                         {
                             string imageValue = imageElement.Value;
-
-                            // Trim and change the value
                             string trimmedImageValue = imageValue.Replace("[THUMBNAIL_ROOT]small", "").Replace("[THUMBNAIL_ROOT]large", "").Replace(".png", "");
-
-                            // Combine uuid and trimmed value, then add .odc
                             string finalName = $"Objects/{uuidValue}/object{trimmedImageValue}.odc";
-
-                            // Print the final string to the textbox
-                            Dispatcher.Invoke(() =>
-                            {
-                                CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Real ODC name guess {finalName}";
-                                CDSDecrypterTextBox.ScrollToEnd();
-                            });
                         }
                     }
 
                     return true;
                 }
-                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <uuid> element not found.");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <uuid> element not found.";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogDebugInfo($"Failed to validate ODC file {Path.GetFileName(filePath)}: {ex.Message}");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate ODC file {Path.GetFileName(filePath)}: {ex.Message}";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
         }
@@ -3740,43 +3636,20 @@ namespace NautilusXP2024
                 var sceneListElement = doc.Descendants("SCENELIST").FirstOrDefault();
                 if (sceneListElement != null)
                 {
-                    // Count the number of <SCENE> elements within <SCENELIST>
                     int sceneCount = sceneListElement.Descendants("SCENE").Count();
                     string elementValue = sceneListElement.Value;
-                    LogDebugInfo($"Validation passed for {Path.GetFileName(filePath)}: Found <SCENELIST> element with {sceneCount} <SCENE> elements.");
-
-                    // Calculate SHA1 hash
                     string sha1Hash = CalculateSha1Hash(filePath);
                     string fileName = Path.GetFileName(filePath);
 
-                    Dispatcher.Invoke(() =>
-                    {
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Success SceneList.xml Decrypted (Contains {sceneCount} Scene entries)";
-                        CDSDecrypterTextBox.Text += $"{Environment.NewLine}File: {fileName}, SHA1: {sha1Hash}";
-                        CDSDecrypterTextBox.ScrollToEnd();
-                    });
                     return true;
                 }
-                LogDebugInfo($"Validation failed for {Path.GetFileName(filePath)}: Required <SCENELIST> element not found.");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Validation failed for {Path.GetFileName(filePath)}: Required <SCENELIST> element not found.";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogDebugInfo($"Failed to validate XML file {Path.GetFileName(filePath)}: {ex.Message}");
-                Dispatcher.Invoke(() =>
-                {
-                    CDSDecrypterTextBox.Text += $"{Environment.NewLine}CDS: Failed to validate XML file {Path.GetFileName(filePath)}: {ex.Message}";
-                    CDSDecrypterTextBox.ScrollToEnd();
-                });
                 return false;
             }
         }
-
 
         private void CDSDecrypterDragDropHandler(object sender, DragEventArgs e)
         {
@@ -6166,7 +6039,7 @@ namespace NautilusXP2024
 
         // TAB 8: Logic for SDC Creation
 
-        private void CreateSdcButton_Click(object sender, RoutedEventArgs e)
+        private async void CreateSdcButton_Click(object sender, RoutedEventArgs e)
         {
             // Gather data from the form
             string name = sdcNameTextBox.Text;
@@ -6230,7 +6103,31 @@ namespace NautilusXP2024
                 )
             );
 
-            // Show save file dialog
+            // Save the XML to a temporary file
+            string tempFilePath = Path.Combine(Path.GetTempPath(), sdcFileName);
+            sdcXml.Save(tempFilePath);
+
+            // Calculate SHA1 hash and update the text box
+            string sha1Hash = await Task.Run(() => CalculateSha1Hash(tempFilePath));
+            Createdsdcsha1TextBox.Text = sha1Hash;
+
+            // Read the content of the temporary file and set it to the sdcCreatorTextbox
+            string sdcContent = await File.ReadAllTextAsync(tempFilePath);
+            SDCCreatorTextbox.Text = sdcContent;
+
+            byte[] fileContent;
+
+            // Check if encryption is needed
+            if (EncryptSDCCheckBox.IsChecked == true)
+            {
+                fileContent = await EncryptSDCODCFileAsync(tempFilePath);
+            }
+            else
+            {
+                fileContent = await File.ReadAllBytesAsync(tempFilePath);
+            }
+
+            // Show save file dialog for final file
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "SDC files (*.sdc)|*.sdc",
@@ -6240,10 +6137,37 @@ namespace NautilusXP2024
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                // Save the XML to the selected file path
-                sdcXml.Save(saveFileDialog.FileName);
+                await File.WriteAllBytesAsync(saveFileDialog.FileName, fileContent);
+            }
+
+            // Clean up temporary file
+            File.Delete(tempFilePath);
+        }
+        private async Task<byte[]> EncryptSDCODCFileAsync(string filePath)
+        {
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+
+                // Generate SHA1 hash from file content before encryption
+                using (SHA1 sha1 = SHA1.Create())
+                {
+                    byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                    string inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", "").ToLowerInvariant();
+
+                    // Encrypt the file content
+                    string computedSha1 = inputSHA1.Substring(0, 16); // Use first 16 characters for encryption key
+                    byte[] encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
+
+                    return encryptedContent;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
+
 
 
         // Function to add a language placeholder
@@ -6395,7 +6319,7 @@ namespace NautilusXP2024
 
         // TAB 8: Logic for SDC Creation
 
-        private void ODCCreateODC_Click(object sender, RoutedEventArgs e)
+        private async void ODCCreateODC_Click(object sender, RoutedEventArgs e)
         {
             // Gather data from the form
             string name = odcNameTextBox.Text;
@@ -6459,19 +6383,115 @@ namespace NautilusXP2024
             // Construct the output file name
             string outputFileName = $"{uuid}{(string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}")}.odc";
 
-            // Show save file dialog
+            // Save the XML to a temporary file
+            string tempFilePath = Path.Combine(Path.GetTempPath(), outputFileName);
+            odcXml.Save(tempFilePath);
+
+            // Calculate SHA1 hash and update the text box
+            string sha1Hash = await Task.Run(() => CalculateSDCODCSha1Hash(tempFilePath));
+            Createdodcsha1TextBox.Text = sha1Hash;
+
+            // Read the content of the temporary file and set it to the ODCCreatorTextbox
+            string odcContent = await File.ReadAllTextAsync(tempFilePath);
+            ODCCreatorTextbox.Text = odcContent;
+
+            byte[] fileContent;
+
+            // Check if encryption is needed
+            if (EncryptODCCheckBox.IsChecked == true)
+            {
+                fileContent = await EncryptSDCODCFileAsync(tempFilePath);
+            }
+            else
+            {
+                fileContent = await File.ReadAllBytesAsync(tempFilePath);
+            }
+
+            // Show save file dialog for final file
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Filter = "ODC files (.odc)|*.odc",
+                Filter = "ODC files (*.odc)|*.odc",
                 DefaultExt = "odc",
                 FileName = outputFileName
             };
+
             if (saveFileDialog.ShowDialog() == true)
             {
-                // Save the XML to the selected file path
-                odcXml.Save(saveFileDialog.FileName);
+                await File.WriteAllBytesAsync(saveFileDialog.FileName, fileContent);
+            }
+
+            // Clean up temporary file
+            File.Delete(tempFilePath);
+        }
+
+        private string CalculateSDCODCSha1Hash(string filePath)
+        {
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    var hash = sha1.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
             }
         }
+
+        private void CreateOdcClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear each TextBox by setting its Text property to an empty string
+            odcNameTextBox.Text = string.Empty;
+            odcDescriptionTextBox.Text = string.Empty;
+            odcMakerTextBox.Text = "Sony Computer Entertainment"; // Reset to default text
+            odcHDKVersionTextBox.Text = "1.86.0.17.PUB"; // Reset to default text
+            odcThumbnailSuffixTextBox.Text = string.Empty;
+            odcUUIDTextBox.Text = string.Empty;
+            odcTimestampTextBox.Text = "FFFFFFFF"; // Reset to default text
+            Createdodcsha1TextBox.Text = string.Empty;
+            ODCCreatorTextbox.Text = string.Empty;
+        }
+        private void CreateSdcClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear each TextBox by setting its Text property to an empty string
+            sdcNameTextBox.Text = string.Empty;
+            sdcDescriptionTextBox.Text = string.Empty;
+            sdcMakerTextBox.Text = "Sony Computer Entertainment"; // Reset to default text
+            sdcHDKVersionTextBox.Text = "1.86.0.17.PUB"; // Reset to default text
+            sdcThumbnailSuffixTextBox.Text = string.Empty;
+            sdcServerArchivePathTextBox.Text = "Scenes/"; // Reset to default text
+            sdcTimestampTextBox.Text = "FFFFFFFF"; // Reset to default text
+            sdcArchiveSizeTextBox.Text = string.Empty;
+            Createdsdcsha1TextBox.Text = string.Empty;
+            SDCCreatorTextbox.Text = string.Empty;
+
+            // Reset CheckBox states
+            offlineSDCCheckBox.IsChecked = false;
+            EncryptSDCCheckBox.IsChecked = false;
+        }
+
+        private async void SDCCopySHA1Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(Createdsdcsha1TextBox.Text))
+            {
+                string originalText = Createdsdcsha1TextBox.Text;
+                Clipboard.SetText(originalText);
+                Createdsdcsha1TextBox.Text = "SHA1 Copied";
+                await Task.Delay(500);
+                Createdsdcsha1TextBox.Text = originalText;
+            }
+        }
+
+        private async void ODCCopySHA1Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(Createdodcsha1TextBox.Text))
+            {
+                string originalText = Createdodcsha1TextBox.Text;
+                Clipboard.SetText(originalText);
+                Createdodcsha1TextBox.Text = "SHA1 Copied";
+                await Task.Delay(500);
+                Createdodcsha1TextBox.Text = originalText;
+            }
+        }
+
 
 
 

@@ -773,18 +773,19 @@ border-radius: 8px;
             <img src="ICON/REWARDS3.PNG">
 			<div style="margin-top: 0px;" class="icon-label">Other</div>
         </div>
-		<div class="gui-icon" onclick="loadLastActiveSubOption(6, 'categories/Minigame_Arcade_Machine.xml')">
-            <img src="ICON/MINIGAMES2.PNG">
+		<div class="gui-icon" onclick="loadLastActiveSubOption(6, 'categories/Minigame_Arcade_Machine.xml')" style="display: none;">
+			<img src="ICON/MINIGAMES2.PNG">
 			<div style="margin-top: 0px;" class="icon-label">Minigames</div>
-        </div>
-		<div class="gui-icon" onclick="loadLastActiveSubOption(7, 'categories/Core.xml')">
-            <img src="ICON/SYSTEM.PNG">
+		</div>
+		<div class="gui-icon" onclick="loadLastActiveSubOption(7, 'categories/Core.xml')" style="display: none;">
+			<img src="ICON/SYSTEM.PNG">
 			<div style="margin-top: 0px;" class="icon-label">System</div>
-        </div>
-		<div class="gui-icon" onclick="loadLastActiveSubOption(8, 'categories/Male_Bundle.xml')">
-            <img src="ICON/BUNDLES2.PNG">
+		</div>
+		<div class="gui-icon" onclick="loadLastActiveSubOption(8, 'categories/Male_Bundle.xml')" style="display: none;">
+			<img src="ICON/BUNDLES2.PNG">
 			<div style="margin-top: 0px;" class="icon-label">Bundles</div>
-        </div>
+		</div>
+
 		<div class="gui-icon" onclick="loadLastActiveSubOption(9, 'categories/Male_Bundle.xml')">
             <img src="ICON/TOOLS.PNG">
 			<div style="margin-top: 0px;" class="icon-label">User Lists</div>
@@ -861,7 +862,7 @@ border-radius: 8px;
 		<div class="sub-option" onclick="loadFolder('categories/Weapons.xml')"><span class="sub-option-icon"><img src="ICON/WEAPONS.PNG" alt="Embedded Icon"></span>Weapons</div>
 		<div class="sub-option" onclick="loadFolder('categories/Aquarium.xml')"><span class="sub-option-icon"><img src="ICON/AQUARIUM.PNG" alt="Embedded Icon"></span>Fishy</div>
 		<div class="sub-option" onclick="loadFolder('categories/Sodium.xml')"><span class="sub-option-icon"><img src="ICON/SODIUM.PNG" alt="Embedded Icon"></span>Sci-Fi</div>
-        <div class="sub-option" onclick="loadFolder('categories/Unknown.xml')"><span class="sub-option-icon"><img src="ICON/PLACEHOLDER.PNG" alt="Unknown Icon"></span>Unsorted</div>
+        <div class="sub-option" style="display: none;" onclick="loadFolder('categories/Unknown.xml')"><span class="sub-option-icon"><img src="ICON/PLACEHOLDER.PNG" alt="Unknown Icon"></span>Unsorted</div>
     </div>
 </div>
 <div class="sub-options-container">
@@ -2054,18 +2055,33 @@ async function fetchFolderData(folderXML, filterByKeyword) {
 
         const items = [];
 
+        // List of strings to exclude
+        const excludeStrings = [
+            "Arcade/Machine", "Minigame", "Minigame/Targetable", "Embedded/Objects",
+            "Core", "Resource/Packs", "Worldmap/Objects", "Launching/Object",
+            "Male_Bundle", "Female_Bundle", "Clothing_Bundle", "Furniture_Bundle",
+            "Animation_Bundle", "Locomotion_Bundle", "Companion_Bundle", "Apt_Bundle"
+        ];
+
         lines.forEach(line => {
             const values = line.split('|');
-            if (values.length >= 4) {
+            if (values.length >= 9) {
                 const folderName = values[0].trim();
                 const niceName = values[3].trim();
-                const lowercaseLine = line.toLowerCase();
-                const lowercaseKeywords = filterByKeyword ? filterByKeyword.toLowerCase().split(" ") : [];
+                const sixthPart = values[5].trim();
 
-                const matchedTerms = lowercaseKeywords.every(keyword => lowercaseLine.includes(keyword));
+                // Check if the line should be excluded
+                const shouldExclude = excludeStrings.some(excludeString => sixthPart.includes(excludeString));
 
-                if (!filterByKeyword || (filterByKeyword && filterByKeyword.length >= 2 && matchedTerms)) {
-                    items.push({ folderName, niceName });
+                if (!shouldExclude) {
+                    const lowercaseLine = line.toLowerCase();
+                    const lowercaseKeywords = filterByKeyword ? filterByKeyword.toLowerCase().split(" ") : [];
+
+                    const matchedTerms = lowercaseKeywords.every(keyword => lowercaseLine.includes(keyword));
+
+                    if (!filterByKeyword || (filterByKeyword && filterByKeyword.length >= 2 && matchedTerms)) {
+                        items.push({ folderName, niceName });
+                    }
                 }
             } else {
                 console.error('Invalid data found in line:', line);

@@ -28,6 +28,7 @@ namespace NautilusXP2024
         public string PS3TitleID { get; set; }
         public OverwriteBehavior FileOverwriteBehavior { get; set; }
         public SaveDebugLog SaveDebugLogToggle { get; set; }
+        public bool LiteCatalogueEnabled { get; set; }
         public ArchiveTypeSetting ArchiveTypeSettingRem { get; set; }
         public ArchiveMapperSetting ArchiveMapperSettingRem { get; set; }
         public RememberLastTabUsed LastTabUsed { get; set; }
@@ -53,6 +54,7 @@ namespace NautilusXP2024
             PS3TitleID = "NPIA00005"; // Default IP address
             ThemeColor = "#fc030f"; // Default color as a string
             SaveDebugLogToggle = SaveDebugLog.True;
+            LiteCatalogueEnabled = true;
             ArchiveTypeSettingRem = ArchiveTypeSetting.SDAT;
             ArchiveMapperSettingRem = ArchiveMapperSetting.EXP;
             LastTabUsed = RememberLastTabUsed.ArchiveTool;

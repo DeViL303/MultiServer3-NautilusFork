@@ -4,7 +4,7 @@
         xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        Title="Nautilus Toolset v1.00 Beta 00023" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
+        Title="Nautilus Toolset v1.00 Beta 00025" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
         ResizeMode="NoResize" WindowStyle="None" Background="#333333"
         BorderBrush="#000000"
                 BorderThickness="1">
@@ -486,7 +486,6 @@
             <Setter Property="BorderBrush" Value="white"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="10"/>
-            <Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="AllowDrop" Value="True"/>
             <Setter Property="Height" Value="430"/>
             <Setter Property="Width" Value="600"/>
@@ -1099,7 +1098,7 @@
                             <StackPanel Orientation="Horizontal" Width="570">
                                 <Label Content="Txxx Version:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="105"/>
                                 <TextBox x:Name="sdcThumbnailSuffixTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="310"/>
-                                <TextBlock Text="Offline SDC:" Style="{StaticResource Toggle1TextBlockStyle}"  VerticalAlignment="Center" Width="65"/>
+                                <TextBlock Text="Offline SDC:" Style="{StaticResource Toggle1TextBlockStyle}" Margin="10,0,0,0" VerticalAlignment="Center" Width="65"/>
                                 <CheckBox x:Name="offlineSDCCheckBox" Checked="CheckBoxOfflineSDC_Checked" Style="{StaticResource ModernToggleSwitchStyle}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
@@ -1108,14 +1107,28 @@
 
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
-                                <Label Content="Archive Size:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="105"/>
-                                <TextBox x:Name="sdcArchiveSizeTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="435" />
+                                <Label Content="Timestamp:" Foreground="White"  FontSize="14" VerticalAlignment="Center" Width="105"/>
+                                <TextBox x:Name="sdcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="140" />
+                                <Label Content="Archive Size (Bytes):" Foreground="White" FontSize="14" Margin="20,0,0,0" VerticalAlignment="Center" Width="135"/>
+                                <TextBox x:Name="sdcArchiveSizeTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="140" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
-                                <Label Content="Timestamp:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="105"/>
-                                <TextBox x:Name="sdcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="435" />
+                                <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
+                                <TextBox x:Name="Createdsdcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
+                                <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="SDCCopySHA1Button_Click" />
                             </StackPanel>
-                            <Button Content="Create SDC" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CreateSdcButton_Click"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,10,0,0">
+                                <Label Content="Create SHA1 Encrypted SDC:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="190"/>
+                                <CheckBox x:Name="EncryptSDCCheckBox" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Create SDC" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CreateSdcButton_Click"/>
+                                <Button Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CreateSdcClearButton_Click"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <TextBlock Text="SDC Content" Style="{StaticResource SceneIdTextBlockStyle}" Margin="0,10,0,-7"/>
+                                <TextBox x:Name="SDCCreatorTextbox" Width="550" Height="300" Style="{StaticResource FileListTextBoxStyle}"/>
+                            </StackPanel>
                         </StackPanel>
                         <!-- Right Form for ODC File Creation -->
                         <StackPanel DragEnter="Grid_DragEnter" 
@@ -1144,15 +1157,31 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="565">
                                 <Label Content="UUID:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="104"/>
-                                <TextBox x:Name="odcUUIDTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="314"/>
-                                <Button Content="Generate UUID" Margin="4" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ODCGenerateUUIDButton_Click" />
+                                <TextBox x:Name="odcUUIDTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="320"/>
+                                <Button Content="Generate UUID" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="ODCGenerateUUIDButton_Click" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
                                 <Label Content="Timestamp:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="odcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="435"/>
                             </StackPanel>
-                            <Button Content="Create ODC" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ODCCreateODC_Click">
-                            </Button>
+                            <StackPanel Orientation="Horizontal" Width="570">
+                                <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
+                                <TextBox x:Name="Createdodcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
+                                <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="ODCCopySHA1Button_Click" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                                <Label Content="Create SHA1 Encrypted ODC:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="190"/>
+                                <CheckBox x:Name="EncryptODCCheckBox" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Create ODC" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ODCCreateODC_Click"/>
+                                <Button Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CreateOdcClearButton_Click"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <TextBlock Text="ODC Content" Style="{StaticResource SceneIdTextBlockStyle}" Margin="0,10,0,-7"/>
+                                <TextBox x:Name="ODCCreatorTextbox" Width="550" Height="300" Style="{StaticResource FileListTextBoxStyle}"/>
+                            </StackPanel>
+                            
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -1592,6 +1621,10 @@
                                 <xctk:ColorPicker x:Name="ThemeColorPicker" Cursor="Hand" Width="67" Height="29"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="5,5,5,8">
+                                <TextBlock Text="Catalogue Shows Only Usable:" Foreground="White" VerticalAlignment="Center" Width="163" Margin="0,0,2,0"/>
+                                <CheckBox x:Name="ToggleSwitchLiteCatalogue" Style="{StaticResource ModernToggleSwitchStyle}" Checked="ToggleSwitchLiteCatalogue_Checked" Unchecked="ToggleSwitchLiteCatalogue_Checked"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="5,5,5,8">
                                 <TextBlock Text="Enable Debug Logs:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
                                 <CheckBox x:Name="ToggleSwitchDebugLogEnable" Unchecked="CheckBoxDebugLogsEnable_UnChecked" Checked="CheckBoxDebugLogsEnable_Checked" Style="{StaticResource ModernToggleSwitchStyle}" />
                             </StackPanel>
@@ -1635,7 +1668,7 @@
                                     </ComboBox.Template>
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock  FontSize="14" Foreground="White" Margin="0,180,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
+                            <TextBlock  FontSize="14" Foreground="White" Margin="0,140,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
