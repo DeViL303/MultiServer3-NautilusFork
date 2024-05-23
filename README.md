@@ -56,8 +56,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 #### Usage Instructions for Archive Creator:
 - Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as creating 70,000+ objects in a single operation.
 - Insert an 8-byte timestamp to align with the timestamp field in your SDC, if applicable.
-- The default output path for the Archive Creator tool is located adjacent to the exe in Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
-
+- The default output path for the Archive Creator tool is located adjacent to the exe in Output/Archives/. This setting can be altered in the preferences.
 #### Options for Archive Creator:
 
 ##### Timestamp:
@@ -109,13 +108,14 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 #### Usage Instructions for Archive Unpacker:
 - Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
 - The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder if you dont want to have to edit timestamps field in SDC.
-- The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
+- The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences.
 - When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
 
 #### Options for Archive Unpacker:
 
 ##### UUID/Path Prefix:
 - A UUID or a complete path prefix can be entered here, which will be appended to any paths identified during the mapping process.
+- It will detect the UUID and handle it differently than a normal path prefix.
 - Additionally, it will scan for any UUIDs present anywhere in the input file path and attempt to utilize them for mapping.
 
 ##### Validate Files:
@@ -133,17 +133,29 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
    - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
    - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
 
-#### Bruteforce UUID Mode:
+#### Bruteforce UUID:
    - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
    - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
    - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
       - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
       - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
 
-##### Offline Mode:
+##### Extract for Offline:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
+
+#### Compatibility Patches:
+ - This does some patches on the fly that allow newer items to work on older clients.
+   - Patche 1: Every 4th byte of every MDL gets patched from 04 to 03. This allows older clients such as 1.00 to load newer MDL files.
+   - Patch 2: Changes .SCENE files to use file:// links instead of file:///
+   - More might be added here as they are discovered.
+  
+#### Delete File.txt/Manifest
+ - This deletes these 2 extra custom files that are created during the packing proccess and can help with mapping.
+ - These are not really needed once the item is mapped.
+ - If you recreate the archive these will be recreated inside it again.
+ - Enabling this option just means you wont ever see them, but they will still be there when needed
 
 <div align="center">
 
@@ -181,8 +193,11 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 ### Note:
 - The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
-- Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe. Change this in settings.
+
+#### Options:
+- Append SHA1 to filenames: Append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
+- Rename for CDN: If input files are named like uuid.odc or uuid_txxx.odc this will rename than to suit CDN (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
 
 <h2 align="center">
    CDS Decrypter Tool
