@@ -507,14 +507,18 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 
 #### Catalogue Usage
-- New feature allow the user to store 5 managed lists - Right click any item to add or remove it from any list.
+- New feature allow the user to store 5 managed lists - Right click any item to manage them:
+  - Add/Remove from list 1, 2, 3, 4, 5
+  - Add to all Lists
+  - Remove from All lists 
 - These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
 - Right click on the list icons, 1, 2, 3, 4, 5 to show the new options:
   - Push Direct to PS3: Set your PS3 FTP IP in settings, then push any list to the PS3 instantly.
   - Push Direct to RPCS3: Set your RPCS3 dev_hdd0 path in settings, then push any list to RPCS3 client instantly
   - Save List as PKG: Create a custom PKG with one click. Install on either PS3 or RPCS3
   - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
-  - Upload SQL/XML/TXT: Use this to upload and visualize, edit, resave a previously created SQL
+  - Upload SQL/XML/TXT: Use this option to upload and visualize, edit, resave a previously created SQL or any file containing UUIDs.
+    - You can even load a scene file here to see what minigames it uses. 
   - Clear this List: Clear this list completely
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/30ab6577-bc39-447a-8de0-0f7c83ad675b)
