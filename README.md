@@ -45,8 +45,11 @@ Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-Nuatilu
    Home Archive Creator
 </h2>
 
+
+
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/228eaad1-84ed-48c4-9099-4242ab975d77)
 
 </div>
 
@@ -99,6 +102,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6d442843-623c-404e-9c67-096ecbed3522)
 
 </div>
 
@@ -188,6 +192,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c8223ead-645b-4524-a011-1858d07ab816)
 
 </div>
 
@@ -205,6 +210,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1ba691f4-a95e-4a04-b5c2-73af5676f207)
 
 </div>
 
@@ -267,6 +273,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f436ec03-fdc3-4b4a-9f5e-70fafdbbc1aa)
 
 </div>
 
@@ -284,6 +291,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/b74a8359-684d-43ab-8bdc-f9325676c8dc)
 
 </div>
 
@@ -325,6 +333,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/9ef4a655-2dea-4606-8d44-4fa7c85ddb6b)
 
 </div>
 
@@ -347,6 +356,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/508fcbe9-aac7-41f6-a122-57efdaaa34ff)
 
 </div>
 
