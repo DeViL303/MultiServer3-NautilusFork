@@ -2,7 +2,7 @@
    Multiserver 3 - Nautilus Fork
    </h1>
 
-This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses the development of an addon I call Nautilus, The changes made during the development of Nautilus may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses the development of an addon I created called Nautilus, The changes made during the development of Nautilus may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
 
 <h1 align="center">
    What is Nautilus?
@@ -17,7 +17,7 @@ Nautilus is a Windows GUI that I designed from scratch to work on Playstation Ho
 
 <h2 align="center">
    
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00022/Nautilus_Beta_00022.zip)
+Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00023/Nautilus_Beta_00023.zip)
 
 </h2>
 
@@ -33,7 +33,8 @@ Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-Nuatilu
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0a78b8fb-cf3d-46ff-9947-9d0aa3f2e381)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d6683e1b-5494-4f0f-a88a-403c0c58c885)
+
 
 
 </div>
@@ -44,8 +45,11 @@ Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-Nuatilu
    Home Archive Creator
 </h2>
 
+
+
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/228eaad1-84ed-48c4-9099-4242ab975d77)
 
 </div>
 
@@ -55,8 +59,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 #### Usage Instructions for Archive Creator:
 - Drag and drop one or more folders into the application and select the desired archive type before initiating the creation process. This tool is capable of handling extensive operations, such as creating 70,000+ objects in a single operation.
 - Insert an 8-byte timestamp to align with the timestamp field in your SDC, if applicable.
-- The default output path for the Archive Creator tool is located adjacent to the exe in Output/Archives/. This setting can be altered in the preferences, although it will revert to the default upon restarting the application.
-
+- The default output path for the Archive Creator tool is located adjacent to the exe in Output/Archives/. This setting can be altered in the preferences.
 #### Options for Archive Creator:
 
 ##### Timestamp:
@@ -99,6 +102,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6d442843-623c-404e-9c67-096ecbed3522)
 
 </div>
 
@@ -108,13 +112,14 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 #### Usage Instructions for Archive Unpacker:
 - Drag and drop one or more compatible archives or folders into the tool. It is designed to manage large-scale tasks, such as unpacking 70,000+ objects in a single operation.
 - The tool generates a timestamp.txt in the output folder containing the original timestamp of the archive, which should be retained for future repacking of that folder if you dont want to have to edit timestamps field in SDC.
-- The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences but will revert to default on the next restart.
+- The default output path for the Archive Unpacker tool is next to the exe in Output/Mapped/. This setting can be modified in the preferences.
 - When unpacking objects, if the input archive includes the string "object," then the output folder name will replace this with the UUID (e.g., 00000000-00000000-00000000-0000000B/object_T037.sdat will be extracted to the 00000000-00000000-00000000-0000000B_T037 folder).
 
 #### Options for Archive Unpacker:
 
 ##### UUID/Path Prefix:
 - A UUID or a complete path prefix can be entered here, which will be appended to any paths identified during the mapping process.
+- It will detect the UUID and handle it differently than a normal path prefix.
 - Additionally, it will scan for any UUIDs present anywhere in the input file path and attempt to utilize them for mapping.
 
 ##### Validate Files:
@@ -132,17 +137,29 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
    - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
    - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
 
-#### Bruteforce UUID Mode:
+#### Bruteforce UUID:
    - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
    - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
    - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
       - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
       - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
 
-##### Offline Mode:
+##### Extract for Offline:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
 - This was the standard practice until recently. If you have previously extracted objects using older tools like Gaz's HomeTool, you will be familiar with this structure. However, it is not the correct folder structure needed for rebuilding archives, so caution is advised. Only enable this option if you dont intend to repack the objects into archives.
 - Given the revival of Online, this is no longer the default folder structure required, It is important to note that unlike other settings, this one does not persist between sessions.
+
+#### Compatibility Patches:
+ - This does some patches on the fly that allow newer items to work on older clients.
+   - Patche 1: Every 4th byte of every MDL gets patched from 04 to 03. This allows older clients such as 1.00 to load newer MDL files.
+   - Patch 2: Changes .SCENE files to use file:// links instead of file:///
+   - More might be added here as they are discovered.
+  
+#### Delete File.txt/Manifest
+ - This deletes these 2 extra custom files that are created during the packing proccess and can help with mapping.
+ - These are not really needed once the item is mapped.
+ - If you recreate the archive these will be recreated inside it again.
+ - Enabling this option just means you wont ever see them, but they will still be there when needed
 
 <div align="center">
 
@@ -161,7 +178,8 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/917aec61-c00b-49e8-813f-c10d4b218962)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/eb18af83-a54d-4c64-8619-0964fb32f243)
+
 
 
 </div>
@@ -174,13 +192,17 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c8223ead-645b-4524-a011-1858d07ab816)
 
 </div>
 
 ### Note:
 - The CDS encrypter tool will automatically generate the SHA1 for input files and then use the first 16 bytes of that SHA1 to encrypt the file.
-- Optionally you can choose to append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe.
+- CDS Encrypter tool by default will output to Output/CDSEncrypt/ next to the exe. Change this in settings.
+
+#### Options:
+- Append SHA1 to filenames: Append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
+- Rename for CDN: If input files are named like uuid.odc or uuid_txxx.odc this will rename than to suit CDN (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
 
 <h2 align="center">
    CDS Decrypter Tool
@@ -188,6 +210,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1ba691f4-a95e-4a04-b5c2-73af5676f207)
 
 </div>
 
@@ -215,7 +238,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/ce70fbf6-f845-41b7-a3d5-7ef738194ad0)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6028c426-f9b7-4ce9-8041-f507176f60a5)
+
 
 
 </div>
@@ -234,7 +258,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d06a82b7-3a73-4079-9d0d-7a5345555279)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94ebe836-6b6a-4569-9944-d4c415ef77bb)
+
 
 
 </div>
@@ -248,6 +273,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f436ec03-fdc3-4b4a-9f5e-70fafdbbc1aa)
 
 </div>
 
@@ -265,6 +291,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/b74a8359-684d-43ab-8bdc-f9325676c8dc)
 
 </div>
 
@@ -294,7 +321,8 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/9b49c355-ac71-4662-9041-f18459cfa797)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0915629a-b85b-4a15-b993-f237f39f85a5)
+
 
 
 </div>
@@ -305,6 +333,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
 
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/9ef4a655-2dea-4606-8d44-4fa7c85ddb6b)
 
 </div>
 
@@ -327,6 +356,7 @@ If you have the "Validate Files" option enabled in TAB 1 mapper tool it will aut
 
 <div align="center">
    
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/508fcbe9-aac7-41f6-a122-57efdaaa34ff)
 
 </div>
 
@@ -365,7 +395,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/1f5f8223-681c-46ba-9ecd-545964d4f1d4)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/63776b62-6002-4b58-9f4c-2d876987fa35)
+
 
 
 </div>
@@ -389,7 +420,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94384bf1-eb52-444b-b639-7b3dc33fcb85)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/79c8f10e-f22b-4975-a804-e16eded39d8d)
+
 
 
 </div>
@@ -414,7 +446,8 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/22499105-6931-4ad6-a34b-32e8d31b73c5)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/900dba64-b5e5-491b-aa45-acf0b9201a95)
+
 
 
 </div>
@@ -439,7 +472,8 @@ View and or Patch various fields in Home EBOOTS.
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6920a64f-3c3f-413e-ac30-aef56488447c)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a95cad13-cdbb-448e-89fe-5f61f65cf6b8)
+
 
 
 </div>
@@ -467,18 +501,24 @@ This tab is currently not working fully. Just the sha1 checker portion works
    Tab 10: Content Catalogue
 </h1>
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6090f2a6-d709-4d59-9541-22b93af68975)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7ef1604a-858b-42fb-8b92-2c38abdd4dbb)
+
+
 
 
 #### Catalogue Usage
-- New feature allow the user to store 5 managed lists - Right click any item to add or remove it from any list.
+- New feature allow the user to store 5 managed lists - Right click any item to manage them:
+  - Add/Remove from list 1, 2, 3, 4, 5
+  - Add to all Lists
+  - Remove from All lists 
 - These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
 - Right click on the list icons, 1, 2, 3, 4, 5 to show the new options:
   - Push Direct to PS3: Set your PS3 FTP IP in settings, then push any list to the PS3 instantly.
   - Push Direct to RPCS3: Set your RPCS3 dev_hdd0 path in settings, then push any list to RPCS3 client instantly
   - Save List as PKG: Create a custom PKG with one click. Install on either PS3 or RPCS3
   - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
-  - Upload SQL/XML/TXT: Use this to upload and visualize, edit, resave a previously created SQL
+  - Upload SQL/XML/TXT: Use this option to upload and visualize, edit, resave a previously created SQL or any file containing UUIDs.
+    - You can even load a scene file here to see what minigames it uses. 
   - Clear this List: Clear this list completely
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/30ab6577-bc39-447a-8de0-0f7c83ad675b)
@@ -491,7 +531,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/371aba2d-a068-43e8-9f56-08702eb7c89c)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d72e4f73-abaf-4387-87ae-1e698f1b2229)
+
 
 
 </div>
@@ -527,7 +568,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/192d7ca5-8478-4da0-ac57-907640712f9b)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/43ba5dc1-ef5f-4b36-a52b-1c8085761712)
+
 
 
 </div>
