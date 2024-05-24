@@ -4,7 +4,7 @@
         xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        Title="Nautilus Toolset v1.00 Beta 00025" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
+        Title="Nautilus Toolset v1.00 Beta 00026" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
         ResizeMode="NoResize" WindowStyle="None" Background="#333333"
         BorderBrush="#000000"
                 BorderThickness="1">

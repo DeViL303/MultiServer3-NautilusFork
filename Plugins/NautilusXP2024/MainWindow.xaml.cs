@@ -7964,56 +7964,98 @@ namespace NautilusXP2024
             }
         }
 
-        private void HandleSdcFileDrop(string[] files)
+        private async void HandleSdcFileDrop(string[] files)
         {
-            // Assuming only one file can be dropped at a time
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string filePath = files.FirstOrDefault();
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            LogDebugInfo("HandleSdcFileDrop: File dropped - " + filePath);
 
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
                 MessageBox.Show("Invalid file. Please drop a valid SDC XML file.");
+                LogDebugInfo("HandleSdcFileDrop: Invalid file path or file does not exist.");
                 return;
             }
 
             try
             {
-                // Load the SDC XML file
+                // Try to load the SDC XML file
+                LogDebugInfo("HandleSdcFileDrop: Attempting to load SDC XML file.");
                 XDocument sdcXml = XDocument.Load(filePath);
-
-                // Assuming English is the default language for the application
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                var englishLanguageElement = sdcXml.Root.Elements("LANGUAGE").FirstOrDefault(el => el.Attribute("REGION")?.Value == "en-GB");
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
-                if (englishLanguageElement != null)
-                {
-                    sdcNameTextBox.Text = englishLanguageElement.Element("NAME")?.Value ?? "";
-                    sdcDescriptionTextBox.Text = englishLanguageElement.Element("DESCRIPTION")?.Value ?? "";
-                    sdcMakerTextBox.Text = englishLanguageElement.Element("MAKER")?.Value ?? "";
-
-                    var archiveElement = englishLanguageElement.Element("ARCHIVES")?.Element("ARCHIVE");
-                    sdcServerArchivePathTextBox.Text = archiveElement?.Value ?? "";
-                    sdcArchiveSizeTextBox.Text = archiveElement?.Attribute("size")?.Value ?? "";
-                    sdcTimestampTextBox.Text = archiveElement?.Attribute("timestamp")?.Value ?? "";
-
-                    // Extract the thumbnail suffix from the image path
-                    var makerImagePath = englishLanguageElement.Element("MAKER_IMAGE")?.Value ?? "";
-                    sdcThumbnailSuffixTextBox.Text = ExtractSDCThumbnailSuffix(makerImagePath);
-
-                    // Check if offline checkbox should be checked
-                    offlineSDCCheckBox.IsChecked = englishLanguageElement.Element("ARCHIVES") == null;
-                }
-
-                // Set HDK version
-                sdcHDKVersionTextBox.Text = sdcXml.Root.Attribute("hdk_version")?.Value ?? "";
+                ProcessSdcXml(sdcXml);
+                LogDebugInfo("HandleSdcFileDrop: SDC XML file loaded successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading SDC file: {ex.Message}");
+                LogDebugInfo("HandleSdcFileDrop: Failed to load SDC XML file. Attempting decryption. Exception: " + ex.Message);
+
+                string tempDirectory = Path.Combine(Path.GetTempPath(), "DecryptedFiles");
+                Directory.CreateDirectory(tempDirectory);
+
+                bool decryptionSuccess = await DecryptFilesAsync(new[] { filePath }, tempDirectory);
+                if (decryptionSuccess)
+                {
+                    string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+                    string decryptedFilePath = Path.Combine(tempDirectory, parentFolderName, Path.GetFileName(filePath));
+                    LogDebugInfo("HandleSdcFileDrop: Decryption successful. Decrypted file path - " + decryptedFilePath);
+
+                    if (File.Exists(decryptedFilePath))
+                    {
+                        try
+                        {
+                            XDocument sdcXml = XDocument.Load(decryptedFilePath);
+                            ProcessSdcXml(sdcXml);
+                            LogDebugInfo("HandleSdcFileDrop: Decrypted SDC XML file loaded successfully.");
+
+                            // Compute and display the SHA1 hash
+                            string sha1Hash = CalculateSDCODCSha1Hash(decryptedFilePath);
+                            Createdsdcsha1TextBox.Text = sha1Hash;
+                            LogDebugInfo("HandleSdcFileDrop: SHA1 hash computed - " + sha1Hash);
+                        }
+                        catch (Exception ex2)
+                        {
+                            MessageBox.Show($"Error reading decrypted SDC file: {ex2.Message}");
+                            LogDebugInfo("HandleSdcFileDrop: Error reading decrypted SDC file. Exception: " + ex2.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Error reading or decrypting SDC file.");
+                    LogDebugInfo("HandleSdcFileDrop: Decryption failed.");
+                }
             }
         }
+
+
+        private void ProcessSdcXml(XDocument sdcXml)
+        {
+            LogDebugInfo("ProcessSdcXml: Processing SDC XML file.");
+            var englishLanguageElement = sdcXml.Root.Elements("LANGUAGE").FirstOrDefault(el => el.Attribute("REGION")?.Value == "en-GB");
+
+            if (englishLanguageElement != null)
+            {
+                sdcNameTextBox.Text = englishLanguageElement.Element("NAME")?.Value ?? "";
+                sdcDescriptionTextBox.Text = englishLanguageElement.Element("DESCRIPTION")?.Value ?? "";
+                sdcMakerTextBox.Text = englishLanguageElement.Element("MAKER")?.Value ?? "";
+
+                var archiveElement = englishLanguageElement.Element("ARCHIVES")?.Element("ARCHIVE");
+                if (archiveElement != null)
+                {
+                    sdcServerArchivePathTextBox.Text = (archiveElement.Value ?? "").Replace("[CONTENT_SERVER_ROOT]", string.Empty);
+                    sdcArchiveSizeTextBox.Text = archiveElement.Attribute("size")?.Value ?? "";
+                    sdcTimestampTextBox.Text = archiveElement.Attribute("timestamp")?.Value ?? "";
+                }
+
+                var makerImagePath = englishLanguageElement.Element("MAKER_IMAGE")?.Value ?? "";
+                sdcThumbnailSuffixTextBox.Text = ExtractSDCThumbnailSuffix(makerImagePath);
+
+                offlineSDCCheckBox.IsChecked = englishLanguageElement.Element("ARCHIVES") == null;
+            }
+
+            sdcHDKVersionTextBox.Text = sdcXml.Root.Attribute("hdk_version")?.Value ?? "";
+            LogDebugInfo("ProcessSdcXml: SDC XML file processed successfully.");
+        }
+
 
         private string ExtractSDCThumbnailSuffix(string imagePath)
         {
@@ -8023,43 +8065,83 @@ namespace NautilusXP2024
         }
 
 
-        private void HandleOdcFileDrop(string[] files)
+        private async void HandleOdcFileDrop(string[] files)
         {
-            // Assuming only one file can be dropped at a time
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string filePath = files.FirstOrDefault();
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            LogDebugInfo("HandleOdcFileDrop: File dropped - " + filePath);
 
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
                 MessageBox.Show("Invalid file. Please drop a valid ODC XML file.");
+                LogDebugInfo("HandleOdcFileDrop: Invalid file path or file does not exist.");
                 return;
             }
 
             try
             {
-                // Load the ODC XML file
+                // Try to load the ODC XML file
+                LogDebugInfo("HandleOdcFileDrop: Attempting to load ODC XML file.");
                 XDocument odcXml = XDocument.Load(filePath);
-
-                // Parse and set the values to the form
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                odcNameTextBox.Text = odcXml.Root.Elements("name").FirstOrDefault()?.Value ?? "";
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-                odcDescriptionTextBox.Text = odcXml.Root.Elements("description").FirstOrDefault()?.Value ?? "";
-                odcMakerTextBox.Text = odcXml.Root.Elements("maker").FirstOrDefault()?.Value ?? "";
-                odcHDKVersionTextBox.Text = odcXml.Root.Attribute("hdk_version")?.Value ?? "";
-                odcUUIDTextBox.Text = odcXml.Root.Element("uuid")?.Value ?? "";
-                odcTimestampTextBox.Text = odcXml.Root.Element("timestamp")?.Value ?? "";
-
-                // Extract the thumbnail suffix from the image path
-                var makerImagePath = odcXml.Root.Elements("maker_image").FirstOrDefault()?.Value ?? "";
-                odcThumbnailSuffixTextBox.Text = ExtractODCThumbnailSuffix(makerImagePath);
+                ProcessOdcXml(odcXml);
+                LogDebugInfo("HandleOdcFileDrop: ODC XML file loaded successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading ODC file: {ex.Message}");
+                LogDebugInfo("HandleOdcFileDrop: Failed to load ODC XML file. Attempting decryption. Exception: " + ex.Message);
+
+                string tempDirectory = Path.Combine(Path.GetTempPath(), "DecryptedFiles");
+                Directory.CreateDirectory(tempDirectory);
+
+                bool decryptionSuccess = await DecryptFilesAsync(new[] { filePath }, tempDirectory);
+                if (decryptionSuccess)
+                {
+                    // Adjust decryptedFilePath to reflect the expected folder structure
+                    string parentFolderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+                    string decryptedFilePath = Path.Combine(tempDirectory, parentFolderName, Path.GetFileName(filePath));
+                    LogDebugInfo("HandleOdcFileDrop: Decryption successful. Decrypted file path - " + decryptedFilePath);
+
+                    if (File.Exists(decryptedFilePath))
+                    {
+                        try
+                        {
+                            // Compute SHA1 of the decrypted file using the existing function
+                            string sha1Hash = CalculateSDCODCSha1Hash(decryptedFilePath);
+                            Createdodcsha1TextBox.Text = sha1Hash;
+
+                            XDocument odcXml = XDocument.Load(decryptedFilePath);
+                            ProcessOdcXml(odcXml);
+                            LogDebugInfo("HandleOdcFileDrop: Decrypted ODC XML file loaded successfully.");
+                        }
+                        catch (Exception ex2)
+                        {
+                            MessageBox.Show($"Error reading decrypted ODC file: {ex2.Message}");
+                            LogDebugInfo("HandleOdcFileDrop: Error reading decrypted ODC file. Exception: " + ex2.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Error reading or decrypting ODC file.");
+                    LogDebugInfo("HandleOdcFileDrop: Decryption failed.");
+                }
             }
         }
+
+        private void ProcessOdcXml(XDocument odcXml)
+        {
+            LogDebugInfo("ProcessOdcXml: Processing ODC XML file.");
+            odcNameTextBox.Text = odcXml.Root.Elements("name").FirstOrDefault()?.Value ?? "";
+            odcDescriptionTextBox.Text = odcXml.Root.Elements("description").FirstOrDefault()?.Value ?? "";
+            odcMakerTextBox.Text = odcXml.Root.Elements("maker").FirstOrDefault()?.Value ?? "";
+            odcHDKVersionTextBox.Text = odcXml.Root.Attribute("hdk_version")?.Value ?? "";
+            odcUUIDTextBox.Text = odcXml.Root.Element("uuid")?.Value ?? "";
+            odcTimestampTextBox.Text = odcXml.Root.Element("timestamp")?.Value ?? "";
+
+            var makerImagePath = odcXml.Root.Elements("maker_image").FirstOrDefault()?.Value ?? "";
+            odcThumbnailSuffixTextBox.Text = ExtractODCThumbnailSuffix(makerImagePath);
+            LogDebugInfo("ProcessOdcXml: ODC XML file processed successfully.");
+        }
+
 
         private string ExtractODCThumbnailSuffix(string imagePath)
         {
