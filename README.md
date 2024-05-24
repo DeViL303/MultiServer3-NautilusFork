@@ -18,7 +18,7 @@ This repository is a fork of AgentDarks447's awesome server project, Multiserver
    What is Nautilus?
    </h1>
    
-Nautilus is a Windows GUI that I designed from scratch to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
+Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
 
 Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
