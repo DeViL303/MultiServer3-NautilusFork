@@ -540,8 +540,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
   - Remove from All lists 
 - These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
 - Right click on the list icons, 1, 2, 3, 4, 5 to show the new options:
-  - Push Direct to PS3: Set your PS3 FTP IP in settings, then push any list to the PS3 instantly.
-  - Push Direct to RPCS3: Set your RPCS3 dev_hdd0 path in settings, then push any list to RPCS3 client instantly
+  - Push Direct to PS3: Push any list to your PS3 instantly. Requires you to have FTP running on your PS3 like webman mod, and your PS3 FTP IP must be set correctly in settings.
+  - Push Direct to RPCS3: Push any list to your RPCS3 client instantly. Make sure to set your RPCS3 dev_hdd0 path in settings first. 
   - Save List as PKG: Create a custom PKG with one click. Install on either PS3 or RPCS3
   - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
   - Upload SQL/XML/TXT: Use this option to upload and visualize, edit, resave a previously created SQL or any file containing UUIDs.
