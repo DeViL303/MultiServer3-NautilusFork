@@ -2,13 +2,15 @@
    Multiserver 3 - Nautilus Fork
    </h1>
 
-This repository is a fork of AgentDarks447's awesome project, Multiserver3. This repo specifically focuses the development of a GUI addon I created called Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDarks447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
 
 <h1 align="center">
    What is Nautilus?
    </h1>
    
-Nautilus is a Windows GUI that I designed from scratch to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. Due to the nature of Homes millions of files and the many edge cases this application will most likely never be "finished".
+Nautilus is a Windows GUI that I designed from scratch to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
+
+Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
 
 <h1 align="center">
