@@ -173,7 +173,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 
 <h1 align="center">
-   Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
+   Tab 2: CDS Tool 
 </h1>
 
 <div align="center">
@@ -202,7 +202,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 #### Options:
 - Append SHA1 to filenames: Append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- Rename for CDN: If input files are named like uuid.odc or uuid_txxx.odc this will rename than to suit CDN (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
+- Rename for CDN: If input files are named like UUID.odc or UUID_TXXX.odc this will rename them to suit CDN format (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
 
 <h2 align="center">
    CDS Decrypter Tool
