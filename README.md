@@ -401,9 +401,9 @@ You could also switch out the JAR files for others if you find better solutions.
 
 ### SDC Creator:
 - SDCs are small XML based files used for storing scene information.
-- Fill out the fields and click create.
-- Create encryped SDCS in one operation - The SHA1 used to encrypt the file will be shown.
-- Choose Offline mode to exlude the archive element from the the SDC.
+- Usage: Fill out the fields and click create.
+- Create encrypted SDCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
+- Choose Offline mode to exlude the archive element from the the SDC. These are suitable for using with HDK builds.
 - The created file will have the name autofilled to match the sdat name in the archive element.
 - The SDC Content box will show the generated SDC for review.
 - Use the clear button to revert all fields to default before creating a new SDC.
@@ -411,9 +411,9 @@ You could also switch out the JAR files for others if you find better solutions.
   
 ### ODC Creator:
 - ODCs are small XML based files used for storing object information.
-- Fill out the fields and click create.
-- Create encryped ODCS in one operation - The SHA1 used to encrypt the file will be shown.
-- Generate random UUIDs here with one click.
+- Usage: Fill out the fields and click create.
+- Create encrypted ODCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
+- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small.
 - The created file will have the name autofilled to UUID.odc or UUID_TXXX.odc if you included a version.
 - The ODC Content box will show the generated ODC for review.
 - Use the clear button to revert all fields to default before creating a new ODC.
