@@ -399,13 +399,14 @@ You could also switch out the JAR files for others if you find better solutions.
 
 </div>
 
+### Use this tab to Create Plaintext or Encrypted SDC and ODC files.
+
+
 <div align="center">
    
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/b5be8545-46af-4356-b3cc-854b37537ca6)
 
 </div>
-
-### Use this tab to Create Plaintext or Encrypted SDC and ODC files.
 
 ### SDC Creator:
 - SDCs are small XML based files used for storing scene information.
