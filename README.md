@@ -395,23 +395,28 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/63776b62-6002-4b58-9f4c-2d876987fa35)
-
-
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a37847e9-5f67-4da3-83e1-3b424e930e0c)
 
 </div>
 
-### SDC Files:
-- Small XML based files used for storing scene information
-### ODC Files:
-- Small XML based files used for storing object information
+### SDC Creator:
+- SDCs are small XML based files used for storing scene information.
+- Fill out the fields and click create.
+- Create encryped SDCS in one operation - The SHA1 used to encrypt the file will be shown.
+- Choose Offline mode to exlude the archive element from the the SDC.
+- The created file will have the name autofilled to match the sdat name in the archive element.
+- The SDC Content box will show the generated SDC for review.
+- Use the clear button to revert all fields to default before creating a new SDC.
 
-### Usage: 
-- Fill out the input fields and click create
-- For objects you can generate random UUIDs here too.
-
-### Options:
-- SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
+  
+### ODC Creator:
+- ODCs are small XML based files used for storing object information.
+- Fill out the fields and click create.
+- Create encryped ODCS in one operation - The SHA1 used to encrypt the file will be shown.
+- Generate random UUIDs here with one click.
+- The created file will have the name autofilled to UUID.odc or UUID_TXXX.odc if you included a version.
+- The ODC Content box will show the generated ODC for review.
+- Use the clear button to revert all fields to default before creating a new ODC.
 
 
 <h1 align="center">
