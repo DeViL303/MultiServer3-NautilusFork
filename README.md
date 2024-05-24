@@ -399,16 +399,20 @@ You could also switch out the JAR files for others if you find better solutions.
 
 </div>
 
+<div align="center">
+
 ### Use this tab to Create Plaintext or Encrypted SDC and ODC files.
 
+</div>
 
+### SDC Creator:
 <div align="center">
    
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/b5be8545-46af-4356-b3cc-854b37537ca6)
 
 </div>
 
-### SDC Creator:
+
 - SDCs are small XML based files used for storing scene information.
 - Usage: Fill out the fields and click create.
 - Create encrypted SDCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
@@ -417,13 +421,15 @@ You could also switch out the JAR files for others if you find better solutions.
 - The SDC Content box will show the generated SDC for review.
 - Use the clear button to revert all fields to default before creating a new SDC.
 
+
+### ODC Creator:
 <div align="center">
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94eb9854-3c6a-4a38-a48a-fa539b3f97eb)
 
 </div>
   
-### ODC Creator:
+
 - ODCs are small XML based files used for storing object information.
 - Usage: Fill out the fields and click create.
 - Create encrypted ODCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
