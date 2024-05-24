@@ -1,5 +1,15 @@
 <h1 align="center">
-   Multiserver 3 - Nautilus Fork
+   Nautilus Toolset Release v1.00 Beta Build 00025
+</h1>
+
+<h2 align="center">
+   
+Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00026/Nautilus_Beta_00025.zip)
+
+</h2>
+
+<h1 align="center">
+   Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
    </h1>
 
 This repository is a fork of AgentDarks447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
@@ -12,16 +22,6 @@ Nautilus is a Windows GUI that I designed from scratch to work on Playstation Ho
 
 Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
-
-<h1 align="center">
-   Nautilus Toolset Release v1.00 Beta Build 00025
-</h1>
-
-<h2 align="center">
-   
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00026/Nautilus_Beta_00025.zip)
-
-</h2>
 
 <div align="center">
 
