@@ -1,25 +1,27 @@
 <h1 align="center">
-   Multiserver 3 - Nautilus Fork
+   Nautilus Toolset Release v1.00 Beta Build 00025
+</h1>
+
+<h2 align="center">
+   
+Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00026/Nautilus_Beta_00025.zip)
+
+</h2>
+
+<h1 align="center">
+   Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
    </h1>
 
-This repository is a fork of AgentDarks447's awesome project, Multiserver3. It specifically focuses the development of an addon I created called Nautilus, The changes made during the development of Nautilus may not be entirely stable and could potentially affect the web tool component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDarks447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
 
 <h1 align="center">
    What is Nautilus?
    </h1>
    
-Nautilus is a Windows GUI that I designed from scratch to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. Due to the nature of Homes millions of files and the many edge cases this application will most likely never be "finished".
+Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
 
+Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
-<h1 align="center">
-   Nautilus Toolset Release v1.00 Beta Build 00023
-</h1>
-
-<h2 align="center">
-   
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00023/Nautilus_Beta_00023.zip)
-
-</h2>
 
 <div align="center">
 
@@ -173,7 +175,7 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 
 <h1 align="center">
-   Tab 2: CDS Tool - SDC/ODC/SceneList Decrypter / Encrypter
+   Tab 2: CDS Tool 
 </h1>
 
 <div align="center">
@@ -202,7 +204,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 #### Options:
 - Append SHA1 to filenames: Append the original SHA1 to the output filenames. This essentially means the decryption key is attached to the file.
-- Rename for CDN: If input files are named like uuid.odc or uuid_txxx.odc this will rename than to suit CDN (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
+- Rename for CDN: If input files are named like UUID.odc or UUID_TXXX.odc this will rename them to suit CDN format (eg. Objects/9178D77B-417940EC-9BA99895-B1CA1179/object_T045.odc)
 
 <h2 align="center">
    CDS Decrypter Tool
@@ -395,23 +397,46 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/63776b62-6002-4b58-9f4c-2d876987fa35)
-
-
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a37847e9-5f67-4da3-83e1-3b424e930e0c)
 
 </div>
 
-### SDC Files:
-- Small XML based files used for storing scene information
-### ODC Files:
-- Small XML based files used for storing object information
+<div align="center">
 
-### Usage: 
-- Fill out the input fields and click create
-- For objects you can generate random UUIDs here too.
+### Use this tab to Create Plaintext or Encrypted SDC and ODC files.
 
-### Options:
-- SDC Offline Mode: When enabled it will leave out the archive section of the xml which is not needed for offline builds.
+</div>
+
+<div align="center">
+   
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/b5be8545-46af-4356-b3cc-854b37537ca6)
+
+</div>
+
+### SDC Creator:
+
+- SDCs are small XML based files used for storing scene information.
+- Usage: Fill out the fields and click create.
+- Create encrypted SDCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
+- Choose Offline mode to exlude the archive element from the the SDC. These are suitable for using with HDK builds.
+- The created file will have the name autofilled to match the sdat name in the archive element.
+- The SDC Content box will show the generated SDC for review.
+- Use the clear button to revert all fields to default before creating a new SDC.
+
+<div align="center">
+
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94eb9854-3c6a-4a38-a48a-fa539b3f97eb)
+
+</div>
+### ODC Creator:
+
+- ODCs are small XML based files used for storing object information.
+- Usage: Fill out the fields and click create.
+- Create encrypted ODCS in one operation - The SHA1 used to encrypt the file will be shown when you click create.
+- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small.
+- The created file will have the name autofilled to UUID.odc or UUID_TXXX.odc if you included a version.
+- The ODC Content box will show the generated ODC for review.
+- Use the clear button to revert all fields to default before creating a new ODC.
 
 
 <h1 align="center">
@@ -513,8 +538,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
   - Remove from All lists 
 - These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
 - Right click on the list icons, 1, 2, 3, 4, 5 to show the new options:
-  - Push Direct to PS3: Set your PS3 FTP IP in settings, then push any list to the PS3 instantly.
-  - Push Direct to RPCS3: Set your RPCS3 dev_hdd0 path in settings, then push any list to RPCS3 client instantly
+  - Push Direct to PS3: Push any list to your PS3 instantly. Requires you to have FTP running on your PS3 like webman mod, and your PS3 FTP IP must be set correctly in settings.
+  - Push Direct to RPCS3: Push any list to your RPCS3 client instantly. Make sure to set your RPCS3 dev_hdd0 path in settings first. 
   - Save List as PKG: Create a custom PKG with one click. Install on either PS3 or RPCS3
   - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
   - Upload SQL/XML/TXT: Use this option to upload and visualize, edit, resave a previously created SQL or any file containing UUIDs.
