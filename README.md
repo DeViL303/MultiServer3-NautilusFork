@@ -19,7 +19,7 @@ Note: Due to the nature of Homes millions of assets and the many edge cases invo
 
 <h2 align="center">
    
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00023/Nautilus_Beta_00023.zip)
+Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/00026/Nautilus_Beta_00025.zip)
 
 </h2>
 
