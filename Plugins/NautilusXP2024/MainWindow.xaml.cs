@@ -77,7 +77,7 @@ namespace NautilusXP2024
                 }
             }
         }
-
+        private FileScannerStandalone fileScanner;
         public MainWindow()
         {
             InitializeComponent();
@@ -85,6 +85,7 @@ namespace NautilusXP2024
             InitializeWebView2();
 
             LoggerAccessor.SetupLogger("NautilusXP2024");
+            fileScanner = new FileScannerStandalone(Sha1TextBox);
 
             DataContext = this;
             // Load settings when the window initializes
@@ -9431,19 +9432,75 @@ namespace NautilusXP2024
 
         private async void ArchiveUnpackerVerifyTestButtonClick(object sender, RoutedEventArgs e)
         {
-            // You might want to add a dialog to select the directory or set a fixed directory
-            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            System.Windows.Forms.DialogResult result = folderDialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            LogDebugInfo("Archive Unpacker: Browsing for directory initiated");
+
+            // Disable the main window to prevent interactions while the dialog is open
+            this.IsEnabled = false;
+
+            var folderDialog = new VistaFolderBrowserDialog();
+
+            bool? result = folderDialog.ShowDialog();
+
+            // Await a delay to absorb any unintentional clicks that happen after the dialog closes
+            await Task.Delay(10); // 10 ms delay
+
+            // Re-enable the main window after the delay
+            this.IsEnabled = true;
+
+            if (result == true && !string.IsNullOrEmpty(folderDialog.SelectedPath))
             {
                 string selectedDirectory = folderDialog.SelectedPath;
-
-                FileScanner scanner = new FileScanner();
-                await scanner.ScanDirectoryAsync(selectedDirectory);
-
-                MessageBox.Show("Scan completed!");
+                await ScanDirectoryAsync(selectedDirectory);
+            }
+            else
+            {
+                LogDebugInfo("Archive Unpacker: No directory selected in folder browser.");
+                MessageBox.Show("No directory selected.");
             }
         }
+
+
+
+        private async void VerifyDragArea_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] droppedItems = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (droppedItems.Length > 0)
+                {
+                    string firstItem = droppedItems[0];
+                    FileScannerStandalone scanner = new FileScannerStandalone(Sha1TextBox);
+
+                    if (System.IO.Directory.Exists(firstItem))
+                    {
+                        await scanner.ScanDirectoryAsync(firstItem);
+                    }
+                    else if (System.IO.File.Exists(firstItem))
+                    {
+                        await scanner.ScanFileAsync(firstItem);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please drop a valid folder or file.");
+                    }
+                }
+            }
+        }
+
+        private async Task ScanDirectoryAsync(string directoryPath)
+        {
+            try
+            {
+                FileScannerStandalone scanner = new FileScannerStandalone(Sha1TextBox);
+                await scanner.ScanDirectoryAsync(directoryPath);
+                MessageBox.Show("Scan completed!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}");
+            }
+        }
+
 
         private void ArchiveUnpackerTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

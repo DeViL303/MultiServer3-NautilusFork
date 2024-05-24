@@ -1097,9 +1097,7 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
                                 <Label Content="Txxx Version:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="105"/>
-                                <TextBox x:Name="sdcThumbnailSuffixTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="310"/>
-                                <TextBlock Text="Offline SDC:" Style="{StaticResource Toggle1TextBlockStyle}" Margin="10,0,0,0" VerticalAlignment="Center" Width="65"/>
-                                <CheckBox x:Name="offlineSDCCheckBox" Checked="CheckBoxOfflineSDC_Checked" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                <TextBox x:Name="sdcThumbnailSuffixTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="435"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
                                 <Label Content="Archive Path:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="105"/>
@@ -1108,11 +1106,13 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570">
                                 <Label Content="Timestamp:" Foreground="White"  FontSize="14" VerticalAlignment="Center" Width="105"/>
-                                <TextBox x:Name="sdcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="140" />
-                                <Label Content="Archive Size (Bytes):" Foreground="White" FontSize="14" Margin="20,0,0,0" VerticalAlignment="Center" Width="135"/>
-                                <TextBox x:Name="sdcArchiveSizeTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="140" />
+                                <TextBox x:Name="sdcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="90" />
+                                <Label Content="Archive Size:" Foreground="White" FontSize="14" Margin="20,0,0,0" VerticalAlignment="Center" Width="90"/>
+                                <TextBox x:Name="sdcArchiveSizeTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="110" />
+                                <TextBlock Text="Offline SDC:" Style="{StaticResource Toggle1TextBlockStyle}" Margin="10,0,0,0" VerticalAlignment="Center" Width="65"/>
+                                <CheckBox x:Name="offlineSDCCheckBox" Checked="CheckBoxOfflineSDC_Checked" Style="{StaticResource ModernToggleSwitchStyle}" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Width="570">
+                            <StackPanel Orientation="Horizontal" Width="570" Margin="0,10,0,0">
                                 <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="Createdsdcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="SDCCopySHA1Button_Click" />
@@ -1164,7 +1164,7 @@
                                 <Label Content="Timestamp:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="odcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="435"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Width="570">
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Width="570">
                                 <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="Createdodcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="ODCCopySHA1Button_Click" />
@@ -1340,7 +1340,7 @@
 
                 <!-- Tab 10 SHA1 Checker -->
                 <TabItem Header="Checker" Tag="SHAChecker" >
-                    <StackPanel Background="#333333" AllowDrop="True" Drop="Sha1DragArea_Drop">
+                    <StackPanel Background="#333333" >
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <!-- Title TextBlock -->
@@ -1351,11 +1351,11 @@
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <!-- Drag-and-Drop Area -->
-                            <Border x:Name="Sha1DragArea" Height="100" Width="500" Margin="15,0,15,0" Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="SHA1BrowseButton_Click">
+                            <Border x:Name="Sha1DragArea" Height="100" Width="500" Margin="15,0,15,0" Style="{StaticResource DragAreaStyle2}" AllowDrop="True" Drop="Sha1DragArea_Drop" MouseLeftButtonUp="SHA1BrowseButton_Click">
                                 <TextBlock x:Name="SHA1DragAreaText" Text="Drag Folders or Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
                             </Border>
-                            <Border x:Name="VerifyDragArea" Height="100" Width="500" Margin="15,0,15,0"  Style="{StaticResource DragAreaStyle2}"  MouseLeftButtonUp="ArchiveUnpackerVerifyTestButtonClick">
-                                <TextBlock x:Name="VerifyDragAreaText" Text="Drag Folders or Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+                            <Border x:Name="VerifyDragArea" Height="100" Width="500" Margin="15,0,15,0"  Style="{StaticResource DragAreaStyle2}" AllowDrop="True" Drop="VerifyDragArea_Drop"  MouseLeftButtonUp="ArchiveUnpackerVerifyTestButtonClick">
+                                <TextBlock x:Name="VerifyDragAreaText" Text="Drag Folders Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
                             </Border>
                          <!--   <Border x:Name="GetInfoDragArea" Height="100" Width="350" Margin="15,0,15,0" Style="{StaticResource DragAreaStyle2}" MouseLeftButtonUp="SHA1BrowseButton_Click"> -->
                          <!--   <TextBlock x:Name="GetInfoDragAreaText" Text="Drag Folders or Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" /> 
