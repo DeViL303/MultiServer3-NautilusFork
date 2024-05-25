@@ -602,7 +602,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c1cef610-24d1-4174-b35b-7fdbe1db05a9)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f2d4ce66-a0d6-4e99-b1e1-caac5f55bca7)
+
 
 
 </div>
