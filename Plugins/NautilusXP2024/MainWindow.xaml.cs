@@ -718,8 +718,6 @@ namespace NautilusXP2024
             }
 
             var sqlScript = new StringBuilder();
-            sqlScript.AppendLine("-- To support the new heat fields in furniture items, we must patch old active items so that their heat is 22 for all heat fields. --");
-            sqlScript.AppendLine("-- This is required for sorting furniture items by heat value. --");
             sqlScript.AppendLine("CREATE TEMPORARY TABLE TempActives");
             sqlScript.AppendLine("(");
             sqlScript.AppendLine("\tObjectIndex\tINTEGER");
@@ -731,22 +729,17 @@ namespace NautilusXP2024
             sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"PPU_HEAT\", 22 FROM TempActives;");
             sqlScript.AppendLine("INSERT INTO Metadata SELECT ObjectIndex, \"NET_HEAT\", 22 FROM TempActives;");
             sqlScript.AppendLine("DROP TABLE TempActives;");
-            sqlScript.AppendLine("-- DO NOT EDIT ANYTHING ABOVE THIS LINE --");
-            sqlScript.AppendLine("-- ALL ITEMS GO INTO STORAGE. YOU CAN TAKE THEM OUT OF STORAGE IN-GAME AND WILL REMAIN LIKE THAT. --");
-            sqlScript.AppendLine("-- PREMIUM TABLE --");
 
             int entitlementIndex = 1;
             foreach (var uuid in premiumUuids)
             {
-                sqlScript.AppendLine($"UPDATE Objects SET EntitlementIndex = (SELECT MAX(EntitlementIndex) FROM Entitlements) + {entitlementIndex}, InventoryEntryType = '2', UserLocation = '1' WHERE ObjectId = '{uuid}';");
+                sqlScript.AppendLine($"UPDATE Objects SET EntitlementIndex = (SELECT MAX(EntitlementIndex) FROM Entitlements) + 1, InventoryEntryType = '2', UserLocation = '1' WHERE ObjectId = '{uuid}';");
                 entitlementIndex++;
             }
-
-            sqlScript.AppendLine("-- REWARD TABLE --");
             int rewardIndex = 1;
             foreach (var uuid in rewardUuids)
             {
-                sqlScript.AppendLine($"UPDATE Objects SET RewardIndex = (SELECT MAX(RewardIndex) FROM Rewards) + {rewardIndex}, InventoryEntryType = '1', UserLocation = '1' WHERE ObjectId = '{uuid}';");
+                sqlScript.AppendLine($"UPDATE Objects SET RewardIndex = (SELECT MAX(RewardIndex) FROM Rewards) + 1, InventoryEntryType = '1', UserLocation = '1' WHERE ObjectId = '{uuid}';");
                 rewardIndex++;
             }
 
@@ -6061,11 +6054,9 @@ namespace NautilusXP2024
             string smallImage = $"[THUMBNAIL_ROOT]small{smallImageSuffix}.png";
             string largeImage = $"[THUMBNAIL_ROOT]large{largeImageSuffix}.png";
 
-            // Extract the SDC file name from the archive path
+            // Extract the SDC file name from the archive path and handle special suffix
             string archiveFileName = System.IO.Path.GetFileNameWithoutExtension(archivePath);
-            string sdcFileName = string.IsNullOrEmpty(thumbnailSuffix)
-                ? $"{archiveFileName}.sdc"
-                : $"{archiveFileName}_T{thumbnailSuffix}.sdc";
+            string sdcFileName = ConvertToSdcFileName(archiveFileName, thumbnailSuffix);
 
             // Create the XML document
             XDocument sdcXml = new XDocument(
@@ -6081,9 +6072,7 @@ namespace NautilusXP2024
 
                         // Conditionally add the ARCHIVES element
                         (offlineSDCCheckBox.IsChecked != true) ?
-                            new XElement("ARCHIVES",
-                                new XElement("ARCHIVE", new XAttribute("size", archiveSize), new XAttribute("timestamp", timestamp), $"[CONTENT_SERVER_ROOT]{archivePath}")
-                            ) : null
+                            new XElement("ARCHIVES", CreateArchiveElement(archivePath, archiveSize, timestamp)) : null
                     ),
 
                     // Duplicated language sections
@@ -6144,6 +6133,41 @@ namespace NautilusXP2024
             // Clean up temporary file
             File.Delete(tempFilePath);
         }
+
+        private string ConvertToSdcFileName(string archiveFileName, string thumbnailSuffix)
+        {
+            // Remove _TXXX suffix if it exists
+            string sdcFileName = Regex.Replace(archiveFileName, "_T\\d{3}$", "");
+
+            // Replace .sdat with .sdc
+            sdcFileName = sdcFileName + ".sdc";
+
+            // Append thumbnail suffix if it exists
+            if (!string.IsNullOrEmpty(thumbnailSuffix))
+            {
+                sdcFileName = sdcFileName.Replace(".sdc", $"_T{thumbnailSuffix}.sdc");
+            }
+
+            return sdcFileName;
+        }
+
+        private XElement CreateArchiveElement(string archivePath, string archiveSize, string timestamp)
+        {
+            var archiveElement = new XElement("ARCHIVE", $"[CONTENT_SERVER_ROOT]{archivePath}");
+
+            if (!string.IsNullOrEmpty(archiveSize))
+            {
+                archiveElement.Add(new XAttribute("size", archiveSize));
+            }
+
+            if (!string.IsNullOrEmpty(timestamp))
+            {
+                archiveElement.Add(new XAttribute("timestamp", timestamp));
+            }
+
+            return archiveElement;
+        }
+
         private async Task<byte[]> EncryptSDCODCFileAsync(string filePath)
         {
             try
@@ -6377,7 +6401,8 @@ namespace NautilusXP2024
                     new XElement("large_image", new XAttribute("lang", "en-GB"), new XAttribute("default", "true"), largeImage),
                     new XElement("entitlements", string.Empty),
                     legalSection,
-                    new XElement("timestamp", timestamp)
+                    // Conditionally add the timestamp element
+                    !string.IsNullOrEmpty(timestamp) ? new XElement("timestamp", timestamp) : null
                 )
             );
 

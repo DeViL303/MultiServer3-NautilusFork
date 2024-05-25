@@ -1113,7 +1113,7 @@
                                 <CheckBox x:Name="offlineSDCCheckBox" Checked="CheckBoxOfflineSDC_Checked" Style="{StaticResource ModernToggleSwitchStyle}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570" Margin="0,10,0,0">
-                                <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
+                                <Label Content="SHA1 Digest:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="Createdsdcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="SDCCopySHA1Button_Click" />
                             </StackPanel>
@@ -1165,7 +1165,7 @@
                                 <TextBox x:Name="odcTimestampTextBox" Style="{StaticResource SmallTextBoxStyle}" Text="FFFFFFFF" Width="435"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Width="570">
-                                <Label Content="File SHA1:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
+                                <Label Content="SHA1 Digest:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
                                 <TextBox x:Name="Createdodcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="ODCCopySHA1Button_Click" />
                             </StackPanel>
