@@ -1774,7 +1774,7 @@ namespace NautilusXP2024
                         continue; // Skip further processing for this file
                     }
 
-                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
+                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
 
                     if (Regex.IsMatch(outputFileName, pattern, RegexOptions.IgnoreCase))
                     {
@@ -1817,12 +1817,53 @@ namespace NautilusXP2024
                             });
                         }
                     }
+                    else
+                    {
+                        // Check for a $ in the filename if it doesn't match the pattern
+                        if (outputFileName.Contains("$"))
+                        {
+                            string newFileName = outputFileName.Replace("$", "\\");
+
+                            string newFilePath = Path.Combine(_settings.BarSdatSharcOutputDirectory, "Scenes", newFileName);
+
+                            // Ensure the target directory exists
+                            Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
+
+                            // Ensure unique filename
+                            int counter = 1;
+                            string uniqueFilePath = newFilePath;
+                            while (File.Exists(uniqueFilePath))
+                            {
+                                uniqueFilePath = Path.Combine(Path.GetDirectoryName(newFilePath), $"{Path.GetFileNameWithoutExtension(newFilePath)}({counter}){Path.GetExtension(newFilePath)}");
+                                counter++;
+                            }
+
+                            try
+                            {
+                                File.Move(outputFilePath, uniqueFilePath);
+                                LogDebugInfo($"Archive Creation: Moved {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
+                                await Dispatcher.InvokeAsync(() =>
+                                {
+                                    ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Moved {outputFileName} to {Path.GetFileName(uniqueFilePath)}";
+                                    ArchiveCreatorTextBox.ScrollToEnd();
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                LogDebugInfo($"Archive Creation: Failed to move {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}");
+                                await Dispatcher.InvokeAsync(() =>
+                                {
+                                    ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to move {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}";
+                                    ArchiveCreatorTextBox.ScrollToEnd();
+                                });
+                            }
+                        }
+                    }
                 }
             }
 
-
             if (CheckBoxArchiveCreatorRenameLocal.IsChecked == true &&
-    (RadioButtonArchiveCreatorBAR.IsChecked == true || RadioButtonArchiveCreatorCORE_SHARC.IsChecked == true))
+                (RadioButtonArchiveCreatorBAR.IsChecked == true || RadioButtonArchiveCreatorCORE_SHARC.IsChecked == true))
             {
                 var outputFiles = Directory.GetFiles(_settings.BarSdatSharcOutputDirectory);
 
@@ -1902,8 +1943,6 @@ namespace NautilusXP2024
                     }
                 }
             }
-
-
 
             // Log the completion and result of the archive creation process
             LogDebugInfo("Archive Creation: Process Success");
@@ -2094,6 +2133,7 @@ namespace NautilusXP2024
         private string UserSuppliedPathPrefix = string.Empty;
         private string UUIDFoundInPath = string.Empty;
         private string CurrentUUID = string.Empty;
+        private string SceneFolderAkaID = string.Empty;
         private string GuessedUUID = string.Empty;
 
         private async Task<bool> UnpackFilesAsync(string[] filePaths)
@@ -2113,6 +2153,22 @@ namespace NautilusXP2024
             {
                 Stopwatch extractionStopwatch = Stopwatch.StartNew();
                 currentFilePath = filePath;
+
+                if (filePath.IndexOf(@"\Scenes\", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    string[] pathParts = filePath.Split(new[] { @"\Scenes\" }, StringSplitOptions.None);
+                    if (pathParts.Length > 1)
+                    {
+                        string[] subPathParts = pathParts[1].Split('\\');
+                        if (subPathParts.Length > 0)
+                        {
+                            SceneFolderAkaID = subPathParts[0];
+                            LogDebugInfo($"SceneFolderAkaID: {SceneFolderAkaID}");
+                        }
+                    }
+                }
+
+
                 LogDebugInfo($"Archive Unpacker: Now processing file: {currentFilePath}");
 
                 // Log start of processing to ArchiveUnpackerTextBox
@@ -2224,6 +2280,7 @@ namespace NautilusXP2024
 
             return true;
         }
+
 
         public async Task ExperimentalMapperAsync(string directoryPath, string ogfilename)
         {
@@ -2622,6 +2679,30 @@ namespace NautilusXP2024
                     directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
                 }
             }
+            else if (!directoryName.StartsWith("object_", StringComparison.OrdinalIgnoreCase) && !directoryName.Contains("object", StringComparison.OrdinalIgnoreCase))
+            {
+                // Handling when SceneFolderAkaID is set and CurrentUUID is not or directory does not have "object" in the name
+                if (!string.IsNullOrEmpty(SceneFolderAkaID))
+                {
+                    newDirectoryName = Path.Combine(parentDirectoryPath, SceneFolderAkaID + "$" + directoryName);
+
+                    // Check if new directory name already exists and create a new name if necessary
+                    string baseNewDirectoryName = newDirectoryName;
+                    int counter = 2;
+                    while (Directory.Exists(newDirectoryName))
+                    {
+                        newDirectoryName = $"{baseNewDirectoryName} ({counter++})";
+                    }
+
+                    // Rename directory if new name is different
+                    if (newDirectoryName != directoryPath)
+                    {
+                        Directory.Move(directoryPath, newDirectoryName);
+                        LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
+                        directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
+                    }
+                }
+            }
 
             string file1 = Path.Combine(directoryPath, "1BA97CA6");
             string file2 = Path.Combine(directoryPath, "7AB93954");
@@ -2723,7 +2804,6 @@ namespace NautilusXP2024
                 await CreateHDKFolderStructure(finalDirectoryPath);
             }
         }
-
 
 
 
