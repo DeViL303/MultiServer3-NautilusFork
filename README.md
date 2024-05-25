@@ -149,11 +149,11 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
    - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
 
 #### Bruteforce UUID:
-   - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
+   - This mode is only VERY rarely needed. DO NOT use it normally to map objects it will be slower and due to hash clashes it can sometimes get the UUID wrong. Under normal circumstances the UUID will be somewhere in the input file path either as part of the sdat name, or the folder its in so it will be automatically picked up.
    - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
-   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
-      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
-      - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
+   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf first.
+      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from XXXXXX_DAT to UUID_XXXXXX_DAT. 
+      - If this mode is used on a CACHE/SCENES/ folder it will rename all the output folders from XXXXXX_DAT to match the scene file + XXXXXX_DAT
 
 ##### Extract for Offline:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
@@ -427,8 +427,8 @@ You could also switch out the JAR files for others if you find better solutions.
 - SDCs are small XML based files used for storing scene information.
 - Usage: Fill out the fields and click create. If you want to create an encrypted SDC in one step, enable the toggle switch.
 - Whether you choose to encrypt it or not, The SHA1 of the plaintext file will be shown when you click create. This is what becomes the encryption key.
-- Choose Offline mode to exlude the archive element from the the SDC. These are suitable for using with HDK builds.
-- The created file will have the name autofilled to match the sdat name in the archive element.
+- Choose Offline mode to exclude the archive element from the SDC. These offline SDCs in plaintext form are suitable for using with HDK builds and local files so no archive download needed.
+- The created file will have the name autofilled to match the sdat name in the archive element if there is one. 
 - The SDC Content box will show the generated SDC for review.
 - Use the clear button to revert all fields to default before creating a new SDC.
 
@@ -442,7 +442,7 @@ You could also switch out the JAR files for others if you find better solutions.
 - ODCs are small XML based files used for storing object information.
 - Usage: Fill out the fields and click create. If you want to create an encrypted ODC in one step, enable the toggle switch.
 - Whether you choose to encrypt it or not, The SHA1 of the plaintext file will be shown when you click create. This is what becomes the encryption key.
-- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small.
+- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small. Not worth worrying about IMO.
 - The created file will have the name autofilled to UUID.odc or UUID_TXXX.odc if you included a version.
 - The ODC Content box will show the generated ODC for review.
 - Use the clear button to revert all fields to default before creating a new ODC.
