@@ -83,6 +83,13 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - If those conditions are met it will rename the output to suit online CDN use:
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.sdat
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.bar
+    
+   - This setting when enabled will also rename scenes to suit CDN if certain conditions are met:
+     - The input folder must have a $ in the name like Sci_Fi_Apt_A08E_30B2$scifi_T037
+     - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
+     - If those conditions are met it will rename the output to suit online CDN use:
+     - eg: Scenes/Sci_Fi_Apt_A08E_30B2/scifi_T037.sdat
+     - eg:Scenes/Sci_Fi_Apt_A08E_30B2/scifi_T037.bar
 
 #### Rename Objects For Local
 - This setting when enabled will rename objects to suit local USRDIR use if certain conditions are met:
