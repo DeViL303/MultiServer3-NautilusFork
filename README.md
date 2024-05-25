@@ -616,9 +616,9 @@ For the catalogue:
 - If you want to be able to send POSTINSTALL.SQL files to your RPCS3 client instantly, Set your RPCS3 dev_hdd0 folder here.
 - If you want to be able to send POSTINSTALL.SQL files to your PS3 client instantly, Set your PS3 IP Address here.
 - If you are using a title ID other than the standard NPIA00005 change it here. Applys to both RPCS3 and PS3.
-- Catalogue shows only usable. This setting when enabled hides the catalogue items that cant be added to user inventory.
+- Catalogue shows only usable. This setting when enabled hides the catalogue items that should NOT be added to user inventory.
   - Bundles
   - Minigames
   - System
- 
+ - Disable this option if you want to browse and search all UUIDs.
 
