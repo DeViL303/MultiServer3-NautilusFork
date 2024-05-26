@@ -4,7 +4,7 @@
 
 <h2 align="center">
    
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
+Download Latest Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
 
 </h2>
 
@@ -16,7 +16,7 @@ This repository is a fork of AgentDark447's awesome server project, Multiserver3
 
 Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac, create_pkg, vgmstream. More detailed credits to come. 
 <h1 align="center">
-   What is Nautilus?
+   What is it?
    </h1>
    
 Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
