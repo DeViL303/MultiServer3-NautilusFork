@@ -1,10 +1,10 @@
 <h1 align="center">
-   Nautilus Toolset Release v1.00 Beta Build 00026
+   Nautilus Toolset v1.00 Beta Build 00026
 </h1>
 
 <h2 align="center">
    
-Download Latest Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
+Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
 
 </h2>
 
@@ -14,7 +14,7 @@ Download Latest Release [HERE](https://github.com/DeViL303/MultiServer3-Nuatilus
 
 This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
 
-Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac, create_pkg, vgmstream. More detailed credits to come. 
+Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 <h1 align="center">
    What is it?
    </h1>
