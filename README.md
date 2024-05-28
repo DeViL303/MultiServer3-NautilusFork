@@ -78,14 +78,14 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
 
 #### Rename for CDN
-   - This setting when enabled will rename objects to suit CDN if certain conditions are met:
+   - This setting when enabled will rename created object archives to suit CDN naming format if certain conditions are met:
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.sdat
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.bar
     
-   - This setting when enabled will also rename scenes to suit CDN if certain conditions are met:
+   - This setting when enabled will also rename scenes to suit CDN naming format if certain conditions are met:
      - The input folder must have a $ in the name like Sci_Fi_Apt_A08E_30B2$scifi_T037
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
@@ -99,7 +99,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - If those conditions are met it will rename the output to suit OFFLINE and "Semi Online" use :)
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
-     - Scenes are not affected by this setting as there is no local format for scene naming, 
+     - Scenes are not affected by this setting as there is no official format for local scene naming (afaik?) 
 
 #### Ignore Timestamp.txt
    - Use this setting to force every archive packed in the current task to take its timestamp from the GUI field above.
