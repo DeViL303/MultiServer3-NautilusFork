@@ -25,7 +25,7 @@ Rew's Playstation Home cache archive can be found here: https://xethub.com/pebxc
 
 </dev>
 <h1 align="center">
-   What is it?
+   What is Nautilus?
    </h1>
    
 Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
