@@ -12,9 +12,11 @@ Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3
    Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
    </h1>
 
-This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3). This application is the product of the research done by Home Laboratory / Home Headquarters members over the last few years. 
 
 Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+
+
 
 <h1 align="center">
   Playstation Home Cache Archive
