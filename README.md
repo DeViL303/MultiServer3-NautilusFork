@@ -525,11 +525,8 @@ View and or Patch various fields in Home EBOOTS.
 
 SHA1 Checker: Used for checking SHA1s and building lists for comparison
 
-Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. 
-
-Get File Details: New tool that shows file info - Work in Progress
-
-This tab is currently not working fully. Just the sha1 checker portion works
+Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. Drag in files or folders to run through validator.
+- This uses a combination of header checks, byte sequence checks, and loading media files with specific libaries, mostly to confirm files are decrypted correctly.  
 
 
 <div align="center">
