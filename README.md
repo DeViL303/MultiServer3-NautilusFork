@@ -1,10 +1,10 @@
 <h1 align="center">
-   Nautilus Toolset Release v1.00 Beta Build 00026
+   Nautilus Toolset v1.00 Beta Build 00026
 </h1>
 
 <h2 align="center">
    
-Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
+Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
 
 </h2>
 
@@ -12,9 +12,22 @@ Download Latest Nautilus [HERE](https://github.com/DeViL303/MultiServer3-Nuatilu
    Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
    </h1>
 
-This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3).
+This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3). This application is the product of the research done by Home Laboratory / Home Headquarters members over the last few years. 
 
-Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac, create_pkg, vgmstream. More detailed credits to come. 
+Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+
+
+
+<h1 align="center">
+  Playstation Home Cache Archive
+   </h1>
+   
+   <div align="center">
+      
+Rew's Playstation Home cache archive can be found here: https://xethub.com/pebxcvi/PSHomeCacheDepot/
+
+</div>
+
 <h1 align="center">
    What is Nautilus?
    </h1>
@@ -78,14 +91,14 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 - **Config SHARC:** Employed for encrypting online mode configuration files that are transmitted to clients upon initial connection. These are encrypted with the content server key but no NPD layer.
 
 #### Rename for CDN
-   - This setting when enabled will rename objects to suit CDN if certain conditions are met:
+   - This setting when enabled will rename created object archives to suit CDN naming format if certain conditions are met:
      - The input folder must have the UUID in the name like 00000000-00000000-00000000-0000000B_T035
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.sdat
      - eg: Objects/00000000-00000000-00000000-0000000B/object_T037.bar
     
-   - This setting when enabled will also rename scenes to suit CDN if certain conditions are met:
+   - This setting when enabled will also rename scenes to suit CDN naming format if certain conditions are met:
      - The input folder must have a $ in the name like Sci_Fi_Apt_A08E_30B2$scifi_T037
      - The Archive type must be set to either BAR, SDAT or SDAT SHARC.
      - If those conditions are met it will rename the output to suit online CDN use:
@@ -99,7 +112,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
      - If those conditions are met it will rename the output to suit OFFLINE and "Semi Online" use :)
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.BAR
      - eg: OBJECTS/00000000-00000000-00000000-0000000B/00000000-00000000-00000000-0000000B.SHARC
-     - Scenes are not affected by this setting as there is no local format for scene naming, 
+     - Scenes are not affected by this setting as there is no official format for local scene naming (afaik?) 
 
 #### Ignore Timestamp.txt
    - Use this setting to force every archive packed in the current task to take its timestamp from the GUI field above.
@@ -149,11 +162,11 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
    - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
 
 #### Bruteforce UUID:
-   - This mode is only rarely needed. Under normal circunstances the uuid will be somewhere in the input file path, either as part of the sdat name, or the folder its in.
+   - This mode is only VERY rarely needed. DO NOT use it normally to map objects it will be slower and due to hash clashes it can sometimes get the UUID wrong. Under normal circumstances the UUID will be somewhere in the input file path either as part of the sdat name, or the folder its in so it will be automatically picked up.
    - This option is only for the rare cases where you have an unknown sdat, such as when there is no inf file available due to being corrupt, or a random source.
-   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf.
-      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from *****_DAT to match the UUID file. 
-      - If this mode is used on a CACHE/SCENES/ folder it will rename all the folder from *****_DAT to match the scene file. 
+   - One bonus of this mode is that it can be used to map sdats directly from raw cache, without having to deinf first.
+      - If this mode is used on a CACHE/OBJECTSDEF/ it will rename all the folders from XXXXXX_DAT to UUID_XXXXXX_DAT. 
+      - If this mode is used on a CACHE/SCENES/ folder it will rename all the output folders from XXXXXX_DAT to match the scene file + XXXXXX_DAT
 
 ##### Extract for Offline:
 - This setting affects only the extraction of objects; when enabled, it extracts objects into the "offline" folder structure with all files and folders at the root level. This configuration is ideal for running in extracted form on HDK builds.
@@ -427,8 +440,8 @@ You could also switch out the JAR files for others if you find better solutions.
 - SDCs are small XML based files used for storing scene information.
 - Usage: Fill out the fields and click create. If you want to create an encrypted SDC in one step, enable the toggle switch.
 - Whether you choose to encrypt it or not, The SHA1 of the plaintext file will be shown when you click create. This is what becomes the encryption key.
-- Choose Offline mode to exlude the archive element from the the SDC. These are suitable for using with HDK builds.
-- The created file will have the name autofilled to match the sdat name in the archive element.
+- Choose Offline mode to exclude the archive element from the SDC. These offline SDCs in plaintext form are suitable for using with HDK builds and local files so no archive download needed.
+- The created file will have the name autofilled to match the sdat name in the archive element if there is one. 
 - The SDC Content box will show the generated SDC for review.
 - Use the clear button to revert all fields to default before creating a new SDC.
 
@@ -442,7 +455,7 @@ You could also switch out the JAR files for others if you find better solutions.
 - ODCs are small XML based files used for storing object information.
 - Usage: Fill out the fields and click create. If you want to create an encrypted ODC in one step, enable the toggle switch.
 - Whether you choose to encrypt it or not, The SHA1 of the plaintext file will be shown when you click create. This is what becomes the encryption key.
-- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small.
+- Generate random UUIDs here with one click. The chances of generating a clashing UUID are extremely small. Not worth worrying about IMO.
 - The created file will have the name autofilled to UUID.odc or UUID_TXXX.odc if you included a version.
 - The ODC Content box will show the generated ODC for review.
 - Use the clear button to revert all fields to default before creating a new ODC.
@@ -514,11 +527,8 @@ View and or Patch various fields in Home EBOOTS.
 
 SHA1 Checker: Used for checking SHA1s and building lists for comparison
 
-Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. 
-
-Get File Details: New tool that shows file info - Work in Progress
-
-This tab is currently not working fully. Just the sha1 checker portion works
+Validate Files: This is a standalone version of the file validator used in the mapper tool. Use this tool on already mapped content. Drag in files or folders to run through validator.
+- This uses a combination of header checks, byte sequence checks, and loading media files with specific libaries, mostly to confirm files are decrypted correctly.  
 
 
 <div align="center">
@@ -602,7 +612,8 @@ This tab is currently not working fully. Just the sha1 checker portion works
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/c1cef610-24d1-4174-b35b-7fdbe1db05a9)
+![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f2d4ce66-a0d6-4e99-b1e1-caac5f55bca7)
+
 
 
 </div>
