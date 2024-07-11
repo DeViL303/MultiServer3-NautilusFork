@@ -11221,9 +11221,22 @@ namespace NautilusXP2024
             // Ensure keyName is not empty
             if (!string.IsNullOrEmpty(keyName))
             {
+                // Trim " (Male)" or " (Female)" from the value if present
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (value.EndsWith(" (Male)"))
+                    {
+                        value = value.Substring(0, value.Length - " (Male)".Length);
+                    }
+                    else if (value.EndsWith(" (Female)"))
+                    {
+                        value = value.Substring(0, value.Length - " (Female)".Length);
+                    }
+                }
+
                 string insertMetadataQuery = @"
-        INSERT INTO Metadata (ObjectIndex, KeyName, Value)
-        VALUES (@objectIndex, @keyName, @value)";
+INSERT INTO Metadata (ObjectIndex, KeyName, Value)
+VALUES (@objectIndex, @keyName, @value)";
                 using (var insertMetadataCommand = new SQLiteCommand(insertMetadataQuery, connection))
                 {
                     insertMetadataCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
@@ -11233,6 +11246,7 @@ namespace NautilusXP2024
                 }
             }
         }
+
 
 
         private async void AddNewSQLItem_Button_Click(object sender, RoutedEventArgs e)
@@ -11497,7 +11511,7 @@ namespace NautilusXP2024
     { "CLOTHING", new List<string> { "HAIR", "HAT", "HANDS", "TORS", "LEGS", "FEET", "OUTFITS", "GLASSES", "HEADPHONES", "JEWELBOTHEARS", "JEWELLEFTEAR", "JEWELRIGHTEAR", "FACIALHAIR", "RACE", "" } },
     { "FURNITURE", new List<string> { "CHAIR", "APPLIANCE", "TABLE", "FOOTSTOOL", "LIGHT", "ORNAMENT", "FRAME", "SOFA", "STORAGE", "CUBE", "FLOORING", "" } },
     { "PORTABLE", new List<string> { "" } },
-    { "ENTITLEMENT_ID", new List<string> { "LUA_REWARD", "AUTO_REWARD", "FREE", "" } },
+    { "ENTITLEMENT_ID", new List<string> { "LUA_REWARD", "AUTOMATIC_REWARD", "FREE", "" } },
     { "MINI_GAME", new List<string> { "", "DARTS", "APPLIANCE", "HUBCONTENT", "XMAS_2010_SCEA", "CASUAL", "GAME", "SPACE" } },
     { "ARCADE_GAME", new List<string> { "" } },
     { "WORLD_MAP", new List<string> { "SCEA SCEE SCEJ SCEASIA", "SCEA SCEE SCEJ", "SCEA SCEE", "SCEJ SCEASIA", "SCEA", "SCEE", "SCEJ", "SCEASIA" } },

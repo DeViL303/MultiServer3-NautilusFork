@@ -1095,6 +1095,7 @@
                                     <TextBlock Text="KeyName 4:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName4" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName4_SelectionChanged">
                                         <ComboBoxItem Content=""/>
+                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName4" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
@@ -1121,6 +1122,8 @@
                                         <ComboBoxItem Content="LPID"/>
                                         <ComboBoxItem Content="ACTIVE"/>
                                         <ComboBoxItem Content="PORTABLE"/>
+                                        <ComboBoxItem Content="MINI_GAME"/>
+                                        <ComboBoxItem Content="EMBEDDED_OBJECT"/>
                                         <ComboBoxItem Content=""/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
@@ -1135,6 +1138,7 @@
                                     <TextBlock Text="KeyName 5:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName5" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName5_SelectionChanged">
                                         <ComboBoxItem Content=""/>
+                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName5" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
@@ -1161,6 +1165,8 @@
                                         <ComboBoxItem Content="LPID"/>
                                         <ComboBoxItem Content="ACTIVE"/>
                                         <ComboBoxItem Content="PORTABLE"/>
+                                        <ComboBoxItem Content="MINI_GAME"/>
+                                        <ComboBoxItem Content="EMBEDDED_OBJECT"/>
                                         <ComboBoxItem Content=""/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
@@ -1175,6 +1181,7 @@
                                     <TextBlock Text="KeyName 6:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName6" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName6_SelectionChanged">
                                         <ComboBoxItem Content=""/>
+                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName6" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
