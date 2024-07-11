@@ -53,6 +53,11 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Net.NetworkInformation;
 using Newtonsoft.Json.Linq;
+using System.Data;
+using System.Data.SQLite;
+using System.Buffers;
+using System.IO.Pipelines;
+using System.Windows.Documents;
 
 
 namespace NautilusXP2024
@@ -110,6 +115,8 @@ namespace NautilusXP2024
             logFlushTimer = new System.Threading.Timer(_ => FlushLogBuffer(), null, Timeout.Infinite, Timeout.Infinite);
 
             PS3IPforFTPTextBox.TextChanged += PS3IPforFTPTextBox_TextChanged;
+
+            InitializeComboBoxEventHandlers();
 
         }
 
@@ -2293,6 +2300,7 @@ namespace NautilusXP2024
 
             CurrentUUID = string.Empty;
             GuessedUUID = string.Empty;
+            SceneFolderAkaID = string.Empty;
             UUIDFoundInPath = string.Empty;
             UserSuppliedPathPrefix = string.Empty;
             Stopwatch MappingStopwatch = Stopwatch.StartNew();
@@ -3707,23 +3715,16 @@ namespace NautilusXP2024
             try
             {
                 var doc = XDocument.Load(filePath);
-                var sceneListElement = doc.Descendants("SCENELIST").FirstOrDefault();
-                if (sceneListElement != null)
-                {
-                    int sceneCount = sceneListElement.Descendants("SCENE").Count();
-                    string elementValue = sceneListElement.Value;
-                    string sha1Hash = CalculateSha1Hash(filePath);
-                    string fileName = Path.GetFileName(filePath);
 
-                    return true;
-                }
-                return false;
+                // For now, just return true without any specific checks
+                return true;
             }
             catch (Exception)
             {
                 return false;
             }
         }
+
 
         private void CDSDecrypterDragDropHandler(object sender, DragEventArgs e)
         {
@@ -6359,29 +6360,32 @@ namespace NautilusXP2024
                 case RememberLastTabUsed.HCDBTool:
                     MainTabControl.SelectedIndex = 2; // Index of HCDBTool tab
                     break;
+                case RememberLastTabUsed.SQLTool:
+                    MainTabControl.SelectedIndex = 3; // Index of SQLTool tab
+                    break;
                 case RememberLastTabUsed.TickLSTTool:
-                    MainTabControl.SelectedIndex = 3; // Index of TickLSTTool tab
+                    MainTabControl.SelectedIndex = 4; // Index of TickLSTTool tab
                     break;
                 case RememberLastTabUsed.SceneIDTool:
-                    MainTabControl.SelectedIndex = 4; // Index of SceneIDTool tab
+                    MainTabControl.SelectedIndex = 5; // Index of SceneIDTool tab
                     break;
                 case RememberLastTabUsed.LUACTool:
-                    MainTabControl.SelectedIndex = 5; // Index of LUACTool tab
+                    MainTabControl.SelectedIndex = 6; // Index of LUACTool tab
                     break;
                 case RememberLastTabUsed.SDCODCTool:
-                    MainTabControl.SelectedIndex = 6; // Index of SDCODCTool tab
+                    MainTabControl.SelectedIndex = 7; // Index of SDCODCTool tab
                     break;
                 case RememberLastTabUsed.Path2Hash:
-                    MainTabControl.SelectedIndex = 7; // Index of Path2Hash tab
+                    MainTabControl.SelectedIndex = 8; // Index of Path2Hash tab
                     break;
                 case RememberLastTabUsed.EbootPatcher:
-                    MainTabControl.SelectedIndex = 8; // Index of EbootPatcher tab
+                    MainTabControl.SelectedIndex = 9; // Index of EbootPatcher tab
                     break;
                 case RememberLastTabUsed.SHAChecker:
-                    MainTabControl.SelectedIndex = 9; // Index of SHAChecker tab
+                    MainTabControl.SelectedIndex = 10; // Index of SHAChecker tab
                     break;
                 case RememberLastTabUsed.MediaTool:
-                    MainTabControl.SelectedIndex = 10; // Index of Video tab
+                    MainTabControl.SelectedIndex = 11; // Index of Video tab
                     break;
                 default:
                     MainTabControl.SelectedIndex = 0; // Default to ArchiveTool tab if none is matched
@@ -10272,6 +10276,2287 @@ namespace NautilusXP2024
 
             NotificationPopup.IsOpen = false;
         }
+
+        private int NexTIndex { get; set; }
+        private string sqlFilePath;
+
+        private void BrowseSQLButton_Click(object sender, RoutedEventArgs e)
+        {
+            var initialDirectory = SqlOutputDirectoryTextBox.Text;
+
+            // Create the directory if it does not exist
+            if (!Directory.Exists(initialDirectory))
+            {
+                Directory.CreateDirectory(initialDirectory);
+            }
+
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                InitialDirectory = initialDirectory,
+                RestoreDirectory = true,
+                Filter = "All supported files (*.sql;*.hcdb;*.xml)|*.sql;*.hcdb;*.xml|SQL files (*.sql)|*.sql|HCDB files (*.hcdb)|*.hcdb|XML files (*.xml)|*.xml|All files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filePath = openFileDialog.FileName;
+                string fileExtension = Path.GetExtension(filePath).ToLower();
+
+                switch (fileExtension)
+                {
+                    case ".sql":
+                        HandleSQLFile(filePath);
+                        break;
+                    case ".hcdb":
+                        HandleHCDBFile(filePath);
+                        break;
+                    case ".xml":
+                        HandleXMLFile(filePath);
+                        break;
+                    default:
+                        MessageBox.Show("Unsupported file type selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                }
+            }
+        }
+
+
+
+        private async void HandleSQLFile(string filePath)
+        {
+            LogDebugInfo($"HandleSQLFile invoked with filePath: {filePath}");
+            sqlFilePath = filePath;  // Store the file path
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                int maxIndex = LoadMaxIndexFromSQLFile(filePath);
+
+                // Set the NexTIndex property
+                NexTIndex = maxIndex + 1;
+
+                // Update the TextBox with NexTIndex
+                txtObjectIndex.Text = NexTIndex.ToString();
+
+                // Populate the grid with entries starting from index 0
+                await PopulateGridWithEntries(0, 25); // Default count value of 25
+
+                stopwatch.Stop();
+                LogDebugInfo($"SQL file processed in {stopwatch.ElapsedMilliseconds} ms. Max Index: {maxIndex}, NexTIndex: {NexTIndex}");
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error loading and parsing SQL file: {ex.Message}");
+                // Suppress the error message box
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
+        private int LoadMaxIndexFromSQLFile(string filePath)
+        {
+            int maxIndex = -1;
+            bool retry = true;
+            int attempts = 0;
+
+            while (retry && attempts < 2)
+            {
+                SQLiteConnection connection = null;
+                attempts++;
+
+                try
+                {
+                    string connectionString = $"Data Source={filePath};Version=3;";
+                    connection = new SQLiteConnection(connectionString);
+                    connection.Open();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    string query = @"
+            SELECT MAX(ObjectIndex) as MaxIndex
+            FROM Objects";
+
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        object result = command.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
+                        {
+                            maxIndex = Convert.ToInt32(result);
+                        }
+                    }
+
+                    retry = false; // If successful, exit loop
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error loading max index from SQL file on attempt {attempts}: {ex.Message}");
+
+                    if (attempts < 2)
+                    {
+                        LogDebugInfo("Retrying...");
+                    }
+                    else
+                    {
+                        LogDebugInfo($"Error loading max index from SQL file: {ex.Message}");
+                    }
+                }
+                finally
+                {
+                    connection?.Close();
+                }
+            }
+
+            return maxIndex;
+        }
+
+        private async void GoToIndexButton_Click(object sender, RoutedEventArgs e)
+        {
+            string input = txtGoToIndex.Text;
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                LogDebugInfo("Input is empty.");
+                return;
+            }
+
+            if (input.Contains('-'))
+            {
+                // Handle range input
+                var parts = input.Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int startIndex) && int.TryParse(parts[1], out int endIndex))
+                {
+                    if (startIndex > endIndex)
+                    {
+                        LogDebugInfo("Invalid range entered: start index is greater than end index.");
+                        MessageBox.Show("Invalid range: start index is greater than end index.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    LogDebugInfo($"GoToIndexButton_Click invoked with range: {startIndex}-{endIndex}");
+                    await PopulateGridWithEntries(startIndex, endIndex - startIndex + 1);
+                }
+                else
+                {
+                    LogDebugInfo("Invalid range entered: unable to parse start or end index.");
+                    MessageBox.Show("Invalid range entered. Please enter a valid range.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else if (int.TryParse(input, out int startIndex))
+            {
+                // Handle single index input
+                LogDebugInfo($"GoToIndexButton_Click invoked with startIndex: {startIndex}");
+                await PopulateGridWithEntries(startIndex, 25);  // Load 50 entries starting from the specified index
+            }
+            else
+            {
+                LogDebugInfo("Invalid index entered.");
+                MessageBox.Show("Invalid index entered. Please enter a valid index.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private void HandleHCDBFile(string filePath)
+        {
+            // Add your code to handle HCDB files here
+            MessageBox.Show($"Handling HCDB file: {filePath}", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void HandleXMLFile(string filePath)
+        {
+            // Add your code to handle XML files here
+            MessageBox.Show($"Handling XML file: {filePath}", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private List<Dictionary<string, string>> LoadEntriesRange(string filePath, int startIndex, int count)
+        {
+            var entries = new List<Dictionary<string, string>>();
+
+            try
+            {
+                LogDebugInfo($"Loading {count} object indexes from {filePath}, starting at index {startIndex}.");
+                string connectionString = $"Data Source={filePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    // Step 1: Fetch the ObjectIndexes in the specified range
+                    string fetchIndexesQuery = @"
+                SELECT ObjectIndex
+                FROM Objects
+                WHERE ObjectIndex >= @startIndex
+                ORDER BY ObjectIndex
+                LIMIT @count";
+
+                    var objectIndexes = new List<int>();
+                    using (SQLiteCommand fetchIndexesCommand = new SQLiteCommand(fetchIndexesQuery, connection))
+                    {
+                        fetchIndexesCommand.Parameters.AddWithValue("@startIndex", startIndex);
+                        fetchIndexesCommand.Parameters.AddWithValue("@count", count);
+
+                        using (SQLiteDataReader reader = fetchIndexesCommand.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                objectIndexes.Add(reader.GetInt32(0));
+                            }
+                        }
+                    }
+
+                    if (objectIndexes.Count == 0)
+                    {
+                        return entries; // No entries to process
+                    }
+
+                    // Step 2: Fetch the Objects and their Metadata for the selected ObjectIndexes
+                    string query = @"
+                SELECT 
+                    o.ObjectIndex, 
+                    o.ObjectId, 
+                    o.Version, 
+                    o.Location, 
+                    o.InventoryEntryType, 
+                    o.ArchiveTimeStamp, 
+                    o.OdcSha1Digest, 
+                    o.EntitlementIndex, 
+                    o.RewardIndex, 
+                    o.UserLocation, 
+                    o.UserDateLastUsed,
+                    m.KeyName,
+                    m.Value
+                FROM Objects o
+                LEFT JOIN Metadata m ON o.ObjectIndex = m.ObjectIndex
+                WHERE o.ObjectIndex IN (" + string.Join(",", objectIndexes) + @")
+                ORDER BY o.ObjectIndex";
+
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var entry = new Dictionary<string, string>();
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    string columnName = reader.GetName(i);
+                                    object value = reader.GetValue(i);
+
+                                    if (columnName == "OdcSha1Digest" && value != DBNull.Value)
+                                    {
+                                        // Convert the BLOB to a hex string
+                                        byte[] blob = (byte[])value;
+                                        entry[columnName] = BitConverter.ToString(blob).Replace("-", "").ToUpper();
+                                    }
+                                    else if ((columnName == "ArchiveTimeStamp" || columnName == "UserDateLastUsed") && value != DBNull.Value)
+                                    {
+                                        // Convert the timestamp to an 8-character hexadecimal string with leading zeros
+                                        int timestamp = Convert.ToInt32(value);
+                                        entry[columnName] = timestamp.ToString("X8");
+                                    }
+                                    else
+                                    {
+                                        entry[columnName] = value.ToString();
+                                    }
+                                }
+                                entries.Add(entry);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error loading entries from SQL file: {ex.Message}");
+            }
+
+            return entries;
+        }
+
+
+
+        private int currentStartIndex = 0; // This will keep track of the current starting index
+
+        private void ForwardButton_Click(object sender, RoutedEventArgs e)
+        {
+            currentStartIndex += 25;
+            PopulateGridWithEntriesSafe(currentStartIndex, 25);
+            ScrollToTop();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            currentStartIndex -= 25;
+            if (currentStartIndex < 0)
+            {
+                currentStartIndex = 0; // Ensure we don't go below 0
+            }
+            PopulateGridWithEntriesSafe(currentStartIndex, 25);
+            ScrollToTop();
+        }
+
+        private async void PopulateGridWithEntriesSafe(int startIndex, int count)
+        {
+            LogDebugInfo($"PopulateGridWithEntriesSafe invoked with startIndex: {startIndex}, count: {count}");
+
+            try
+            {
+                await PopulateGridWithEntries(startIndex, count);
+                ScrollToTop(); // Scroll to the top after populating entries
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error populating grid: {ex.Message}");
+                MessageBox.Show($"Error populating grid: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ScrollToTop()
+        {
+            sqlItemsScrollViewer?.ScrollToTop();
+        }
+
+        private async Task PopulateGridWithEntries(int startIndex, int count)
+        {
+            LogDebugInfo($"PopulateGridWithEntries invoked with startIndex: {startIndex}, count: {count}");
+
+            var entries = LoadEntriesRange(sqlFilePath, startIndex, count);
+
+            if (entries == null || entries.Count == 0)
+            {
+                LogDebugInfo("No entries loaded from database.");
+                return;
+            }
+
+            // Define column widths
+            var columnWidths = new Dictionary<string, GridLength>
+    {
+        { "ObjectIndex", new GridLength(50) },
+        { "ObjectId", new GridLength(240) },
+        { "Version", new GridLength(38) },
+        { "Location", new GridLength(52) },
+        { "InventoryEntryType", new GridLength(38) },
+        { "ArchiveTimeStamp", new GridLength(67) },
+        { "OdcSha1Digest", new GridLength(290) },
+        { "EntitlementIndex", new GridLength(44) },
+        { "RewardIndex", new GridLength(49) },
+        { "UserLocation", new GridLength(45) },
+        { "UserDateLastUsed", new GridLength(38) },
+        { "KeyName", new GridLength(125) },
+        { "Value", new GridLength(300) }
+    };
+
+            // Clear existing children and column definitions
+            SQLItemsGrid.Children.Clear();
+            SQLItemsGrid.ColumnDefinitions.Clear();
+            SQLItemsGrid.RowDefinitions.Clear();
+
+            // Add column definitions
+            foreach (var column in columnWidths)
+            {
+                SQLItemsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = column.Value });
+            }
+
+            // Add row definitions for each entry
+            foreach (var entry in entries)
+            {
+                SQLItemsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
+
+            // Sort and group metadata entries by ObjectIndex
+            var sortedEntries = entries.GroupBy(e => e["ObjectIndex"])
+                                       .Select(g => new
+                                       {
+                                           ObjectIndex = g.Key,
+                                           Entries = g.OrderBy(e =>
+                                           {
+                                               var keyName = e["KeyName"];
+                                               if (keyName.Contains("CLOTHING") || keyName.Contains("FURNITURE") || keyName.Contains("MINI_GAME"))
+                                                   return 1;
+                                               if (keyName.Contains("RIGS"))
+                                                   return 2;
+                                               if (keyName.Contains("ENTITLEMENT_ID"))
+                                                   return 3;
+                                               return keyName.Contains("_HEAT") ? 5 : 4; // Default order for other entries, _HEAT last
+                                           }).ThenBy(e => e["KeyName"]).ToList() // Ensure consistent ordering within groups
+                                       });
+
+            // Add data incrementally
+            int rowIndex = 0;
+            foreach (var group in sortedEntries)
+            {
+                foreach (var entry in group.Entries)
+                {
+                    int colIndex = 0;
+                    foreach (var column in columnWidths.Keys)
+                    {
+                        string displayValue = entry.ContainsKey(column) ? entry[column] : string.Empty;
+
+                        // Modify the display value based on specific conditions
+                        if (column == "Value")
+                        {
+                            if (displayValue == "00000000-00000000-00000010-00000000")
+                            {
+                                displayValue += " (Male)";
+                            }
+                            else if (displayValue == "00000000-00000000-00000010-00000001")
+                            {
+                                displayValue += " (Female)";
+                            }
+                        }
+
+                        var textBox = new TextBox
+                        {
+                            Text = displayValue,
+                            Margin = new Thickness(2),
+                            Style = (Style)FindResource("SmallTextBoxStyle2")
+                        };
+                        Grid.SetRow(textBox, rowIndex);
+                        Grid.SetColumn(textBox, colIndex++);
+                        SQLItemsGrid.Children.Add(textBox);
+                    }
+                    rowIndex++;
+                }
+
+                // Update the UI
+                await Task.Delay(1);  // Small delay to ensure the UI updates incrementally
+            }
+        }
+
+
+
+
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            string searchQuery = txtSearch.Text.Trim();
+            if (string.IsNullOrEmpty(searchQuery))
+            {
+                MessageBox.Show("Please enter a search query.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Perform the search and load results
+            PerformSearchAndLoadResults(searchQuery);
+        }
+
+        private async void PerformSearchAndLoadResults(string searchQuery)
+        {
+            try
+            {
+                // Find the ObjectIndex based on the ObjectID search query
+                int startIndex = GetObjectIndexByObjectId(searchQuery);
+
+                if (startIndex == -1)
+                {
+                    MessageBox.Show("ObjectID not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Load the item and the next 25 items
+                await PopulateGridWithEntries(startIndex, 25);
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error performing search: {ex.Message}");
+                MessageBox.Show($"Error performing search: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private int GetObjectIndexByObjectId(string objectId)
+        {
+            int objectIndex = -1;
+
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    string query = @"
+                SELECT ObjectIndex
+                FROM Objects
+                WHERE ObjectId = @objectId
+                LIMIT 1";
+
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@objectId", objectId);
+                        object result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            objectIndex = Convert.ToInt32(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error retrieving ObjectIndex by ObjectId: {ex.Message}");
+            }
+
+            return objectIndex;
+        }
+
+        
+
+        private async Task<List<string>> GetObjectIdsInRange(int startIndex, int endIndex)
+        {
+            var objectIds = new List<string>();
+
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    string query = @"
+                SELECT ObjectId
+                FROM Objects
+                WHERE ObjectIndex BETWEEN @startIndex AND @endIndex";
+
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@startIndex", startIndex);
+                        command.Parameters.AddWithValue("@endIndex", endIndex);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                objectIds.Add(reader.GetString(0));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error retrieving ObjectIDs in range: {ex.Message}");
+            }
+
+            return objectIds;
+        }
+
+        private async void DeleteSQLIndexButton_Click(object sender, RoutedEventArgs e)
+        {
+            string input = txtGoToIndex.Text;
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                LogDebugInfo("Input is empty.");
+                return;
+            }
+
+            int startIndex, endIndex;
+
+            if (input.Contains('-'))
+            {
+                // Handle range input
+                var parts = input.Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[0], out startIndex) && int.TryParse(parts[1], out int endIndexParsed))
+                {
+                    if (startIndex > endIndexParsed)
+                    {
+                        LogDebugInfo("Invalid range entered: start index is greater than end index.");
+                        MessageBox.Show("Invalid range: start index is greater than end index.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    endIndex = endIndexParsed;
+                }
+                else
+                {
+                    LogDebugInfo("Invalid range entered: unable to parse start or end index.");
+                    MessageBox.Show("Invalid range entered. Please enter a valid range.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+            else if (int.TryParse(input, out startIndex))
+            {
+                // Handle single index input
+                endIndex = startIndex;
+            }
+            else
+            {
+                LogDebugInfo("Invalid index entered.");
+                MessageBox.Show("Invalid index entered. Please enter a valid index.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var objectIds = await GetObjectIdsInRange(startIndex, endIndex);
+            if (objectIds.Count == 0)
+            {
+                MessageBox.Show("No entries found for the specified range.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            string message = "Are you sure you want to delete the following entries?\n\n" + string.Join("\n", objectIds);
+            MessageBoxResult result = MessageBox.Show(message, "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                await DeleteEntriesAndReorder(startIndex, endIndex);
+            }
+        }
+
+        private async Task DeleteEntriesAndReorder(int startIndex, int endIndex)
+        {
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Step 1: Delete metadata entries in the specified range
+                            string deleteMetadataQuery = @"
+                    DELETE FROM Metadata
+                    WHERE ObjectIndex BETWEEN @startIndex AND @endIndex";
+                            using (SQLiteCommand deleteMetadataCommand = new SQLiteCommand(deleteMetadataQuery, connection))
+                            {
+                                deleteMetadataCommand.Parameters.AddWithValue("@startIndex", startIndex);
+                                deleteMetadataCommand.Parameters.AddWithValue("@endIndex", endIndex);
+                                await deleteMetadataCommand.ExecuteNonQueryAsync();
+                            }
+
+                            // Step 2: Delete main entries in the specified range
+                            string deleteQuery = @"
+                    DELETE FROM Objects
+                    WHERE ObjectIndex BETWEEN @startIndex AND @endIndex";
+                            using (SQLiteCommand deleteCommand = new SQLiteCommand(deleteQuery, connection))
+                            {
+                                deleteCommand.Parameters.AddWithValue("@startIndex", startIndex);
+                                deleteCommand.Parameters.AddWithValue("@endIndex", endIndex);
+                                await deleteCommand.ExecuteNonQueryAsync();
+                            }
+
+                            // Step 3: Reorder the remaining indexes
+                            string updateQuery = @"
+                    UPDATE Objects
+                    SET ObjectIndex = ObjectIndex - @offset
+                    WHERE ObjectIndex > @endIndex";
+                            using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                            {
+                                int offset = endIndex - startIndex + 1;
+                                updateCommand.Parameters.AddWithValue("@offset", offset);
+                                updateCommand.Parameters.AddWithValue("@endIndex", endIndex);
+                                await updateCommand.ExecuteNonQueryAsync();
+                            }
+
+                            transaction.Commit();
+                            LogDebugInfo("Entries deleted and indexes reordered successfully.");
+                            MessageBox.Show("Entries deleted and indexes reordered successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            // Update NexTIndex and the textbox
+                            int maxIndex = await GetMaxObjectIndex(connection);
+                            NexTIndex = maxIndex + 1;
+                            txtObjectIndex.Text = NexTIndex.ToString();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            LogDebugInfo($"Error deleting entries and reordering indexes: {ex.Message}");
+                            MessageBox.Show($"Error deleting entries and reordering indexes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
+
+                // Refresh the grid to reflect changes
+                await PopulateGridWithEntries(0, 25);
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error performing delete and reorder: {ex.Message}");
+                MessageBox.Show($"Error performing delete and reorder: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+       
+
+        private async Task<int> GetMaxObjectIndex(SQLiteConnection connection)
+        {
+            int maxIndex = -1;
+
+            try
+            {
+                string query = @"
+            SELECT MAX(ObjectIndex) as MaxIndex
+            FROM Objects";
+
+                using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                {
+                    object result = await command.ExecuteScalarAsync();
+                    if (result != DBNull.Value && result != null)
+                    {
+                        maxIndex = Convert.ToInt32(result);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error retrieving max ObjectIndex: {ex.Message}");
+            }
+
+            return maxIndex;
+        }
+
+        // Method to handle key name selection changes and update value ComboBox options
+        private void txtKeyName1_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName1, txtValue1, txtCustomKeyName1, txtCustomValue1);
+        private void txtKeyName2_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName2, txtValue2, txtCustomKeyName2, txtCustomValue2);
+        private void txtKeyName3_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName3, txtValue3, txtCustomKeyName3, txtCustomValue3);
+        private void txtKeyName4_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName4, txtValue4, txtCustomKeyName4, txtCustomValue4);
+        private void txtKeyName5_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName5, txtValue5, txtCustomKeyName5, txtCustomValue5);
+        private void txtKeyName6_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateValueComboBox(txtKeyName6, txtValue6, txtCustomKeyName6, txtCustomValue6);
+
+
+
+        // Method to handle key name selection changes and update value ComboBox options
+        // Method to handle key name selection changes and update value ComboBox options
+        // Method to handle key name selection changes and update value ComboBox options
+        private void UpdateValueComboBox(ComboBox keyComboBox, ComboBox valueComboBox, TextBox customKeyTextBox, TextBox customValueTextBox)
+        {
+            if (keyComboBox.SelectedItem == null) return;
+
+            string selectedKey = (keyComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (selectedKey == "CUSTOM")
+            {
+                customKeyTextBox.Visibility = Visibility.Visible;
+                keyComboBox.Visibility = Visibility.Collapsed;
+                customValueTextBox.Visibility = Visibility.Visible;
+                valueComboBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                customKeyTextBox.Visibility = Visibility.Collapsed;
+                keyComboBox.Visibility = Visibility.Visible;
+
+                valueComboBox.Visibility = Visibility.Visible;
+                customValueTextBox.Visibility = Visibility.Collapsed;
+
+                valueComboBox.Items.Clear();
+
+                if (keyNameValues.ContainsKey(selectedKey))
+                {
+                    foreach (var value in keyNameValues[selectedKey])
+                    {
+                        valueComboBox.Items.Add(new ComboBoxItem { Content = value });
+                    }
+
+                    if (valueComboBox.Items.Count > 0)
+                    {
+                        valueComboBox.SelectedIndex = 0; // Automatically select the first value if there is one
+                    }
+                }
+                valueComboBox.Items.Add(new ComboBoxItem { Content = "CUSTOM" });
+            }
+
+            // Automatic selection for other ComboBoxes
+            if (keyComboBox == txtKeyName1)
+            {
+                ResetComboBox(txtKeyName2, txtCustomKeyName2);
+                ResetComboBox(txtValue2, txtCustomValue2);
+                ResetComboBox(txtKeyName3, txtCustomKeyName3);
+                ResetComboBox(txtValue3, txtCustomValue3);
+
+                if (selectedKey == "CLOTHING")
+                {
+                    SelectComboBoxItem(txtKeyName2, "RIGS");
+                    SelectComboBoxItem(txtKeyName3, "ENTITLEMENT_ID");
+
+                    // Uncheck and disable the HEAT checkbox, clear HEAT textboxes
+                    chkBox1.IsChecked = false;
+                    chkBox1.IsEnabled = false;
+                    SetHeatTextBoxes(string.Empty, true);
+                }
+                else if (selectedKey == "FURNITURE")
+                {
+                    SelectComboBoxItem(txtKeyName2, "ENTITLEMENT_ID");
+                    ResetComboBox(txtKeyName3, txtCustomKeyName3);
+                    ResetComboBox(txtValue3, txtCustomValue3);
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
+
+                    // Ensure the checkbox is enabled for FURNITURE
+                    chkBox1.IsEnabled = true;
+                }
+                else if (selectedKey == "SCENE_ENTITLEMENT")
+                {
+                    SelectComboBoxItem(txtKeyName2, "SCENE_TYPE");
+                    SelectComboBoxItem(txtKeyName3, "ENTITLEMENT_ID");
+
+                    // Swap Value1 to a TextBox
+                    customValueTextBox.Visibility = Visibility.Visible;
+                    valueComboBox.Visibility = Visibility.Collapsed;
+                }
+                else if (selectedKey == "COMMUNICATION_ID")
+                {
+                    SelectComboBoxItem(txtKeyName2, "TITLE_ID");
+
+                    // Swap Value1 and Value2 to TextBoxes
+                    txtCustomValue1.Visibility = Visibility.Visible;
+                    txtValue1.Visibility = Visibility.Collapsed;
+                    txtCustomValue2.Visibility = Visibility.Visible;
+                    txtValue2.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    chkBox1.IsEnabled = true;
+                }
+            }
+        }
+
+
+        private void SelectComboBoxItem(ComboBox comboBox, string itemText)
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if ((item as ComboBoxItem)?.Content.ToString() == itemText)
+                {
+                    comboBox.SelectedItem = item;
+                    return;
+                }
+            }
+            // If not found, reset to default
+            comboBox.SelectedIndex = -1;
+        }
+
+        private void UpdateValueComboBoxForValue(ComboBox valueComboBox, TextBox customValueTextBox)
+        {
+            if (valueComboBox.SelectedItem == null) return;
+
+            string selectedValue = (valueComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (selectedValue == "CUSTOM")
+            {
+                customValueTextBox.Visibility = Visibility.Visible;
+                valueComboBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                customValueTextBox.Visibility = Visibility.Collapsed;
+                valueComboBox.Visibility = Visibility.Visible;
+            }
+        }
+
+        // Event handler for selection changed on value ComboBoxes
+        private void Value_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox valueComboBox = sender as ComboBox;
+            if (valueComboBox != null)
+            {
+                if (valueComboBox == txtValue1)
+                {
+                    UpdateValueComboBoxForValue(txtValue1, txtCustomValue1);
+                }
+                else if (valueComboBox == txtValue2)
+                {
+                    UpdateValueComboBoxForValue(txtValue2, txtCustomValue2);
+                }
+                else if (valueComboBox == txtValue3)
+                {
+                    UpdateValueComboBoxForValue(txtValue3, txtCustomValue3);
+                }
+            }
+        }
+
+        // Attach Value_SelectionChanged to each value ComboBox
+        private void InitializeComboBoxEventHandlers()
+        {
+            txtValue1.SelectionChanged += Value_SelectionChanged;
+            txtValue2.SelectionChanged += Value_SelectionChanged;
+            txtValue3.SelectionChanged += Value_SelectionChanged;
+        }
+
+       
+
+
+        private void chkBox1_Checked(object sender, RoutedEventArgs e)
+        {
+            SetHeatTextBoxes("1", false); // Set value to "1" and make them writable
+        }
+
+        private void chkBox1_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetHeatTextBoxes(string.Empty, true); // Clear the text and make them read-only
+        }
+
+        private void SetHeatTextBoxes(string text, bool isReadOnly)
+        {
+            txtBox1.Text = text;
+            txtBox1.IsReadOnly = isReadOnly;
+
+            txtBox2.Text = text;
+            txtBox2.IsReadOnly = isReadOnly;
+
+            txtBox4.Text = text;
+            txtBox4.IsReadOnly = isReadOnly;
+
+            txtBox5.Text = text;
+            txtBox5.IsReadOnly = isReadOnly;
+
+            txtBox6.Text = text;
+            txtBox6.IsReadOnly = isReadOnly;
+        }
+
+
+        private void InsertMetadataEntry(SQLiteConnection connection, int objectIndex, ComboBox keyComboBox, ComboBox valueComboBox, TextBox customKeyTextBox, TextBox customValueTextBox)
+        {
+            string keyName = keyComboBox.Visibility == Visibility.Visible ?
+                             ((ComboBoxItem)keyComboBox.SelectedItem)?.Content.ToString() : customKeyTextBox.Text;
+            string value = valueComboBox.Visibility == Visibility.Visible ?
+                           ((ComboBoxItem)valueComboBox.SelectedItem)?.Content.ToString() : customValueTextBox.Text;
+
+            // Ensure keyName is not empty
+            if (!string.IsNullOrEmpty(keyName))
+            {
+                string insertMetadataQuery = @"
+        INSERT INTO Metadata (ObjectIndex, KeyName, Value)
+        VALUES (@objectIndex, @keyName, @value)";
+                using (var insertMetadataCommand = new SQLiteCommand(insertMetadataQuery, connection))
+                {
+                    insertMetadataCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                    insertMetadataCommand.Parameters.AddWithValue("@keyName", keyName);
+                    insertMetadataCommand.Parameters.AddWithValue("@value", value ?? string.Empty); // Use empty string if value is null
+                    insertMetadataCommand.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+        private async void AddNewSQLItem_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int objectIndex = int.Parse(txtObjectIndex.Text);
+                string objectId = txtObjectId.Text;
+                int version = int.Parse(txtVersion.Text);
+                int location = int.Parse(txtLocation.Text);
+                string entryType = txtEntryType.Text == "NULL" ? null : txtEntryType.Text;
+                string archiveTimeStampHex = txtArchiveTimeStampHex.Text;
+                string odcSha1Digest = txtOdcSha1Digest.Text;
+                int? entitlementIndex = ParseNullableInt(txtEntitlementIndex.Text);
+                int? rewardIndex = ParseNullableInt(txtRewardIndex.Text);
+                int userLocation = int.Parse(txtUserLocation.Text);
+                string lastUsed = txtLastUsed.Text;
+
+                // Validate SHA1
+                if (!Regex.IsMatch(odcSha1Digest, @"^[a-fA-F0-9]{40}$"))
+                {
+                    MessageBox.Show("Invalid SHA1 format. It must be 40 hexadecimal characters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Validate UUID
+                if (!Regex.IsMatch(objectId, @"^[a-fA-F0-9]{8}-[a-fA-F0-9]{8}-[a-fA-F0-9]{8}-[a-fA-F0-9]{8}$"))
+                {
+                    MessageBox.Show("Invalid UUID format. It must be in the format 8-8-8-8 hexadecimal characters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Validate timestamp
+                if (!Regex.IsMatch(archiveTimeStampHex, @"^[a-fA-F0-9]{1,8}$"))
+                {
+                    MessageBox.Show("Invalid timestamp format. It must be up to 8 hexadecimal characters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Validate last used date if not NULL
+                int? lastUsedDate = null;
+                if (!string.IsNullOrEmpty(lastUsed) && lastUsed != "NULL")
+                {
+                    if (!Regex.IsMatch(lastUsed, @"^[a-fA-F0-9]{1,8}$"))
+                    {
+                        MessageBox.Show("Invalid last used date format. It must be up to 8 hexadecimal characters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    lastUsedDate = ConvertHexToInt(lastUsed);
+                }
+
+                int archiveTimeStamp = ConvertHexToInt(archiveTimeStampHex);
+                byte[] odcSha1DigestBytes = ConvertHexToByteArray(odcSha1Digest);
+
+                bool objectReplaced = false;
+
+                using (var connection = new SQLiteConnection($"Data Source={sqlFilePath};Version=3;"))
+                {
+                    await connection.OpenAsync();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Check if ObjectIndex already exists
+                            bool objectIndexExists = await CheckObjectIndexExists(connection, objectIndex);
+                            bool objectIdExists = false;
+                            int existingObjectIndex = -1;
+
+                            if (!objectIndexExists)
+                            {
+                                (objectIdExists, existingObjectIndex) = await CheckObjectIdExists(connection, objectId);
+                            }
+
+                            if (objectIndexExists || objectIdExists)
+                            {
+                                string message = objectIndexExists ?
+                                    $"ObjectIndex {objectIndex} already exists. Do you want to delete the original item and insert the new one?" :
+                                    $"ObjectId {objectId} already exists under ObjectIndex {existingObjectIndex}. Do you want to delete the original item and insert the new one?";
+
+                                MessageBoxResult result = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                                if (result == MessageBoxResult.No)
+                                {
+                                    return; // Abort the insertion process
+                                }
+
+                                // Delete the existing item
+                                int indexToDelete = objectIndexExists ? objectIndex : existingObjectIndex;
+                                await DeleteItemByObjectIndex(connection, indexToDelete);
+                                objectReplaced = true;
+                                objectIndex = indexToDelete; // Use the existing index
+                            }
+
+                            // Insert main object entry
+                            string insertQuery = @"
+                    INSERT INTO Objects (ObjectIndex, ObjectId, Version, Location, InventoryEntryType, ArchiveTimeStamp, OdcSha1Digest, EntitlementIndex, RewardIndex, UserLocation, UserDateLastUsed)
+                    VALUES (@objectIndex, @objectId, @version, @location, @entryType, @archiveTimeStamp, @odcSha1Digest, @entitlementIndex, @rewardIndex, @userLocation, @lastUsedDate)";
+                            using (var insertCommand = new SQLiteCommand(insertQuery, connection))
+                            {
+                                insertCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                                insertCommand.Parameters.AddWithValue("@objectId", objectId);
+                                insertCommand.Parameters.AddWithValue("@version", version);
+                                insertCommand.Parameters.AddWithValue("@location", location);
+                                insertCommand.Parameters.AddWithValue("@entryType", (object)entryType ?? DBNull.Value);
+                                insertCommand.Parameters.AddWithValue("@archiveTimeStamp", archiveTimeStamp);
+                                insertCommand.Parameters.AddWithValue("@odcSha1Digest", odcSha1DigestBytes);
+                                insertCommand.Parameters.AddWithValue("@entitlementIndex", (object)entitlementIndex ?? DBNull.Value);
+                                insertCommand.Parameters.AddWithValue("@rewardIndex", (object)rewardIndex ?? DBNull.Value);
+                                insertCommand.Parameters.AddWithValue("@userLocation", userLocation);
+                                insertCommand.Parameters.AddWithValue("@lastUsedDate", (object)lastUsedDate ?? DBNull.Value);
+                                await insertCommand.ExecuteNonQueryAsync();
+                            }
+
+                            // Insert metadata entries
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName1, txtValue1, txtCustomKeyName1, txtCustomValue1);
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName2, txtValue2, txtCustomKeyName2, txtCustomValue2);
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName3, txtValue3, txtCustomKeyName3, txtCustomValue3);
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName4, txtValue4, txtCustomKeyName4, txtCustomValue4);
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName5, txtValue5, txtCustomKeyName5, txtCustomValue5);
+                            InsertMetadataEntry(connection, objectIndex, txtKeyName6, txtValue6, txtCustomKeyName6, txtCustomValue6);
+
+                            // Insert HEAT metadata entries if checkbox is checked
+                            if (chkBox1.IsChecked == true)
+                            {
+                                InsertHeatMetadataEntries(connection, objectIndex);
+                            }
+
+                            transaction.Commit();
+                            MessageBox.Show("New item added successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            ResetForm(); // Only reset the form after a successful transaction
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            LogDebugInfo($"Error adding new item: {ex.Message}");
+                            MessageBox.Show($"Error adding new item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+
+                    if (!objectReplaced)
+                    {
+                        // Update NexTIndex and the textbox if not replaced
+                        int maxIndex = await GetMaxObjectIndex(connection);
+                        NexTIndex = maxIndex + 1;
+                        txtObjectIndex.Text = NexTIndex.ToString();
+                    }
+
+                    // Call the range load function to load the index number in txtObjectIndex textbox and load 25 from that point on
+                    await PopulateGridWithEntries(objectIndex, 25);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error adding new item: {ex.Message}");
+                MessageBox.Show($"Error adding new item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private async Task<bool> CheckObjectIndexExists(SQLiteConnection connection, int objectIndex)
+        {
+            string query = "SELECT COUNT(*) FROM Objects WHERE ObjectIndex = @objectIndex";
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@objectIndex", objectIndex);
+                int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+                return count > 0;
+            }
+        }
+
+        private async Task<(bool, int)> CheckObjectIdExists(SQLiteConnection connection, string objectId)
+        {
+            string query = "SELECT ObjectIndex FROM Objects WHERE ObjectId = @objectId";
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@objectId", objectId);
+                object result = await command.ExecuteScalarAsync();
+                if (result != null)
+                {
+                    int existingObjectIndex = Convert.ToInt32(result);
+                    return (true, existingObjectIndex);
+                }
+                return (false, -1);
+            }
+        }
+
+        private async Task DeleteItemByObjectIndex(SQLiteConnection connection, int objectIndex)
+        {
+            // Delete metadata entries
+            string deleteMetadataQuery = "DELETE FROM Metadata WHERE ObjectIndex = @objectIndex";
+            using (var deleteMetadataCommand = new SQLiteCommand(deleteMetadataQuery, connection))
+            {
+                deleteMetadataCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                await deleteMetadataCommand.ExecuteNonQueryAsync();
+            }
+
+            // Delete main object entry
+            string deleteQuery = "DELETE FROM Objects WHERE ObjectIndex = @objectIndex";
+            using (var deleteCommand = new SQLiteCommand(deleteQuery, connection))
+            {
+                deleteCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                await deleteCommand.ExecuteNonQueryAsync();
+            }
+        }
+
+
+
+
+        // Method to insert HEAT metadata entries
+        private void InsertHeatMetadataEntries(SQLiteConnection connection, int objectIndex)
+        {
+            var heatTextBoxes = new Dictionary<string, TextBox>
+    {
+        { "HOST_HEAT", txtBox4 },
+        { "MAIN_HEAT", txtBox1 },
+        { "NET_HEAT", txtBox5 },
+        { "PPU_HEAT", txtBox2 },
+        { "VRAM_HEAT", txtBox6 }
+    };
+
+            foreach (var heatEntry in heatTextBoxes)
+            {
+                if (!string.IsNullOrWhiteSpace(heatEntry.Value.Text))
+                {
+                    string insertMetadataQuery = @"
+            INSERT INTO Metadata (ObjectIndex, KeyName, Value)
+            VALUES (@objectIndex, @keyName, @value)";
+                    using (var insertMetadataCommand = new SQLiteCommand(insertMetadataQuery, connection))
+                    {
+                        insertMetadataCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                        insertMetadataCommand.Parameters.AddWithValue("@keyName", heatEntry.Key);
+                        insertMetadataCommand.Parameters.AddWithValue("@value", heatEntry.Value.Text);
+                        insertMetadataCommand.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+
+        private void InsertHeatMetadataEntry(SQLiteConnection connection, int objectIndex, string keyName, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                string insertMetadataQuery = @"
+        INSERT INTO Metadata (ObjectIndex, KeyName, Value)
+        VALUES (@objectIndex, @keyName, @value)";
+                using (var insertMetadataCommand = new SQLiteCommand(insertMetadataQuery, connection))
+                {
+                    insertMetadataCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                    insertMetadataCommand.Parameters.AddWithValue("@keyName", keyName);
+                    insertMetadataCommand.Parameters.AddWithValue("@value", value);
+                    insertMetadataCommand.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+
+
+        // Dictionary to map key names to values
+        private Dictionary<string, List<string>> keyNameValues = new Dictionary<string, List<string>>
+{
+    { "CLOTHING", new List<string> { "HAIR", "HAT", "HANDS", "TORS", "LEGS", "FEET", "OUTFITS", "GLASSES", "HEADPHONES", "JEWELBOTHEARS", "JEWELLEFTEAR", "JEWELRIGHTEAR", "FACIALHAIR", "RACE", "" } },
+    { "FURNITURE", new List<string> { "CHAIR", "APPLIANCE", "TABLE", "FOOTSTOOL", "LIGHT", "ORNAMENT", "FRAME", "SOFA", "STORAGE", "CUBE", "FLOORING", "" } },
+    { "PORTABLE", new List<string> { "" } },
+    { "ENTITLEMENT_ID", new List<string> { "LUA_REWARD", "AUTO_REWARD", "FREE", "" } },
+    { "MINI_GAME", new List<string> { "", "DARTS", "APPLIANCE", "HUBCONTENT", "XMAS_2010_SCEA", "CASUAL", "GAME", "SPACE" } },
+    { "ARCADE_GAME", new List<string> { "" } },
+    { "WORLD_MAP", new List<string> { "SCEA SCEE SCEJ SCEASIA", "SCEA SCEE SCEJ", "SCEA SCEE", "SCEJ SCEASIA", "SCEA", "SCEE", "SCEJ", "SCEASIA" } },
+    { "SCENE_ENTITLEMENT", new List<string> { "CUSTOM" } },
+    { "EMBEDDED_OBJECT", new List<string> { "" } },
+    { "COMMUNICATION_ID", new List<string> { "" } },
+    { "ACTIVE", new List<string> { "DEFAULT", "" } },
+    { "TARGETABLE", new List<string> { "" } },
+    { "RIGS", new List<string> { "00000000-00000000-00000010-00000000 (Male)", "00000000-00000000-00000010-00000001 (Female)" } },
+    { "TITLE_ID", new List<string> { "CUSTOM" } },
+    { "TAGS", new List<string> { "CUSTOM" } },
+    { "LPID", new List<string> { "DEFAULT_HAIR", "DEFAULT_FACIALHAIR" } },
+    { "SCENE_TYPE", new List<string> { "APARTMENT", "CLUBHOUSE" } }
+};
+
+        private int ConvertHexToInt(string hex)
+        {
+            try
+            {
+                return int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Format error converting hex to int: {ex.Message}");
+                throw;
+            }
+        }
+
+        private byte[] ConvertHexToByteArray(string hex)
+        {
+            try
+            {
+                int numberChars = hex.Length;
+                byte[] bytes = new byte[numberChars / 2];
+                for (int i = 0; i < numberChars; i += 2)
+                {
+                    bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                }
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Format error converting hex to byte array: {ex.Message}");
+                throw;
+            }
+        }
+
+        private int? ParseNullableInt(string value)
+        {
+            if (string.IsNullOrEmpty(value) || value == "NULL")
+            {
+                return null;
+            }
+
+            if (int.TryParse(value, out int result))
+            {
+                return result;
+            }
+
+            LogDebugInfo($"Invalid nullable int format: {value}");
+            throw new FormatException($"Invalid nullable int format: {value}");
+        }
+
+       
+
+
+        private int? ParseHexOrNullableInt(string text)
+        {
+            LogDebugInfo($"Parsing hex or nullable int: {text}");
+            if (string.IsNullOrEmpty(text) || text.Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                return ConvertHexToInt(text);
+            }
+            catch (FormatException)
+            {
+                throw new FormatException($"Invalid hex or nullable int format: {text}");
+            }
+        }
+
+        private void InsertNewItem(int objectIndex, string objectId, int version, int location, char entryType, int archiveTimeStamp, byte[] odcSha1Digest, int? entitlementIndex, int? rewardIndex, int userLocation, int? userDateLastUsed)
+        {
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    string insertQuery = @"
+                INSERT INTO Objects (ObjectIndex, ObjectId, Version, Location, InventoryEntryType, ArchiveTimeStamp, OdcSha1Digest, EntitlementIndex, RewardIndex, UserLocation, UserDateLastUsed)
+                VALUES (@objectIndex, @objectId, @version, @location, @entryType, @archiveTimeStamp, @odcSha1Digest, @entitlementIndex, @rewardIndex, @userLocation, @userDateLastUsed)";
+
+                    using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@objectIndex", objectIndex);
+                        command.Parameters.AddWithValue("@objectId", objectId);
+                        command.Parameters.AddWithValue("@version", version);
+                        command.Parameters.AddWithValue("@location", location);
+                        command.Parameters.AddWithValue("@entryType", entryType == '\0' ? (object)DBNull.Value : entryType);
+                        command.Parameters.AddWithValue("@archiveTimeStamp", archiveTimeStamp);
+                        command.Parameters.AddWithValue("@odcSha1Digest", odcSha1Digest);
+                        command.Parameters.AddWithValue("@entitlementIndex", (object)entitlementIndex ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@rewardIndex", (object)rewardIndex ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@userLocation", userLocation);
+                        command.Parameters.AddWithValue("@userDateLastUsed", (object)userDateLastUsed ?? DBNull.Value);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error inserting new item into SQL file: {ex.Message}");
+                throw;
+            }
+        }
+
+
+        // Method to reset all ComboBoxes and TextBoxes to their default states
+        private void ResetForm()
+        {
+            // Reset TextBoxes to default values
+            txtObjectId.Text = "";
+            txtVersion.Text = "31";
+            txtLocation.Text = "1";
+            txtEntryType.Text = "NULL";
+            txtArchiveTimeStampHex.Text = "FFFFFFFF";
+            txtOdcSha1Digest.Text = "";
+            txtEntitlementIndex.Text = "NULL";
+            txtRewardIndex.Text = "NULL";
+            txtUserLocation.Text = "0";
+            txtLastUsed.Text = "NULL";
+
+            // Reset ComboBoxes to default values and hide custom TextBoxes
+            ResetComboBox(txtKeyName1, txtCustomKeyName1);
+            ResetComboBox(txtValue1, txtCustomValue1);
+            ResetComboBox(txtKeyName2, txtCustomKeyName2);
+            ResetComboBox(txtValue2, txtCustomValue2);
+            ResetComboBox(txtKeyName3, txtCustomKeyName3);
+            ResetComboBox(txtValue3, txtCustomValue3);
+            ResetComboBox(txtKeyName4, txtCustomKeyName4);
+            ResetComboBox(txtValue4, txtCustomValue4);
+            ResetComboBox(txtKeyName5, txtCustomKeyName5);
+            ResetComboBox(txtValue5, txtCustomValue5);
+            ResetComboBox(txtKeyName6, txtCustomKeyName6);
+            ResetComboBox(txtValue6, txtCustomValue6);
+
+            // Reset CheckBoxes
+            chkBox1.IsChecked = false;
+
+            // Reset additional TextBoxes
+            txtBox1.Text = "";
+            txtBox2.Text = "";
+            txtBox4.Text = "";
+            txtBox5.Text = "";
+            txtBox6.Text = "";
+
+            // Make HEAT textboxes readonly
+            txtBox1.IsReadOnly = true;
+            txtBox2.IsReadOnly = true;
+            txtBox4.IsReadOnly = true;
+            txtBox5.IsReadOnly = true;
+            txtBox6.IsReadOnly = true;
+        }
+
+        // Helper method to reset a ComboBox and its corresponding custom TextBox
+        private void ResetComboBox(ComboBox comboBox, TextBox customTextBox)
+        {
+            comboBox.SelectedIndex = -1; // Reset the ComboBox selection
+            comboBox.Visibility = Visibility.Visible; // Ensure ComboBox is visible
+            customTextBox.Text = ""; // Clear the custom TextBox
+            customTextBox.Visibility = Visibility.Collapsed; // Hide the custom TextBox
+        }
+
+        // Event handler for the Clear button
+        private void ClearSQLButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResetForm();
+        }
+
+        public class XmlObject
+        {
+            public string ObjectIndex { get; set; }
+            public string ObjectId { get; set; }
+            public string Version { get; set; }
+            public string Location { get; set; }
+            public string InventoryEntryType { get; set; }
+            public string ArchiveTimeStamp { get; set; }
+            public string OdcSha1Digest { get; set; }
+            public string EntitlementIndex { get; set; }
+            public string RewardIndex { get; set; }
+            public string UserLocation { get; set; }
+            public string UserDateLastUsed { get; set; }
+            public List<XmlMetadata> Metadata { get; set; }
+        }
+
+        public class XmlMetadata
+        {
+            public string ObjectIndex { get; set; }
+            public string KeyName { get; set; }
+            public string Value { get; set; }
+        }
+
+
+        // Placeholder event handlers
+        private void txtValue_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void txtKeyName_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void ExportXMLToSQLButton_Click(object sender, RoutedEventArgs e) { }
+        private async void ExportToXMLButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                List<XmlObject> xmlObjects = new List<XmlObject>();
+
+                // Retrieve data from the SQL database
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Query to get all objects
+                    string objectQuery = @"
+            SELECT 
+                ObjectIndex, 
+                ObjectId, 
+                Version, 
+                Location, 
+                InventoryEntryType, 
+                ArchiveTimeStamp, 
+                OdcSha1Digest, 
+                EntitlementIndex, 
+                RewardIndex, 
+                UserLocation, 
+                UserDateLastUsed 
+            FROM Objects";
+
+                    using (SQLiteCommand objectCommand = new SQLiteCommand(objectQuery, connection))
+                    {
+                        using (SQLiteDataReader reader = (SQLiteDataReader)await objectCommand.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                XmlObject xmlObject = new XmlObject
+                                {
+                                    ObjectIndex = reader["ObjectIndex"].ToString(),
+                                    ObjectId = reader["ObjectId"].ToString(),
+                                    Version = reader["Version"].ToString(),
+                                    Location = reader["Location"].ToString(),
+                                    InventoryEntryType = reader["InventoryEntryType"]?.ToString(),
+                                    ArchiveTimeStamp = ConvertTimestampToHex(reader["ArchiveTimeStamp"]?.ToString()),
+                                    OdcSha1Digest = ConvertBlobToSha1(reader["OdcSha1Digest"] as byte[]),
+                                    EntitlementIndex = reader["EntitlementIndex"]?.ToString(),
+                                    RewardIndex = reader["RewardIndex"]?.ToString(),
+                                    UserLocation = reader["UserLocation"].ToString(),
+                                    UserDateLastUsed = reader["UserDateLastUsed"]?.ToString(),
+                                    Metadata = new List<XmlMetadata>()
+                                };
+
+                                // Query to get metadata for the current object
+                                string metadataQuery = @"
+                        SELECT ObjectIndex, KeyName, Value 
+                        FROM Metadata 
+                        WHERE ObjectIndex = @objectIndex";
+
+                                using (SQLiteCommand metadataCommand = new SQLiteCommand(metadataQuery, connection))
+                                {
+                                    metadataCommand.Parameters.AddWithValue("@objectIndex", xmlObject.ObjectIndex);
+
+                                    using (SQLiteDataReader metadataReader = (SQLiteDataReader)await metadataCommand.ExecuteReaderAsync())
+                                    {
+                                        while (await metadataReader.ReadAsync())
+                                        {
+                                            XmlMetadata metadata = new XmlMetadata
+                                            {
+                                                ObjectIndex = metadataReader["ObjectIndex"].ToString(),
+                                                KeyName = metadataReader["KeyName"].ToString(),
+                                                Value = metadataReader["Value"].ToString()
+                                            };
+
+                                            xmlObject.Metadata.Add(metadata);
+                                        }
+                                    }
+                                }
+
+                                xmlObjects.Add(xmlObject);
+                            }
+                        }
+                    }
+                }
+
+                // Ask user where to save the XML file
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                    DefaultExt = ".xml",
+                    Title = "Save XML File"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    string selectedFilePath = saveFileDialog.FileName;
+                    WriteObjectsToXML(selectedFilePath, xmlObjects);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to XML: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string ConvertTimestampToHex(string timestamp)
+        {
+            if (int.TryParse(timestamp, out int timestampInt))
+            {
+                return timestampInt.ToString("X8");
+            }
+            return timestamp; // Return the original value if conversion fails
+        }
+
+        private string ConvertBlobToSha1(byte[] blob)
+        {
+            if (blob != null && blob.Length == 20) // Ensure it's a 20-byte SHA1 blob
+            {
+                return BitConverter.ToString(blob).Replace("-", "").ToUpper();
+            }
+            return string.Empty;
+        }
+
+        private void WriteObjectsToXML(string xmlFilePath, List<XmlObject> xmlObjects)
+        {
+            try
+            {
+                using (XmlWriter writer = XmlWriter.Create(xmlFilePath, new XmlWriterSettings { Indent = true }))
+                {
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("object_catalogue");
+
+                    foreach (var obj in xmlObjects)
+                    {
+                        if (string.IsNullOrEmpty(obj.ObjectId))
+                        {
+                            continue; // Skip entries without a UUID
+                        }
+
+                        writer.WriteStartElement("object");
+
+                        writer.WriteAttributeString("uuid", obj.ObjectId);
+                        writer.WriteAttributeString("timestamp", obj.ArchiveTimeStamp.ToUpper());
+
+                        if (!string.IsNullOrEmpty(obj.OdcSha1Digest))
+                        {
+                            writer.WriteAttributeString("sha1", obj.OdcSha1Digest.ToUpper());
+                        }
+
+                        if (!string.IsNullOrEmpty(obj.Version))
+                        {
+                            writer.WriteAttributeString("vers", obj.Version);
+                        }
+
+                        // Add metadata
+                        AddMetadataToXML(writer, obj.Metadata);
+
+                        writer.WriteEndElement(); // End "object"
+                    }
+
+                    writer.WriteEndElement(); // End "object_catalogue"
+                    writer.WriteEndDocument();
+                }
+
+                CleanUpXML(xmlFilePath, xmlFilePath); // Clean up the XML and save to the final file path
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error writing XML to file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void AddMetadataToXML(XmlWriter writer, List<XmlMetadata> metadataList)
+        {
+            Dictionary<string, List<string>> metadata = new Dictionary<string, List<string>>();
+            Dictionary<string, Dictionary<string, string>> specialMetadata = new Dictionary<string, Dictionary<string, string>>();
+            List<XmlMetadata> heatMetadata = new List<XmlMetadata>(); // List to store heat metadata
+            bool hasSpecialEntitlement = false;
+
+            foreach (var metadataItem in metadataList)
+            {
+                string keyName = metadataItem.KeyName.ToLower();
+                string value = metadataItem.Value;
+
+                if (keyName == "title_id")
+                {
+                    if (!metadata.ContainsKey(keyName))
+                    {
+                        metadata[keyName] = new List<string>();
+                    }
+                    metadata[keyName].Add(value);
+                }
+                else if (keyName == "entitlement_id" || keyName == "product_id" || keyName == "category_id")
+                {
+                    if (keyName == "entitlement_id" && (value == "LUA_REWARD" || value == "AUTOMATIC_REWARD" || value == "FREE"))
+                    {
+                        hasSpecialEntitlement = true;
+                        if (!specialMetadata.ContainsKey(keyName))
+                        {
+                            specialMetadata[keyName] = new Dictionary<string, string>();
+                        }
+                        specialMetadata[keyName]["SCEE"] = value;
+                        specialMetadata[keyName]["SCEA"] = value;
+                        specialMetadata[keyName]["SCEJ"] = value;
+                        specialMetadata[keyName]["SCEAsia"] = value;
+                    }
+                    else
+                    {
+                        string territory = GetTerritory(value);
+                        if (!specialMetadata.ContainsKey(keyName))
+                        {
+                            specialMetadata[keyName] = new Dictionary<string, string>();
+                        }
+                        specialMetadata[keyName][territory] = value;
+                    }
+                }
+                else if (keyName == "host_heat" || keyName == "main_heat" || keyName == "net_heat" || keyName == "ppu_heat" || keyName == "vram_heat")
+                {
+                    // Add to heat metadata list
+                    heatMetadata.Add(metadataItem);
+                }
+                else
+                {
+                    if (!metadata.ContainsKey(keyName))
+                    {
+                        metadata[keyName] = new List<string>();
+                    }
+                    metadata[keyName].Add(value);
+                }
+            }
+
+            // Write regular metadata
+            foreach (var key in metadata.Keys)
+            {
+                writer.WriteStartElement(key);
+
+                if (metadata[key].Count == 0 || string.IsNullOrEmpty(metadata[key][0]))
+                {
+                    writer.WriteEndElement(); // Self-closing tag for empty values
+                }
+                else
+                {
+                    writer.WriteString(string.Join(" ", metadata[key])); // Space-separated values
+                    writer.WriteEndElement();
+                }
+            }
+
+            // Write special metadata
+            WriteSpecialMetadata(writer, specialMetadata, hasSpecialEntitlement);
+
+            // Write heat metadata last
+            foreach (var heatItem in heatMetadata)
+            {
+                writer.WriteStartElement(heatItem.KeyName.ToLower());
+                writer.WriteString(heatItem.Value);
+                writer.WriteEndElement();
+            }
+        }
+
+        private void WriteSpecialMetadata(XmlWriter writer, Dictionary<string, Dictionary<string, string>> specialMetadata, bool hasSpecialEntitlement)
+        {
+            foreach (var key in specialMetadata.Keys)
+            {
+                var territories = new HashSet<string> { "SCEE", "SCEA", "SCEJ", "SCEAsia" };
+
+                foreach (var territory in specialMetadata[key].Keys)
+                {
+                    writer.WriteStartElement(key);
+                    writer.WriteAttributeString("territory", territory);
+
+                    if (!string.IsNullOrEmpty(specialMetadata[key][territory]))
+                    {
+                        writer.WriteString(specialMetadata[key][territory]);
+                    }
+
+                    writer.WriteEndElement();
+
+                    territories.Remove(territory);
+                }
+
+                // Add missing territories
+                foreach (var territory in territories)
+                {
+                    writer.WriteStartElement(key);
+                    writer.WriteAttributeString("territory", territory);
+                    writer.WriteEndElement(); // Self-closing tag for empty values
+                }
+            }
+        }
+
+        private string GetTerritory(string value)
+        {
+            if (value.StartsWith("E"))
+            {
+                return "SCEE";
+            }
+            else if (value.StartsWith("U"))
+            {
+                return "SCEA";
+            }
+            else if (value.StartsWith("J"))
+            {
+                return "SCEJ";
+            }
+            else if (value.StartsWith("H"))
+            {
+                return "SCEAsia";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        private void CleanUpXML(string inputXmlFilePath, string outputXmlFilePath)
+        {
+            XDocument doc = XDocument.Load(inputXmlFilePath);
+
+            // Remove entries with empty territory
+            doc.Descendants()
+               .Where(e => e.Attribute("territory") != null && string.IsNullOrEmpty(e.Attribute("territory").Value))
+               .Remove();
+
+            // Make LPID uppercase and format clothing and furniture values
+            foreach (var element in doc.Descendants())
+            {
+                if (element.Name.LocalName == "lpid")
+                {
+                    element.Name = "LPID";
+                    if (!string.IsNullOrEmpty(element.Value))
+                    {
+                        element.Value = TransformSpecialCases(element.Value);
+                    }
+                }
+                else if (element.Name.LocalName == "clothing" || element.Name.LocalName == "furniture")
+                {
+                    if (!string.IsNullOrEmpty(element.Value))
+                    {
+                        element.Value = TransformSpecialCases(element.Value);
+                    }
+                }
+            }
+
+            doc.Save(outputXmlFilePath);
+        }
+
+        private string TransformSpecialCases(string input)
+        {
+            switch (input.ToLower())
+            {
+                case "default_hair":
+                    return "Default_Hair";
+                case "jewelbothears":
+                    return "JewelBothEars";
+                case "jewelleftear":
+                    return "JewelLeftEar";
+                case "jewelrightear":
+                    return "JewelRightEar";
+                case "headphones":
+                    return "HeadPhones";
+                case "facialhair":
+                    return "FacialHair";
+                case "default_facialhair":
+                    return "Default_FacialHair";
+                default:
+                    return char.ToUpper(input[0]) + input.Substring(1).ToLower();
+            }
+        }
+
+
+        private void Border_DragEnter(object sender, DragEventArgs e)
+        {
+            LogDebugInfo("Border_DragEnter invoked.");
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+                LogDebugInfo("FileDrop detected. Copy effect set.");
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+                LogDebugInfo("No FileDrop detected. None effect set.");
+            }
+        }
+
+        private void Border_Drop(object sender, DragEventArgs e)
+        {
+            LogDebugInfo("Border_Drop invoked.");
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    string filePath = files[0];
+                    LogDebugInfo($"File dropped: {filePath}");
+                    ProcessDroppedFile(filePath);
+                }
+            }
+        }
+
+        private async void ProcessDroppedFile(string filePath)
+        {
+            LogDebugInfo($"ProcessDroppedFile invoked with filePath: {filePath}");
+            try
+            {
+                if (!TryProcessFile(filePath))
+                {
+                    string baseOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "work"); // Use static work directory
+                    LogDebugInfo($"Decrypting file: {filePath}");
+                    bool decrypted = await DecryptODCFilesAsync(new[] { filePath }, baseOutputDirectory);
+                    if (decrypted)
+                    {
+                        string decryptedFilePath = Path.Combine(baseOutputDirectory, Path.GetFileName(filePath));
+                        LogDebugInfo($"Decrypted file path: {decryptedFilePath}");
+                        if (!TryProcessFile(decryptedFilePath))
+                        {
+                            MessageBox.Show("Failed to process the decrypted file.");
+                            LogDebugInfo("Failed to process the decrypted file.");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to decrypt the file.");
+                        LogDebugInfo("Failed to decrypt the file.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while processing the file: " + ex.Message);
+                LogDebugInfo($"Error processing file: {ex.Message}");
+            }
+        }
+
+        private bool TryProcessFile(string filePath)
+        {
+            LogDebugInfo($"TryProcessFile invoked with filePath: {filePath}");
+            try
+            {
+                // Load the XML document
+                XDocument doc = XDocument.Load(filePath);
+                LogDebugInfo("XML document loaded.");
+
+                // Extract the UUID and timestamp
+                string uuid = doc.Root.Element("uuid")?.Value;
+                if (string.IsNullOrEmpty(uuid))
+                {
+                    LogDebugInfo("UUID not found in XML document.");
+                    return false; // UUID not found, return false
+                }
+
+                string timestamp = doc.Root.Element("timestamp")?.Value;
+
+                // Calculate SHA1 hash of the file
+                string sha1Hash = CalculateSha1(filePath);
+                LogDebugInfo($"SHA1 hash calculated: {sha1Hash}");
+
+                // Extract the image file name suffix and update the version
+                string version = ExtractVersionFromImages(doc);
+                LogDebugInfo($"Version extracted from images: {version}");
+
+                // Update the TextBox controls
+                txtObjectId.Text = uuid;
+                txtArchiveTimeStampHex.Text = timestamp;
+                txtOdcSha1Digest.Text = sha1Hash;
+                txtVersion.Text = version;
+
+                LogDebugInfo("File processed successfully.");
+                return true; // Successfully processed the file
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error processing file: {ex.Message}");
+                return false; // Error occurred, return false
+            }
+        }
+
+        public async Task<bool> DecryptODCFilesAsync(string[] filePaths, string baseOutputDirectory)
+        {
+            LogDebugInfo("DecryptODCFilesAsync invoked.");
+            bool allFilesProcessed = true;
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                try
+                {
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    LogDebugInfo($"Read file content: {filename}");
+
+                    BruteforceProcess proc = new BruteforceProcess(fileContent);
+                    byte[] decryptedContent = proc.StartBruteForce();
+
+                    if (decryptedContent != null)
+                    {
+                        string outputDirectory = baseOutputDirectory;
+                        if (!Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                            LogDebugInfo($"Created output directory: {outputDirectory}");
+                        }
+                        string outputPath = Path.Combine(outputDirectory, filename);
+                        await File.WriteAllBytesAsync(outputPath, decryptedContent);
+                        LogDebugInfo($"Decrypted content written to: {outputPath}");
+
+                        if (!IsValidDecryptedODCFile(outputPath))
+                        {
+                            File.Delete(outputPath);
+                            LogDebugInfo($"Invalid decrypted ODC file, deleted: {outputPath}");
+                            allFilesProcessed = false;
+                        }
+                    }
+                    else
+                    {
+                        allFilesProcessed = false;
+                        LogDebugInfo($"Decryption failed for file: {filename}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    allFilesProcessed = false;
+                    LogDebugInfo($"Error decrypting file: {ex.Message}");
+                }
+            }
+
+            return allFilesProcessed;
+        }
+
+        private bool IsValidDecryptedODCFile(string filePath)
+        {
+            LogDebugInfo($"IsValidDecryptedODCFile invoked with filePath: {filePath}");
+            try
+            {
+                XDocument doc = XDocument.Load(filePath);
+                bool isValid = doc.Root.Element("uuid") != null;
+                LogDebugInfo($"IsValidDecryptedODCFile result: {isValid}");
+                return isValid;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error in IsValidDecryptedODCFile: {ex.Message}");
+                return false;
+            }
+        }
+
+        private string CalculateSha1(string filePath)
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Open))
+            {
+                using (SHA1 sha1 = SHA1.Create())
+                {
+                    byte[] hashBytes = sha1.ComputeHash(fs);
+                    return BitConverter.ToString(hashBytes).Replace("-", "").ToUpperInvariant();
+                }
+            }
+        }
+
+        private string ExtractVersionFromImages(XDocument doc)
+        {
+            string[] imageElements = { "maker_image", "small_image", "large_image" };
+            foreach (var elementName in imageElements)
+            {
+                string imagePath = doc.Root.Element(elementName)?.Value;
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    var match = Regex.Match(imagePath, @"_T(\d{3})\.png", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        // Extract the version and trim leading zeros
+                        string version = match.Groups[1].Value.TrimStart('0');
+                        return version;
+                    }
+                }
+            }
+            return string.Empty; // Return empty string if no version found
+        }
+
+        private async void ExportToHCDBButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogDebugInfo("HCDB Conversion: Process Initiated");
+            
+
+            if (!Directory.Exists(_settings.HcdbOutputDirectory))
+            {
+                Directory.CreateDirectory(_settings.HcdbOutputDirectory);
+                LogDebugInfo($"HCDB Conversion: Output directory created at {_settings.HcdbOutputDirectory}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(sqlFilePath))
+            {
+                string[] filePaths = new string[] { sqlFilePath };
+                string[] segsPaths = filePaths.Select(fp => fp + ".segs").ToArray(); // Assuming LZMA outputs files with .segs extension
+
+                LogDebugInfo($"HCDB Conversion: Starting conversion for {filePaths.Length} file(s)");
+                bool conversionSuccess = await ConvertSqlToHcdbAsync_Unique(filePaths);
+
+                if (conversionSuccess)
+                {
+                    bool encryptionSuccess = await EncryptHCDBFilesAsync_Unique(segsPaths, _settings.HcdbOutputDirectory); // Encrypt the .segs files
+                    if (!encryptionSuccess)
+                    {
+                        string message = "Encryption Failed";
+                       
+                        LogDebugInfo($"HCDB Conversion: Result - {message}");
+                    }
+                }
+                else
+                {
+                    string message = "Conversion Failed";
+                    
+                    LogDebugInfo($"HCDB Conversion: Result - {message}");
+                }
+            }
+            else
+            {
+                LogDebugInfo("HCDB Conversion: Aborted - No SQL file specified for conversion.");
+                
+            }
+        }
+
+
+
+        private async Task<bool> ConvertSqlToHcdbAsync_Unique(string[] filePaths)
+        {
+            bool allFilesProcessed = true;
+            string lzmaPath = @"dependencies\lzma_segs.exe";
+
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                string expectedOutputPath = filePath + ".segs";  // Expecting LZMA to append ".segs" to the input file's name
+
+                try
+                {
+                    // Process the file with LZMA without explicitly specifying the output path
+                    if (!ExecuteLzmaProcess_Unique(lzmaPath, filePath))
+                    {
+                        LogDebugInfo($"Conversion failed for {filename}.");
+                        allFilesProcessed = false;
+                    }
+                    else
+                    {
+                        LogDebugInfo($"Conversion successful for {filename}, output likely written to {expectedOutputPath}.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error processing {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+
+            return allFilesProcessed;
+        }
+
+        private bool ExecuteLzmaProcess_Unique(string lzmaPath, string inputFilePath)
+        {
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = lzmaPath;
+                    process.StartInfo.Arguments = $"\"{inputFilePath}\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+
+                    // To log output or errors (optional but useful for debugging)
+                    string output = process.StandardOutput.ReadToEnd();
+                    string errors = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    // Check if the process exited successfully and the expected output file was created
+                    if (process.ExitCode == 0 && File.Exists(inputFilePath + ".segs"))
+                    {
+                        LogDebugInfo($"LZMA compression successful for {Path.GetFileName(inputFilePath)}");
+                        return true;
+                    }
+                    else
+                    {
+                        LogDebugInfo($"LZMA compression failed for {Path.GetFileName(inputFilePath)}: {errors}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error during LZMA compression: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> EncryptHCDBFilesAsync_Unique(string[] filePaths, string baseOutputDirectory)
+        {
+            bool allFilesProcessed = true;
+            string segsFileSHA1 = "";
+
+            foreach (var filePath in filePaths)
+            {
+                string filename = Path.GetFileName(filePath);
+                string originalFilenameWithoutExtension = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filename));
+
+                // Create the subfolder "Database_Edits" in the existing path
+                string subfolderPath = Path.Combine(baseOutputDirectory, "Database_Edits");
+                if (!Directory.Exists(subfolderPath))
+                {
+                    Directory.CreateDirectory(subfolderPath);
+                }
+
+                try
+                {
+                    byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                    byte[]? encryptedContent = null;
+                    string inputSHA1 = "";
+
+                    using (SHA1 sha1 = SHA1.Create())
+                    {
+                        byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                        inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", ""); // Full SHA1 of input content
+                        segsFileSHA1 = inputSHA1; // Store the SHA1 of the .segs file
+                        LogDebugInfo($"Input SHA1 for {filename}: {inputSHA1}");
+
+                        // Encrypt the content
+                        string computedSha1 = inputSHA1.Substring(0, 16);
+                        encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
+
+                        if (encryptedContent != null)
+                        {
+                            // Define the 4 file names
+                            string[] hcdbFilenames = new string[]
+                            {
+                        "Objects/ObjectCatalogue_5_SCEAsia.hcdb",
+                        "Objects/ObjectCatalogue_5_SCEJ.hcdb",
+                        "Objects/ObjectCatalogue_5_SCEA.hcdb",
+                        "Objects/ObjectCatalogue_5_SCEE.hcdb"
+                            };
+
+                            foreach (var hcdbFilename in hcdbFilenames)
+                            {
+                                string outputPath = Path.Combine(subfolderPath, Path.GetFileName(hcdbFilename));
+                                await File.WriteAllBytesAsync(outputPath, encryptedContent);
+                                LogDebugInfo($"File {hcdbFilename} encrypted and written to {outputPath}.");
+                            }
+
+                            // After successful encryption, delete the .segs file
+                            File.Delete(filePath);
+                            LogDebugInfo($"Temporary file {filePath} deleted after successful encryption.");
+                        }
+                        else
+                        {
+                            allFilesProcessed = false;
+                            LogDebugInfo($"Encryption failed for file {filename}, no data written.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebugInfo($"Error encrypting {filename}: {ex.Message}");
+                    allFilesProcessed = false;
+                }
+            }
+
+            if (allFilesProcessed)
+            {
+                ShowSuccessMessageBox(segsFileSHA1, Path.Combine(baseOutputDirectory, "Database_Edits")); // Display the success message box with SHA-1 and open save location
+            }
+
+            return allFilesProcessed;
+        }
+
+
+        private void ShowSuccessMessageBox(string segsFileSHA1, string saveDirectory)
+        {
+            var messageBox = new Window
+            {
+                Title = "Conversion Successful",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Thickness(10)
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = "HCDB Conversion was successful.\n\nSHA1 of the .segs file:",
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            var sha1TextBox = new TextBox
+            {
+                Text = segsFileSHA1,
+                IsReadOnly = true,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            var copyButton = new Button
+            {
+                Content = "Copy SHA1",
+                Width = 100,
+                Height = 30,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            copyButton.Click += (s, e) =>
+            {
+                Clipboard.SetText(segsFileSHA1);
+                MessageBox.Show("SHA1 copied to clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 30,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            okButton.Click += (s, e) =>
+            {
+                messageBox.Close();
+                Process.Start("explorer.exe", saveDirectory); // Open the save directory
+            };
+
+            stackPanel.Children.Add(textBlock);
+            stackPanel.Children.Add(sha1TextBox);
+            stackPanel.Children.Add(copyButton);
+            stackPanel.Children.Add(okButton);
+
+            messageBox.Content = stackPanel;
+            messageBox.ShowDialog();
+        }
+
+
+        private async Task<string> ComputeFileSHA1(string filePath)
+        {
+            using (var sha1 = SHA1.Create())
+            {
+                using (var fileStream = File.OpenRead(filePath))
+                {
+                    var hashBytes = await sha1.ComputeHashAsync(fileStream);
+                    return BitConverter.ToString(hashBytes).Replace("-", "").ToUpper();
+                }
+            }
+        }
+
 
     }
 }

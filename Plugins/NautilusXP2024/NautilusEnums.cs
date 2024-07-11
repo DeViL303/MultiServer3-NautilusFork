@@ -22,6 +22,7 @@ namespace NautilusXP2024
         ArchiveTool,
         CDSTool,
         HCDBTool,
+        SQLTool,
         TickLSTTool,
         SceneIDTool,
         LUACTool,
