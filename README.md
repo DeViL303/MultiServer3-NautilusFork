@@ -486,7 +486,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h1 align="center">
-   Tab 7: Path2Hash Tool
+   Tab 8: Path2Hash Tool
 </h1>
 
 <div align="center">
@@ -512,7 +512,7 @@ If you know the path to a file and it refuses to map normally, you can add the p
 </div>
 
 <h1 align="center">
-   Tab 8: Home EBOOT Patcher
+   Tab 9: Home EBOOT Patcher
 </h1>
 
 <div align="center">
@@ -538,7 +538,7 @@ View and or Patch various fields in Home EBOOTS.
 </div>
 
 <h1 align="center">
-   Tab 9: Checker
+   Tab 10: Checker
 </h1>
 
 <div align="center">
@@ -566,7 +566,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 10: Content Catalogue
+   Tab 11: Content Catalogue
 </h1>
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7ef1604a-858b-42fb-8b92-2c38abdd4dbb)
@@ -594,7 +594,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 
 <h1 align="center">
-   Tab 11: Media Tool
+   Tab 12: Media Tool
 </h1>
 
 <div align="center">
@@ -631,7 +631,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 12: Settings
+   Tab 13: Settings
 </h1>
 
 <div align="center">
