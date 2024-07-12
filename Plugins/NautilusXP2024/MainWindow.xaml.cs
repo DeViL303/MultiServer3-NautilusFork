@@ -58,6 +58,8 @@ using System.Data.SQLite;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Windows.Documents;
+using System.Windows.Controls.Primitives;
+
 
 
 namespace NautilusXP2024
@@ -11265,8 +11267,8 @@ VALUES (@objectIndex, @keyName, @value)";
                 int userLocation = int.Parse(txtUserLocation.Text);
                 string lastUsed = txtLastUsed.Text;
 
-                // Validate SHA1
-                if (!Regex.IsMatch(odcSha1Digest, @"^[a-fA-F0-9]{40}$"))
+                // Validate SHA1 (allow it to be empty or a valid SHA1)
+                if (!string.IsNullOrEmpty(odcSha1Digest) && !Regex.IsMatch(odcSha1Digest, @"^[a-fA-F0-9]{40}$"))
                 {
                     MessageBox.Show("Invalid SHA1 format. It must be 40 hexadecimal characters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
@@ -11299,7 +11301,7 @@ VALUES (@objectIndex, @keyName, @value)";
                 }
 
                 int archiveTimeStamp = ConvertHexToInt(archiveTimeStampHex);
-                byte[] odcSha1DigestBytes = ConvertHexToByteArray(odcSha1Digest);
+                byte[] odcSha1DigestBytes = !string.IsNullOrEmpty(odcSha1Digest) ? ConvertHexToByteArray(odcSha1Digest) : null;
 
                 bool objectReplaced = false;
 
@@ -11307,39 +11309,39 @@ VALUES (@objectIndex, @keyName, @value)";
                 {
                     await connection.OpenAsync();
 
+                    bool objectIndexExists = await CheckObjectIndexExists(connection, objectIndex);
+                    bool objectIdExists = false;
+                    int existingObjectIndex = -1;
+
+                    if (!objectIndexExists)
+                    {
+                        (objectIdExists, existingObjectIndex) = await CheckObjectIdExists(connection, objectId);
+                    }
+
+                    if (objectIndexExists || objectIdExists)
+                    {
+                        string message = objectIndexExists ?
+                            $"ObjectIndex {objectIndex} already exists. Do you want to replace the existing item?" :
+                            $"ObjectId {objectId} already exists under ObjectIndex {existingObjectIndex}. Do you want to replace the existing item?";
+
+                        var result = CustomMessageBoxInserttoSQL.Show(message, "Replace", "Cancel");
+
+                        if (result == CustomMessageBoxInserttoSQL.CustomMessageBoxResult.Cancel)
+                        {
+                            return; // Abort the insertion process
+                        }
+
+                        // Delete the existing item
+                        int indexToDelete = objectIndexExists ? objectIndex : existingObjectIndex;
+                        await DeleteItemByObjectIndex(connection, indexToDelete);
+                        objectReplaced = true;
+                        objectIndex = indexToDelete; // Use the existing index
+                    }
+
                     using (var transaction = connection.BeginTransaction())
                     {
                         try
                         {
-                            // Check if ObjectIndex already exists
-                            bool objectIndexExists = await CheckObjectIndexExists(connection, objectIndex);
-                            bool objectIdExists = false;
-                            int existingObjectIndex = -1;
-
-                            if (!objectIndexExists)
-                            {
-                                (objectIdExists, existingObjectIndex) = await CheckObjectIdExists(connection, objectId);
-                            }
-
-                            if (objectIndexExists || objectIdExists)
-                            {
-                                string message = objectIndexExists ?
-                                    $"ObjectIndex {objectIndex} already exists. Do you want to delete the original item and insert the new one?" :
-                                    $"ObjectId {objectId} already exists under ObjectIndex {existingObjectIndex}. Do you want to delete the original item and insert the new one?";
-
-                                MessageBoxResult result = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                                if (result == MessageBoxResult.No)
-                                {
-                                    return; // Abort the insertion process
-                                }
-
-                                // Delete the existing item
-                                int indexToDelete = objectIndexExists ? objectIndex : existingObjectIndex;
-                                await DeleteItemByObjectIndex(connection, indexToDelete);
-                                objectReplaced = true;
-                                objectIndex = indexToDelete; // Use the existing index
-                            }
-
                             // Insert main object entry
                             string insertQuery = @"
                     INSERT INTO Objects (ObjectIndex, ObjectId, Version, Location, InventoryEntryType, ArchiveTimeStamp, OdcSha1Digest, EntitlementIndex, RewardIndex, UserLocation, UserDateLastUsed)
@@ -11352,7 +11354,7 @@ VALUES (@objectIndex, @keyName, @value)";
                                 insertCommand.Parameters.AddWithValue("@location", location);
                                 insertCommand.Parameters.AddWithValue("@entryType", (object)entryType ?? DBNull.Value);
                                 insertCommand.Parameters.AddWithValue("@archiveTimeStamp", archiveTimeStamp);
-                                insertCommand.Parameters.AddWithValue("@odcSha1Digest", odcSha1DigestBytes);
+                                insertCommand.Parameters.AddWithValue("@odcSha1Digest", (object)odcSha1DigestBytes ?? DBNull.Value);
                                 insertCommand.Parameters.AddWithValue("@entitlementIndex", (object)entitlementIndex ?? DBNull.Value);
                                 insertCommand.Parameters.AddWithValue("@rewardIndex", (object)rewardIndex ?? DBNull.Value);
                                 insertCommand.Parameters.AddWithValue("@userLocation", userLocation);
@@ -11375,8 +11377,14 @@ VALUES (@objectIndex, @keyName, @value)";
                             }
 
                             transaction.Commit();
-                            MessageBox.Show("New item added successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                            ResetForm(); // Only reset the form after a successful transaction
+                            if (objectReplaced)
+                            {
+                                MessageBox.Show("Object replaced successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show("Object inserted successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -11386,13 +11394,10 @@ VALUES (@objectIndex, @keyName, @value)";
                         }
                     }
 
-                    if (!objectReplaced)
-                    {
-                        // Update NexTIndex and the textbox if not replaced
-                        int maxIndex = await GetMaxObjectIndex(connection);
-                        NexTIndex = maxIndex + 1;
-                        txtObjectIndex.Text = NexTIndex.ToString();
-                    }
+                    // Update NexTIndex and the textbox
+                    int maxIndex = await GetMaxObjectIndex(connection);
+                    NexTIndex = maxIndex + 1;
+                    txtObjectIndex.Text = NexTIndex.ToString();
 
                     // Call the range load function to load the index number in txtObjectIndex textbox and load 25 from that point on
                     await PopulateGridWithEntries(objectIndex, 25);
@@ -11517,12 +11522,12 @@ VALUES (@objectIndex, @keyName, @value)";
     { "WORLD_MAP", new List<string> { "SCEA SCEE SCEJ SCEASIA", "SCEA SCEE SCEJ", "SCEA SCEE", "SCEJ SCEASIA", "SCEA", "SCEE", "SCEJ", "SCEASIA" } },
     { "SCENE_ENTITLEMENT", new List<string> { "CUSTOM" } },
     { "EMBEDDED_OBJECT", new List<string> { "" } },
-    { "COMMUNICATION_ID", new List<string> { "" } },
+    { "COMMUNICATION_ID", new List<string> { "CUSTOM" } },
     { "ACTIVE", new List<string> { "DEFAULT", "" } },
     { "TARGETABLE", new List<string> { "" } },
     { "RIGS", new List<string> { "00000000-00000000-00000010-00000000 (Male)", "00000000-00000000-00000010-00000001 (Female)" } },
     { "TITLE_ID", new List<string> { "CUSTOM" } },
-    { "TAGS", new List<string> { "CUSTOM" } },
+    { "TAGS", new List<string> { "" } },
     { "LPID", new List<string> { "DEFAULT_HAIR", "DEFAULT_FACIALHAIR" } },
     { "SCENE_TYPE", new List<string> { "APARTMENT", "CLUBHOUSE" } }
 };
@@ -11718,11 +11723,7 @@ VALUES (@objectIndex, @keyName, @value)";
             public string Value { get; set; }
         }
 
-
-        // Placeholder event handlers
         private void txtValue_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
-        private void txtKeyName_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
-        private void ExportXMLToSQLButton_Click(object sender, RoutedEventArgs e) { }
         private async void ExportToXMLButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -12571,6 +12572,7 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
+      
 
     }
 }

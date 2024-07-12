@@ -26,6 +26,10 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="GridTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Style" Value="{StaticResource SmallTextBoxStyle2}"/>
+        </Style>
         <Style x:Key="DarkModeComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#282828"/>
@@ -1068,7 +1072,7 @@
                                 <StackPanel Orientation="Horizontal" Margin="5,6,5,2">
                                     <!-- KeyName 1 and Value 1 -->
                                     <TextBlock Text="KeyName 1:" FontSize="10" Margin="5,0" Foreground="White"/>
-                                    <ComboBox x:Name="txtKeyName1" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName1_SelectionChanged">
+                                    <ComboBox x:Name="txtKeyName1" MaxDropDownHeight="420" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName1_SelectionChanged" >
                                         <ComboBoxItem Content="CLOTHING"/>
                                         <ComboBoxItem Content="FURNITURE"/>
                                         <ComboBoxItem Content="PORTABLE"/>
@@ -1095,7 +1099,6 @@
                                     <TextBlock Text="KeyName 4:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName4" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName4_SelectionChanged">
                                         <ComboBoxItem Content=""/>
-                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName4" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
@@ -1113,7 +1116,7 @@
                                 <StackPanel Orientation="Horizontal" Margin="5,2">
                                     <!-- KeyName 2 and Value 2 -->
                                     <TextBlock Text="KeyName 2:" FontSize="10" Margin="5,0" Foreground="White"/>
-                                    <ComboBox x:Name="txtKeyName2" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName2_SelectionChanged">
+                                    <ComboBox x:Name="txtKeyName2" Height="20" MaxDropDownHeight="400" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName2_SelectionChanged">
                                         <ComboBoxItem Content="ENTITLEMENT_ID"/>
                                         <ComboBoxItem Content="RIGS"/>
                                         <ComboBoxItem Content="TARGETABLE"/>
@@ -1138,7 +1141,6 @@
                                     <TextBlock Text="KeyName 5:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName5" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName5_SelectionChanged">
                                         <ComboBoxItem Content=""/>
-                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName5" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
@@ -1181,7 +1183,6 @@
                                     <TextBlock Text="KeyName 6:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
                                     <ComboBox x:Name="txtKeyName6" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName6_SelectionChanged">
                                         <ComboBoxItem Content=""/>
-                                        <ComboBoxItem Content="TAGS"/>
                                         <ComboBoxItem Content="CUSTOM"/>
                                     </ComboBox>
                                     <TextBox x:Name="txtCustomKeyName6" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
