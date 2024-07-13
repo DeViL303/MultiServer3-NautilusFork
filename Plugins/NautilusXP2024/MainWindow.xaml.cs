@@ -10280,6 +10280,7 @@ namespace NautilusXP2024
         }
 
         private int NexTIndex { get; set; }
+        private Dictionary<string, Dictionary<string, string>> unsavedChanges = new Dictionary<string, Dictionary<string, string>>();
         private string sqlFilePath;
 
         private void BrowseSQLButton_Click(object sender, RoutedEventArgs e)
@@ -10731,7 +10732,15 @@ namespace NautilusXP2024
 
                             textBox.TextChanged += (sender, e) =>
                             {
+                                textBox.Foreground = Brushes.Yellow; // Change text color to yellow
                                 UnsavedChanges.Visibility = Visibility.Visible;
+
+                                // Store unsaved changes
+                                if (!unsavedChanges.ContainsKey(entry["ObjectIndex"]))
+                                {
+                                    unsavedChanges[entry["ObjectIndex"]] = new Dictionary<string, string>();
+                                }
+                                unsavedChanges[entry["ObjectIndex"]][column] = textBox.Text;
                             };
 
                             textBox.KeyDown += async (sender, e) =>
@@ -10744,14 +10753,27 @@ namespace NautilusXP2024
                                     {
                                         await DeleteMetadataEntry(entry["ObjectIndex"], tag.OriginalKeyName, tag.OriginalValue);
                                     }
-                                    else if (column == "KeyName" || column == "Value")
-                                    {
-                                        await UpdateMetadataEntry(entry["ObjectIndex"], column, textBox.Text, tag.OriginalKeyName, tag.OriginalValue);
-                                    }
                                     else
                                     {
-                                        await UpdateDatabaseEntry(entry["ObjectIndex"], column, textBox.Text);
+                                        foreach (var change in unsavedChanges[entry["ObjectIndex"]])
+                                        {
+                                            if (change.Key == "KeyName" && string.IsNullOrWhiteSpace(change.Value))
+                                            {
+                                                await DeleteMetadataEntry(entry["ObjectIndex"], tag.OriginalKeyName, tag.OriginalValue);
+                                            }
+                                            else if (change.Key == "KeyName" || change.Key == "Value")
+                                            {
+                                                await UpdateMetadataEntry(entry["ObjectIndex"], change.Key, change.Value, tag.OriginalKeyName, tag.OriginalValue);
+                                            }
+                                            else
+                                            {
+                                                await UpdateDatabaseEntry(entry["ObjectIndex"], change.Key, change.Value);
+                                            }
+                                        }
                                     }
+
+                                    // Clear changes after saving
+                                    unsavedChanges.Remove(entry["ObjectIndex"]);
                                     UnsavedChanges.Visibility = Visibility.Hidden;
                                     await PopulateGridWithEntries(currentStartIndex, 25); // Reload the same object index range
                                 }
