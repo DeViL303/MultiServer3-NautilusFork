@@ -1222,7 +1222,8 @@
                                 <Button Content="Delete Index" Width="90" Height="26" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="5" Click="DeleteSQLIndexButton_Click"/>
                                 <TextBlock Text="UUID:" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="20,5,5,5"/>
                                 <TextBox x:Name="txtSearch" Width="320" Margin="1,0" Style="{StaticResource SmallTextBoxStyle}" Text=""/>
-                                <Button Content="Search" Width="60" Height="26" FontSize="12" FontWeight="Bold" Margin="5,0,190,0" Style="{StaticResource DarkModeButtonStyle}" Click="SearchButton_Click"/>
+                                <Button Content="Search" Width="60" Height="26" FontSize="12" FontWeight="Bold" Margin="5,0,20,0" Style="{StaticResource DarkModeButtonStyle}" Click="SearchButton_Click"/>
+                                <TextBlock x:Name="UnsavedChanges" Width="170" Text="Unsaved Changes - Press Enter!" Visibility="Hidden" FontSize="12" Foreground="yellow" VerticalAlignment="Center" Margin="5"/>
                                 <Button Name="BrowseSQLButton" Content="Open SQL" FontSize="12" Style="{StaticResource DarkModeButtonStyle}" Click="BrowseSQLButton_Click" Width="80" Height="26" Margin="5,0"/>
                                 <Button Content="Export XML" Width="90" Height="26" Padding="0" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="ExportToXMLButton_Click" Margin="5,0,0,0"/>
                                 <Button Content="Export HCDB" Width="100" Height="26" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="5,0" VerticalAlignment="Center" Click="ExportToHCDBButton_Click"/>

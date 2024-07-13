@@ -10618,7 +10618,6 @@ namespace NautilusXP2024
         {
             sqlItemsScrollViewer?.ScrollToTop();
         }
-
         private async Task PopulateGridWithEntries(int startIndex, int count)
         {
             LogDebugInfo($"PopulateGridWithEntries invoked with startIndex: {startIndex}, count: {count}");
@@ -10714,6 +10713,55 @@ namespace NautilusXP2024
                             Margin = new Thickness(2),
                             Style = (Style)FindResource("SmallTextBoxStyle2")
                         };
+
+                        // Make ObjectIndex and ObjectId read-only
+                        if (column == "ObjectIndex" || column == "ObjectId")
+                        {
+                            textBox.IsReadOnly = true;
+                        }
+
+                        // Make other fields editable including Version, KeyName, Value, SHA1, and Timestamp
+                        if (column == "Version" || column == "KeyName" || column == "Value" || column == "OdcSha1Digest" || column == "ArchiveTimeStamp")
+                        {
+                            // Store original key name and value
+                            string originalKeyName = entry.ContainsKey("KeyName") ? entry["KeyName"] : string.Empty;
+                            string originalValue = entry.ContainsKey("Value") ? entry["Value"] : string.Empty;
+
+                            textBox.Tag = new { OriginalKeyName = originalKeyName, OriginalValue = originalValue };
+
+                            textBox.TextChanged += (sender, e) =>
+                            {
+                                UnsavedChanges.Visibility = Visibility.Visible;
+                            };
+
+                            textBox.KeyDown += async (sender, e) =>
+                            {
+                                if (e.Key == Key.Enter)
+                                {
+                                    var tag = (dynamic)textBox.Tag;
+
+                                    if (column == "KeyName" && string.IsNullOrWhiteSpace(textBox.Text))
+                                    {
+                                        await DeleteMetadataEntry(entry["ObjectIndex"], tag.OriginalKeyName, tag.OriginalValue);
+                                    }
+                                    else if (column == "KeyName" || column == "Value")
+                                    {
+                                        await UpdateMetadataEntry(entry["ObjectIndex"], column, textBox.Text, tag.OriginalKeyName, tag.OriginalValue);
+                                    }
+                                    else
+                                    {
+                                        await UpdateDatabaseEntry(entry["ObjectIndex"], column, textBox.Text);
+                                    }
+                                    UnsavedChanges.Visibility = Visibility.Hidden;
+                                    await PopulateGridWithEntries(currentStartIndex, 25); // Reload the same object index range
+                                }
+                            };
+                        }
+                        else
+                        {
+                            textBox.IsReadOnly = true;
+                        }
+
                         Grid.SetRow(textBox, rowIndex);
                         Grid.SetColumn(textBox, colIndex++);
                         SQLItemsGrid.Children.Add(textBox);
@@ -10726,8 +10774,120 @@ namespace NautilusXP2024
             }
         }
 
+        private async Task UpdateDatabaseEntry(string objectIndex, string columnName, string newValue)
+        {
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
 
+                    string updateQuery = string.Empty;
+                    SQLiteCommand command = new SQLiteCommand(connection);
 
+                    if (columnName == "ArchiveTimeStamp")
+                    {
+                        int timestampValue = ConvertHexToInt(newValue);
+                        updateQuery = $@"
+                    UPDATE Objects
+                    SET {columnName} = @newValue
+                    WHERE ObjectIndex = @objectIndex";
+                        command.Parameters.AddWithValue("@newValue", timestampValue);
+                    }
+                    else if (columnName == "OdcSha1Digest")
+                    {
+                        byte[] sha1Value = ConvertHexToByteArray(newValue);
+                        updateQuery = $@"
+                    UPDATE Objects
+                    SET {columnName} = @newValue
+                    WHERE ObjectIndex = @objectIndex";
+                        command.Parameters.AddWithValue("@newValue", sha1Value);
+                    }
+                    else if (columnName == "Version")
+                    {
+                        updateQuery = $@"
+                    UPDATE Objects
+                    SET {columnName} = @newValue
+                    WHERE ObjectIndex = @objectIndex";
+                        command.Parameters.AddWithValue("@newValue", newValue);
+                    }
+
+                    command.CommandText = updateQuery;
+                    command.Parameters.AddWithValue("@objectIndex", objectIndex);
+                    await command.ExecuteNonQueryAsync();
+
+                    LogDebugInfo($"Database entry updated: ObjectIndex={objectIndex}, Column={columnName}, NewValue={newValue}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error updating database entry: {ex.Message}");
+                MessageBox.Show($"Error updating database entry: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task UpdateMetadataEntry(string objectIndex, string columnName, string newValue, string originalKeyName, string originalValue)
+        {
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    string updateQuery = $@"
+                UPDATE Metadata
+                SET {columnName} = @newValue
+                WHERE ObjectIndex = @objectIndex AND KeyName = @originalKeyName AND Value = @originalValue";
+
+                    SQLiteCommand command = new SQLiteCommand(updateQuery, connection);
+                    command.Parameters.AddWithValue("@newValue", newValue);
+                    command.Parameters.AddWithValue("@objectIndex", objectIndex);
+                    command.Parameters.AddWithValue("@originalKeyName", originalKeyName);
+                    command.Parameters.AddWithValue("@originalValue", originalValue);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    LogDebugInfo($"Metadata entry updated: ObjectIndex={objectIndex}, Column={columnName}, NewValue={newValue}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error updating metadata entry: {ex.Message}");
+                MessageBox.Show($"Error updating metadata entry: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task DeleteMetadataEntry(string objectIndex, string keyName, string value)
+        {
+            try
+            {
+                string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    string deleteQuery = $@"
+                DELETE FROM Metadata
+                WHERE ObjectIndex = @objectIndex AND KeyName = @keyName AND Value = @value";
+
+                    SQLiteCommand command = new SQLiteCommand(deleteQuery, connection);
+                    command.Parameters.AddWithValue("@objectIndex", objectIndex);
+                    command.Parameters.AddWithValue("@keyName", keyName);
+                    command.Parameters.AddWithValue("@value", value);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    LogDebugInfo($"Metadata entry deleted: ObjectIndex={objectIndex}, KeyName={keyName}, Value={value}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error deleting metadata entry: {ex.Message}");
+                MessageBox.Show($"Error deleting metadata entry: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
