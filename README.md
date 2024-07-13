@@ -282,7 +282,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/90d2e3dd-3304-4abc-9639-881b3d94f063)
+![image](https://github.com/user-attachments/assets/4c2753a7-4888-4dfb-a66a-ddf969ffe939)
+
 
 
 </div>
@@ -290,14 +291,16 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 ### Features:
 - Open PS Home Object Catalogue SQL files and Add/Remove items
 - Import SQL, Export to old style XML which is stil supported in new versions. It not known if there is a limit on item count in XML style catalogue.
-- Shows plaintext hex timestamp and sha1 so its eaiser to read and enter data, it will convert it to int and 20 bute blob when you add an item to SQL.
+- Shows plaintext hex timestamp and sha1 in GUI so its easier to read and edit data, No need to worry about converting data types anymore.
+- It will convert data entered to int and 20 byte blob or whatever is needed when you click "Add Item". 
+- Edit existing sha1, timestamp, version, keyname, value fields and simply press enter to save changes back to SQL instantly. 
 - Export to 4 x HCDB, one for each region when finished editing SQL (Gives you SHA1 for TSS when you export to HCDB)
 - Jump to and load any UUID or index, to load a range of indexes put in 2 values hyphen separated like 71345-71435). Loading more than 100 at a time will make GUI slow.
 - Delete any item or range of items in same way as loading, enter hyphen separated values, it will reorder all remaining items to suit.
 - Adding items - By default it will autofill next index, If you override this with existing UUID or index, if it does exist already it will ask if you want to replace the item.
 - Verifies all fields are correct format, that UUID is 8-8-8-8, SHA1 is 20bytes etc 
 - Easy add option, Drag in ODC, plaintext or encrypted and it will autofill out UUID, Timestamp, Version, SHA1 fields.
-
+- 
 </div>
 
 
