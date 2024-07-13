@@ -277,13 +277,37 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 </div>
 
 <h1 align="center">
-   Tab 4: SceneID Generator / Decrypter
+   Tab 4: DB Editor
+</h1>
+
+<div align="center">
+
+![image](https://github.com/user-attachments/assets/90d2e3dd-3304-4abc-9639-881b3d94f063)
+
+
+</div>
+
+### Features:
+- Open PS Home Object Catalogue SQL files and Add/Remove items
+- Import SQL, Export to old style XML which is stil supported in new versions. It not known if there is a limit on item count in XML style catalogue.
+- Shows plaintext hex timestamp and sha1 so its eaiser to read and enter data, it will convert it to int and 20 bute blob when you add an item to SQL.
+- Export to 4 x HCDB, one for each region when finished editing SQL (Gives you SHA1 for TSS when you export to HCDB)
+- Jump to and load any UUID or index, to load a range of indexes put in 2 values hyphen separated like 71345-71435). Loading more than 100 at a time will make GUI slow.
+- Delete any item or range of items in same way as loading, enter hyphen separated values, it will reorder all remaining items to suit.
+- Adding items - By default it will autofill next index, If you override this with existing UUID or index, if it does exist already it will ask if you want to replace the item.
+- Verifies all fields are correct format, that UUID is 8-8-8-8, SHA1 is 20bytes etc 
+- Easy add option, Drag in ODC, plaintext or encrypted and it will autofill out UUID, Timestamp, Version, SHA1 fields.
+
+</div>
+
+
+<h1 align="center">
+   Tab 5: SceneID Generator / Decrypter
 </h1>
 
 <div align="center">
    
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94ebe836-6b6a-4569-9944-d4c415ef77bb)
-
 
 
 </div>
@@ -340,7 +364,7 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 
 <h1 align="center">
-   Tab 5: LUA / LUAC TOOL
+   Tab 6: LUA / LUAC TOOL
 </h1>
 
 <div align="center">
@@ -414,7 +438,7 @@ You could also switch out the JAR files for others if you find better solutions.
 </div>
 
 <h1 align="center">
-   Tab 6: SDC / ODC Tool
+   Tab 7: SDC / ODC Tool
 </h1>
 
 <div align="center">
@@ -462,7 +486,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h1 align="center">
-   Tab 7: Path2Hash Tool
+   Tab 8: Path2Hash Tool
 </h1>
 
 <div align="center">
@@ -488,7 +512,7 @@ If you know the path to a file and it refuses to map normally, you can add the p
 </div>
 
 <h1 align="center">
-   Tab 8: Home EBOOT Patcher
+   Tab 9: Home EBOOT Patcher
 </h1>
 
 <div align="center">
@@ -514,7 +538,7 @@ View and or Patch various fields in Home EBOOTS.
 </div>
 
 <h1 align="center">
-   Tab 9: Checker
+   Tab 10: Checker
 </h1>
 
 <div align="center">
@@ -542,7 +566,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 10: Content Catalogue
+   Tab 11: Content Catalogue
 </h1>
 
 ![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7ef1604a-858b-42fb-8b92-2c38abdd4dbb)
@@ -570,7 +594,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 
 <h1 align="center">
-   Tab 11: Media Tool
+   Tab 12: Media Tool
 </h1>
 
 <div align="center">
@@ -607,7 +631,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 12: Settings
+   Tab 13: Settings
 </h1>
 
 <div align="center">
