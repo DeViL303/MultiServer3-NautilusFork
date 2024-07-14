@@ -303,6 +303,16 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - 
 </div>
 
+### Bulk Metadata Editor
+- Add new Metadata fields to all items easily
+- Simple Find and Replace for Metadata values
+- Allows applying some experimental patches to all items
+- 
+<div align="center">
+
+![image](https://github.com/user-attachments/assets/ddfcae32-593e-417d-acea-fc8d9b1eae9e)
+
+</div>
 
 <h1 align="center">
    Tab 5: SceneID Generator / Decrypter
