@@ -10285,6 +10285,7 @@ namespace NautilusXP2024
 
         private void BrowseSQLButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             var initialDirectory = SqlOutputDirectoryTextBox.Text;
 
             // Create the directory if it does not exist
@@ -10417,6 +10418,7 @@ namespace NautilusXP2024
 
         private async void GoToIndexButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             string input = txtGoToIndex.Text;
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -10583,6 +10585,7 @@ namespace NautilusXP2024
 
         private void ForwardButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             currentStartIndex += 25;
             PopulateGridWithEntriesSafe(currentStartIndex, 25);
             ScrollToTop();
@@ -10590,6 +10593,7 @@ namespace NautilusXP2024
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             currentStartIndex -= 25;
             if (currentStartIndex < 0)
             {
@@ -10599,7 +10603,14 @@ namespace NautilusXP2024
             ScrollToTop();
         }
 
-        private async void PopulateGridWithEntriesSafe(int startIndex, int count)
+        private void ClearUnsavedChanges()
+        {
+            unsavedChanges.Clear();
+            UnsavedChanges.Visibility = Visibility.Hidden;
+        }
+
+
+        internal async void PopulateGridWithEntriesSafe(int startIndex, int count)
         {
             LogDebugInfo($"PopulateGridWithEntriesSafe invoked with startIndex: {startIndex}, count: {count}");
 
@@ -10914,6 +10925,7 @@ namespace NautilusXP2024
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             string searchQuery = txtSearch.Text.Trim();
             if (string.IsNullOrEmpty(searchQuery))
             {
@@ -11029,6 +11041,7 @@ namespace NautilusXP2024
 
         private async void DeleteSQLIndexButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             string input = txtGoToIndex.Text;
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -11435,6 +11448,7 @@ VALUES (@objectIndex, @keyName, @value)";
 
         private async void AddNewSQLItem_Button_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             try
             {
                 int objectIndex = int.Parse(txtObjectIndex.Text);
@@ -11823,6 +11837,7 @@ VALUES (@objectIndex, @keyName, @value)";
         // Method to reset all ComboBoxes and TextBoxes to their default states
         private void ResetForm()
         {
+            ClearUnsavedChanges();
             // Reset TextBoxes to default values
             txtObjectId.Text = "";
             txtVersion.Text = "31";
@@ -11908,6 +11923,7 @@ VALUES (@objectIndex, @keyName, @value)";
         private void txtValue_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
         private async void ExportToXMLButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             try
             {
                 List<XmlObject> xmlObjects = new List<XmlObject>();
@@ -12482,6 +12498,7 @@ VALUES (@objectIndex, @keyName, @value)";
 
         private async void ExportToHCDBButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearUnsavedChanges();
             LogDebugInfo("HCDB Conversion: Process Initiated");
             
 
@@ -12754,7 +12771,18 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
-      
+        private void BulkEditSQLButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(sqlFilePath))
+            {
+                MessageBox.Show("Please select a SQL file first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            BulkEditorForDB bulkEditor = new BulkEditorForDB(this, sqlFilePath);
+            bulkEditor.ShowDialog();
+        }
+
 
     }
 }

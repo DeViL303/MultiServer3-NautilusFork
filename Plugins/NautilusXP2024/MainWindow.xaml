@@ -1111,6 +1111,7 @@
                                     <CheckBox x:Name="chkBox1" Width="20" Padding="5" Margin="1,0" Checked="chkBox1_Checked" Unchecked="chkBox1_Unchecked"/>
                                     <TextBlock Text="HOST_HEAT:" Width="55" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
                                     <TextBox x:Name="txtBox4" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                                    <Button Content="Reset" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSQLButton_Click" Margin="15,0,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Margin="5,2">
@@ -1152,7 +1153,7 @@
                                     <TextBox x:Name="txtBox1" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
                                     <TextBlock Text="NET_HEAT:" Width="55" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
                                     <TextBox x:Name="txtBox5" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
-                                    <Button Content="Reset" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSQLButton_Click" Margin="15,0,0,0"/>
+                                    <Button Content="Bulk Edit" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="BulkEditSQLButton_Click" Margin="15,0,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Margin="5,2">
