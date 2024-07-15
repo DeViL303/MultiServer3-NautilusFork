@@ -300,14 +300,15 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Adding items - By default it will autofill next index, If you override this with existing UUID or index, if it does exist already it will ask if you want to replace the item.
 - Verifies all fields are correct format, that UUID is 8-8-8-8, SHA1 is 20bytes etc 
 - Easy add option, Drag in ODC, plaintext or encrypted and it will autofill out UUID, Timestamp, Version, SHA1 fields.
-- 
+  
 </div>
 
 ### Bulk Metadata Editor
 - Add new Metadata fields to all items easily
 - Simple Find and Replace for Metadata values
+- Add metadata based on matching an existing metadata keyname or value.
 - Allows applying some experimental patches to all items
-- 
+  
 <div align="center">
 
 ![image](https://github.com/user-attachments/assets/ddfcae32-593e-417d-acea-fc8d9b1eae9e)
