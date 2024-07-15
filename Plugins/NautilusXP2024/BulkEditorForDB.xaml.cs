@@ -913,6 +913,109 @@ namespace NautilusXP2024
             }
         }
 
+        private async void ApplyMatchAndAddButton_Click(object sender, RoutedEventArgs e)
+        {
+            string matchText = MatchTextBox.Text.Trim();
+            string addKeyName = AddKeyNameTextBox.Text.Trim().ToUpper();
+            string addValue = AddValueTextBox.Text.Trim().ToUpper();
+
+            if (string.IsNullOrEmpty(matchText) || string.IsNullOrEmpty(addKeyName) || string.IsNullOrEmpty(addValue))
+            {
+                MessageBox.Show("Match Key/Value, Add KeyName, and Add Value cannot be empty.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            await AddMetadataBasedOnMatch(matchText, addKeyName, addValue);
+
+            // Reload the first 25 entries in the main window
+            _mainWindow.PopulateGridWithEntriesSafe(0, 25);
+        }
+
+        private async Task AddMetadataBasedOnMatch(string matchText, string addKeyName, string addValue)
+        {
+            try
+            {
+                string connectionString = $"Data Source={_sqlFilePath};Version=3;";
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    LogDebugInfo("SQLite connection opened successfully.");
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        string selectQuery = @"
+                    SELECT DISTINCT ObjectIndex 
+                    FROM Metadata 
+                    WHERE (LOWER(KeyName) = LOWER(@matchText) OR LOWER(Value) = LOWER(@matchText))
+                    AND (LENGTH(KeyName) = LENGTH(@matchText) OR LENGTH(Value) = LENGTH(@matchText))";
+                        var objectIndexes = new List<int>();
+
+                        using (SQLiteCommand command = new SQLiteCommand(selectQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("@matchText", matchText);
+                            using (SQLiteDataReader reader = (SQLiteDataReader)await command.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    objectIndexes.Add(reader.GetInt32(0));
+                                }
+                            }
+                        }
+
+                        foreach (int objectIndex in objectIndexes)
+                        {
+                            string checkQuery = @"
+                        SELECT COUNT(*) 
+                        FROM Metadata 
+                        WHERE ObjectIndex = @objectIndex AND KeyName = @addKeyName AND Value = @addValue";
+
+                            using (SQLiteCommand checkCommand = new SQLiteCommand(checkQuery, connection))
+                            {
+                                checkCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                                checkCommand.Parameters.AddWithValue("@addKeyName", addKeyName);
+                                checkCommand.Parameters.AddWithValue("@addValue", addValue);
+
+                                long count = (long)await checkCommand.ExecuteScalarAsync();
+                                if (count > 0)
+                                {
+                                    // Skip adding this entry as it already exists
+                                    continue;
+                                }
+                            }
+
+                            string insertQuery = @"
+                        INSERT INTO Metadata (ObjectIndex, KeyName, Value)
+                        VALUES (@objectIndex, @addKeyName, @addValue)";
+
+                            using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+                            {
+                                insertCommand.Parameters.AddWithValue("@objectIndex", objectIndex);
+                                insertCommand.Parameters.AddWithValue("@addKeyName", addKeyName);
+                                insertCommand.Parameters.AddWithValue("@addValue", addValue);
+                                await insertCommand.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+
+                    using (SQLiteCommand vacuumCommand = new SQLiteCommand("VACUUM", connection))
+                    {
+                        await vacuumCommand.ExecuteNonQueryAsync();
+                        LogDebugInfo("Database vacuumed to reduce file size.");
+                    }
+
+                    LogDebugInfo($"Added metadata entry (KeyName: {addKeyName}, Value: {addValue}) to object indexes matching '{matchText}'.");
+                    MessageBox.Show("Metadata entry added to matching entries successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error adding metadata based on match: {ex.Message}");
+                MessageBox.Show($"Error adding metadata based on match: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
     }
 }
