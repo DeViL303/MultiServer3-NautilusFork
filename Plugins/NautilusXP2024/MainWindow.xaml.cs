@@ -39,11 +39,9 @@ using System.Security.Cryptography;
 using System.Text;
 using CompressionLibrary.Custom;
 using CyberBackendLibrary.DataTypes;
-using System.IO;
 using System.Collections.Generic;
-using System;
 using System.Threading.Tasks;
-using System;
+using System.Net.Http;
 using System.IO;
 using System.Net;
 using System.Windows;
@@ -59,6 +57,10 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Windows.Documents;
 using System.Windows.Controls.Primitives;
+using CsvHelper;
+using SharpCompress.Common;
+using System.Security.Principal;
+using System.Reflection;
 
 
 
@@ -2556,7 +2558,7 @@ namespace NautilusXP2024
                 {
                     logMessage = $"Map CoreData: Unmapped file - {unmappedFile}";
                     LogDebugInfo(logMessage);
-                   
+
 
                     // Allow the UI to update
                     await Task.Yield();
@@ -3158,13 +3160,13 @@ namespace NautilusXP2024
                 int hashOfPath = 0;
                 foreach (char ch in text)
                     hashOfPath = hashOfPath * 37 + ch;
-              LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
+                LogDebugInfo($"Computed Hash: {hashOfPath} for Text: {text}");
 
                 return hashOfPath;
             }
         }
 
-
+       
         // TAB 2: Logic for CDS Encryption 
 
         private async void CDSEncrypterExecuteButtonClick(object sender, RoutedEventArgs e)
@@ -3974,7 +3976,7 @@ namespace NautilusXP2024
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = lzmaPath;
-                    process.StartInfo.Arguments = $"\"{inputFilePath}\"";  
+                    process.StartInfo.Arguments = $"\"{inputFilePath}\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
@@ -7783,7 +7785,7 @@ namespace NautilusXP2024
                 MessageBox.Show($"Error opening directory: {ex.Message}");
             }
         }
-     
+
         private void VideoOpenButton_Click(object sender, RoutedEventArgs e)
         {
             string outputDirectory = VideoOutputDirectoryTextBox.Text;
@@ -8026,7 +8028,7 @@ namespace NautilusXP2024
 #pragma warning restore CS8603 // Possible null reference return.
         }
 
-     
+
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -8746,7 +8748,8 @@ namespace NautilusXP2024
                                 byte[] appIdData = new byte[5];
                                 fs.Read(appIdData, 0, appIdData.Length);
                                 string appId = Encoding.UTF8.GetString(appIdData);
-                                Dispatcher.Invoke(() => {
+                                Dispatcher.Invoke(() =>
+                                {
                                     UpdateGUIElement(offsetKey, appId);
                                 });
                             }
@@ -8768,7 +8771,8 @@ namespace NautilusXP2024
                                 }
                                 else
                                 {
-                                    Dispatcher.Invoke(() => {
+                                    Dispatcher.Invoke(() =>
+                                    {
                                         UpdateGUIElement(offsetKey, data);
                                     });
                                 }
@@ -8776,14 +8780,16 @@ namespace NautilusXP2024
                         }
                         else
                         {
-                            Dispatcher.Invoke(() => {
+                            Dispatcher.Invoke(() =>
+                            {
                                 UpdateGUIElement(offsetKey, null);
                             });
                         }
                     }
 
                     string fullMuisVersion = secondPartOfMuis != "" ? $"{firstPartOfMuis}.{secondPartOfMuis}" : firstPartOfMuis;
-                    Dispatcher.Invoke(() => {
+                    Dispatcher.Invoke(() =>
+                    {
                         LoadedEbootMuisVersion.Text = fullMuisVersion;
 
                         // Determine the text based on whether the version matches
@@ -8805,7 +8811,8 @@ namespace NautilusXP2024
             }
             else
             {
-                Dispatcher.Invoke(() => {
+                Dispatcher.Invoke(() =>
+                {
                     EbootPatcherDragAreaText.Text = "EBOOT version/type unknown. Please ensure you're using a supported EBOOT file.";
                 });
             }
@@ -9221,7 +9228,8 @@ namespace NautilusXP2024
             string titleIdValue = LoadedEbootTitleID.Text.PadRight(9, '0');
 
             // Reflect the padded value back in the GUI, so it matches what gets written to the file
-            Dispatcher.Invoke(() => {
+            Dispatcher.Invoke(() =>
+            {
                 LoadedEbootTitleID.Text = titleIdValue;
             });
 
@@ -9271,7 +9279,8 @@ namespace NautilusXP2024
             string appIdValue = LoadedEbootAppID.Text.PadRight(5, '0');
 
             // Reflect the padded value back in the GUI, so it matches what gets written to the file
-            Dispatcher.Invoke(() => {
+            Dispatcher.Invoke(() =>
+            {
                 LoadedEbootAppID.Text = appIdValue;
             });
 
@@ -9309,7 +9318,8 @@ namespace NautilusXP2024
             npCommIdValue = npCommIdValue.Length > 15 ? npCommIdValue.Substring(0, 15) : npCommIdValue.PadRight(9, '\0');
 
             // Reflect the padded/truncated value back in the GUI, so it matches what gets written to the file
-            Dispatcher.Invoke(() => {
+            Dispatcher.Invoke(() =>
+            {
                 LoadedEbootNPCommID.Text = npCommIdValue.Replace("\0", ""); // Display without nulls in the GUI for clarity
             });
 
@@ -9345,7 +9355,8 @@ namespace NautilusXP2024
             string serviceIdValue = LoadedEbootServiceID.Text.PadRight(19, '0');
 
             // Reflect the padded value back in the GUI, so it matches what gets written to the file
-            Dispatcher.Invoke(() => {
+            Dispatcher.Invoke(() =>
+            {
                 LoadedEbootServiceID.Text = serviceIdValue;
             });
 
@@ -9506,7 +9517,8 @@ namespace NautilusXP2024
                             offlineNameValue = offlineNameValue.Substring(0, maxLength);
 
                             // Update the textbox with the potentially trimmed string
-                            Dispatcher.Invoke(() => {
+                            Dispatcher.Invoke(() =>
+                            {
                                 LoadedEbootOfflineName.Text = offlineNameValue;
                             });
 
@@ -9815,7 +9827,7 @@ namespace NautilusXP2024
             });
         }
 
-      
+
         // BNKUnpacker Handlers
         private void BNKUnpackerDragDropHandler(object sender, DragEventArgs e)
         {
@@ -10997,7 +11009,7 @@ namespace NautilusXP2024
             return objectIndex;
         }
 
-        
+
 
         private async Task<List<string>> GetObjectIdsInRange(int startIndex, int endIndex)
         {
@@ -11177,7 +11189,7 @@ namespace NautilusXP2024
             }
         }
 
-       
+
 
         private async Task<int> GetMaxObjectIndex(SQLiteConnection connection)
         {
@@ -11376,7 +11388,7 @@ namespace NautilusXP2024
             txtValue3.SelectionChanged += Value_SelectionChanged;
         }
 
-       
+
 
 
         private void chkBox1_Checked(object sender, RoutedEventArgs e)
@@ -11776,7 +11788,7 @@ VALUES (@objectIndex, @keyName, @value)";
             throw new FormatException($"Invalid nullable int format: {value}");
         }
 
-       
+
 
 
         private int? ParseHexOrNullableInt(string text)
@@ -11920,6 +11932,9 @@ VALUES (@objectIndex, @keyName, @value)";
             public string Value { get; set; }
         }
 
+        private string csvFilePath;
+
+
         private void txtValue_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
         private async void ExportToXMLButton_Click(object sender, RoutedEventArgs e)
         {
@@ -11952,23 +11967,25 @@ VALUES (@objectIndex, @keyName, @value)";
 
                     using (SQLiteCommand objectCommand = new SQLiteCommand(objectQuery, connection))
                     {
-                        using (SQLiteDataReader reader = (SQLiteDataReader)await objectCommand.ExecuteReaderAsync())
+                        using (var reader = await objectCommand.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
                             {
+                                var sqliteReader = (SQLiteDataReader)reader;
+
                                 XmlObject xmlObject = new XmlObject
                                 {
-                                    ObjectIndex = reader["ObjectIndex"].ToString(),
-                                    ObjectId = reader["ObjectId"].ToString(),
-                                    Version = reader["Version"].ToString(),
-                                    Location = reader["Location"].ToString(),
-                                    InventoryEntryType = reader["InventoryEntryType"]?.ToString(),
-                                    ArchiveTimeStamp = ConvertTimestampToHex(reader["ArchiveTimeStamp"]?.ToString()),
-                                    OdcSha1Digest = ConvertBlobToSha1(reader["OdcSha1Digest"] as byte[]),
-                                    EntitlementIndex = reader["EntitlementIndex"]?.ToString(),
-                                    RewardIndex = reader["RewardIndex"]?.ToString(),
-                                    UserLocation = reader["UserLocation"].ToString(),
-                                    UserDateLastUsed = reader["UserDateLastUsed"]?.ToString(),
+                                    ObjectIndex = sqliteReader["ObjectIndex"].ToString(),
+                                    ObjectId = sqliteReader["ObjectId"].ToString(),
+                                    Version = sqliteReader["Version"].ToString(),
+                                    Location = sqliteReader["Location"].ToString(),
+                                    InventoryEntryType = sqliteReader["InventoryEntryType"]?.ToString(),
+                                    ArchiveTimeStamp = ConvertTimestampToHex(sqliteReader["ArchiveTimeStamp"]?.ToString()),
+                                    OdcSha1Digest = ConvertBlobToSha1(sqliteReader["OdcSha1Digest"] as byte[]),
+                                    EntitlementIndex = sqliteReader["EntitlementIndex"]?.ToString(),
+                                    RewardIndex = sqliteReader["RewardIndex"]?.ToString(),
+                                    UserLocation = sqliteReader["UserLocation"].ToString(),
+                                    UserDateLastUsed = sqliteReader["UserDateLastUsed"]?.ToString(),
                                     Metadata = new List<XmlMetadata>()
                                 };
 
@@ -11982,15 +11999,17 @@ VALUES (@objectIndex, @keyName, @value)";
                                 {
                                     metadataCommand.Parameters.AddWithValue("@objectIndex", xmlObject.ObjectIndex);
 
-                                    using (SQLiteDataReader metadataReader = (SQLiteDataReader)await metadataCommand.ExecuteReaderAsync())
+                                    using (var metadataReader = await metadataCommand.ExecuteReaderAsync())
                                     {
                                         while (await metadataReader.ReadAsync())
                                         {
+                                            var sqliteMetadataReader = (SQLiteDataReader)metadataReader;
+
                                             XmlMetadata metadata = new XmlMetadata
                                             {
-                                                ObjectIndex = metadataReader["ObjectIndex"].ToString(),
-                                                KeyName = metadataReader["KeyName"].ToString(),
-                                                Value = metadataReader["Value"].ToString()
+                                                ObjectIndex = sqliteMetadataReader["ObjectIndex"].ToString(),
+                                                KeyName = sqliteMetadataReader["KeyName"].ToString(),
+                                                Value = sqliteMetadataReader["Value"].ToString()
                                             };
 
                                             xmlObject.Metadata.Add(metadata);
@@ -12016,14 +12035,104 @@ VALUES (@objectIndex, @keyName, @value)";
                 {
                     string selectedFilePath = saveFileDialog.FileName;
                     WriteObjectsToXML(selectedFilePath, xmlObjects);
-                }
 
+                    // Generate the CSV file path based on the XML file path
+                    csvFilePath = Path.ChangeExtension(selectedFilePath, ".csv");
+                    ExportToCSV(csvFilePath);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error exporting to XML: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error exporting to XML and CSV: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
+        private async void ExportToCSV(string csvFilePath)
+        {
+            try
+            {
+                using (var writer = new StreamWriter(csvFilePath))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                    {
+                        await connection.OpenAsync();
+
+                        string query = @"
+                    SELECT 
+                        o.ObjectIndex, 
+                        o.ObjectId, 
+                        o.Version, 
+                        o.Location, 
+                        o.InventoryEntryType, 
+                        o.ArchiveTimeStamp, 
+                        o.OdcSha1Digest, 
+                        o.EntitlementIndex, 
+                        o.RewardIndex, 
+                        o.UserLocation, 
+                        o.UserDateLastUsed, 
+                        m.KeyName, 
+                        m.Value
+                    FROM Objects o
+                    LEFT JOIN Metadata m ON o.ObjectIndex = m.ObjectIndex";
+
+                        using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                        {
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                bool headerWritten = false;
+
+                                while (await reader.ReadAsync())
+                                {
+                                    var sqliteReader = (SQLiteDataReader)reader;
+
+                                    if (!headerWritten)
+                                    {
+                                        for (int i = 0; i < sqliteReader.FieldCount; i++)
+                                        {
+                                            csv.WriteField(sqliteReader.GetName(i));
+                                        }
+                                        csv.NextRecord();
+                                        headerWritten = true;
+                                    }
+
+                                    for (int i = 0; i < sqliteReader.FieldCount; i++)
+                                    {
+                                        var value = sqliteReader.GetValue(i);
+
+                                        if (value is DBNull)
+                                        {
+                                            csv.WriteField(string.Empty);
+                                        }
+                                        else if (value is byte[] blob)
+                                        {
+                                            csv.WriteField(BitConverter.ToString(blob).Replace("-", "").ToUpper());
+                                        }
+                                        else if (value is int && (sqliteReader.GetName(i) == "ArchiveTimeStamp" || sqliteReader.GetName(i) == "UserDateLastUsed"))
+                                        {
+                                            // Convert integer timestamps to hexadecimal strings
+                                            csv.WriteField(Convert.ToInt32(value).ToString("X8"));
+                                        }
+                                        else
+                                        {
+                                            csv.WriteField(value);
+                                        }
+                                    }
+                                    csv.NextRecord();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to CSV: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
         private string ConvertTimestampToHex(string timestamp)
         {
@@ -12290,6 +12399,8 @@ VALUES (@objectIndex, @keyName, @value)";
         }
 
 
+
+
         private void Border_DragEnter(object sender, DragEventArgs e)
         {
             LogDebugInfo("Border_DragEnter invoked.");
@@ -12500,7 +12611,7 @@ VALUES (@objectIndex, @keyName, @value)";
         {
             ClearUnsavedChanges();
             LogDebugInfo("HCDB Conversion: Process Initiated");
-            
+
 
             if (!Directory.Exists(_settings.HcdbOutputDirectory))
             {
@@ -12522,21 +12633,21 @@ VALUES (@objectIndex, @keyName, @value)";
                     if (!encryptionSuccess)
                     {
                         string message = "Encryption Failed";
-                       
+
                         LogDebugInfo($"HCDB Conversion: Result - {message}");
                     }
                 }
                 else
                 {
                     string message = "Conversion Failed";
-                    
+
                     LogDebugInfo($"HCDB Conversion: Result - {message}");
                 }
             }
             else
             {
                 LogDebugInfo("HCDB Conversion: Aborted - No SQL file specified for conversion.");
-                
+
             }
         }
 
@@ -12784,5 +12895,1100 @@ VALUES (@objectIndex, @keyName, @value)";
         }
 
 
+        private void XMLClearListHandler(object sender, RoutedEventArgs e)
+        {
+            XMLOutputTextBox.Clear();
+        }
+
+
+        public class Scene
+        {
+            public string Url { get; set; }
+            public string Sha1 { get; set; }
+            public XElement XElement { get; set; }  // Store the original XElement for modification
+        } 
+
+        private string Sha1ForHCDB;
+        private string ContentServerURL;
+        private string SceneListSHA1;
+
+
+
+        private async void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            string tssUrl = TSSUrlTextBox.Text;
+            if (string.IsNullOrEmpty(tssUrl))
+            {
+                MessageBox.Show("Please enter a TSS URL.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            string selectedTerritory = ((ComboBoxItem)TerritoryComboBox.SelectedItem).Content.ToString();
+
+            // Log starting message
+            XMLOutputTextBox.Text += $"Starting CDN audit with TSS URL: {tssUrl}.... ";
+
+            // Download the TSS XML
+            bool tssDownloadSuccess = await AuditDownloadFileAsync(tssUrl, "TSS.xml");
+            XMLOutputTextBox.Text += tssDownloadSuccess
+                ? "TSS XML downloaded successfully.\n"
+                : "Failed to download TSS XML.\n";
+
+            if (!tssDownloadSuccess)
+            {
+                return;
+            }
+
+            // Parse the TSS XML to find the SHA1 for the ObjectCatalogue_5_<territory>.hcdb
+            string tssFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit", "TSS.xml");
+            Sha1ForHCDB = ParseSha1FromTssXml(tssFilePath, $"Objects/ObjectCatalogue_5_{selectedTerritory}.hcdb");
+
+            if (string.IsNullOrEmpty(Sha1ForHCDB))
+            {
+                XMLOutputTextBox.Text += $"SHA1 for ObjectCatalogue_5_{selectedTerritory}.hcdb not found in TSS XML.\n";
+            }
+            else
+            {
+                XMLOutputTextBox.Text += $"SHA1 found for ObjectCatalogue_5_{selectedTerritory}.hcdb: {Sha1ForHCDB}\n";
+            }
+
+            // Parse the TSS XML to find the SHA1 for the SceneList.xml
+            SceneListSHA1 = ParseSha1FromTssXml(tssFilePath, "Environments/SceneList.xml");
+
+            if (string.IsNullOrEmpty(SceneListSHA1))
+            {
+                XMLOutputTextBox.Text += "SHA1 for SceneList.xml not found in TSS XML.\n";
+            }
+            else
+            {
+                XMLOutputTextBox.Text += $"SHA1 found for SceneList.xml: {SceneListSHA1}\n";
+            }
+
+            // Parse the TSS XML to find the Content Server URL
+            ContentServerURL = ParseContentServerUrlFromTssXml(tssFilePath, tssUrl);
+
+            if (string.IsNullOrEmpty(ContentServerURL))
+            {
+                XMLOutputTextBox.Text += "Content Server URL not found in TSS XML.\n";
+            }
+            else
+            {
+                XMLOutputTextBox.Text += $"Content Server URL Found and Set to: {ContentServerURL}\n";
+            }
+
+            // Extract the domain from the TSS URL
+            Uri tssUri = new Uri(tssUrl);
+            string domain = $"{tssUri.Scheme}://{tssUri.Host}";
+
+            // Construct the URL for the ObjectCatalogue file
+            string objectCatalogueUrl = $"{domain}/Objects/ObjectCatalogue_5_{selectedTerritory}.hcdb";
+
+            // Log starting message
+            XMLOutputTextBox.Text += $"Starting download of ObjectCatalogue_5_{selectedTerritory}.hcdb.... \n";
+
+            // Download the ObjectCatalogue file
+            bool catalogueDownloadSuccess = await DownloadFileWithProgressAsync(objectCatalogueUrl, $"ObjectCatalogue_5_{selectedTerritory}.hcdb");
+            XMLOutputTextBox.Text += catalogueDownloadSuccess
+                ? $"ObjectCatalogue_5_{selectedTerritory}.hcdb downloaded successfully.\n"
+                : $"Failed to download ObjectCatalogue_5_{selectedTerritory}.hcdb.\n";
+
+            if (catalogueDownloadSuccess)
+            {
+                string hcdbFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit", $"ObjectCatalogue_5_{selectedTerritory}.hcdb");
+                string outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit");
+
+                // Decrypt and convert the HCDB file
+                bool decryptionSuccess = await DecryptAndConvertHcdbAsync(hcdbFilePath, outputDirectory);
+                XMLOutputTextBox.Text += decryptionSuccess
+                    ? $"ObjectCatalogue_5_{selectedTerritory}.hcdb decrypted and converted to SQL successfully.\n"
+                    : $"Failed to decrypt and convert ObjectCatalogue_5_{selectedTerritory}.hcdb.\n";
+            }
+
+            // Construct the URL for the SceneList.xml file
+            string sceneListUrl = $"{domain}/Environments/SceneList.xml";
+
+            // Log starting message
+            XMLOutputTextBox.Text += $"Starting download of SceneList.xml from {sceneListUrl}.... \n";
+
+            // Download the SceneList.xml file
+            bool sceneListDownloadSuccess = await DownloadFileWithProgressAsync(sceneListUrl, "SceneList.xml");
+            XMLOutputTextBox.Text += sceneListDownloadSuccess
+                ? "SceneList.xml downloaded successfully.\n"
+                : "Failed to download SceneList.xml.\n";
+
+            if (sceneListDownloadSuccess)
+            {
+                string sceneListFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit", "SceneList.xml");
+                string outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit");
+
+                // Decrypt the SceneList.xml file
+                bool sceneListDecryptionSuccess = await DecryptSceneListAsync(sceneListFilePath, outputDirectory);
+                XMLOutputTextBox.Text += sceneListDecryptionSuccess
+                    ? ""
+                    : "Failed to decrypt SceneList.xml.\n";
+            }
+        }
+
+
+        private async Task<bool> DownloadFileWithProgressAsync(string url, string fileName)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(10); // Increase timeout to 10 minutes
+
+                    var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    response.EnsureSuccessStatusCode();
+
+                    string downloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit");
+                    Directory.CreateDirectory(downloadDirectory);
+                    string downloadPath = Path.Combine(downloadDirectory, fileName);
+
+                    using (var fileStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var httpStream = await response.Content.ReadAsStreamAsync())
+                    {
+                        var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                        var canReportProgress = totalBytes != -1;
+                        var totalRead = 0L;
+                        var buffer = new byte[8192];
+                        var isMoreToRead = true;
+
+                        while (isMoreToRead)
+                        {
+                            var read = await httpStream.ReadAsync(buffer, 0, buffer.Length);
+                            if (read == 0)
+                            {
+                                isMoreToRead = false;
+                            }
+                            else
+                            {
+                                await fileStream.WriteAsync(buffer, 0, read);
+                                totalRead += read;
+
+                                if (canReportProgress)
+                                {
+                                    UpdateLastLine($"Downloaded {totalRead} of {totalBytes} bytes ({(double)totalRead / totalBytes:P}).... ");
+                                }
+                                else
+                                {
+                                    UpdateLastLine($"Downloaded {totalRead} bytes.... ");
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error downloading file from {url}: {ex.Message}\n";
+                return false;
+            }
+        }
+
+        private void UpdateLastLine(string text)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var lines = XMLOutputTextBox.Text.Split('\n').ToList();
+                if (lines.Count > 1)
+                {
+                    lines[lines.Count - 1] = text;
+                }
+                else
+                {
+                    lines.Add(text);
+                }
+                XMLOutputTextBox.Text = string.Join("\n", lines);
+                XMLOutputTextBox.ScrollToEnd();
+            });
+        }
+
+        private string ParseSha1FromTssXml(string filePath, string targetFile)
+        {
+            try
+            {
+                XDocument doc = XDocument.Load(filePath);
+                var sha1Element = doc.Descendants("SHA1")
+                                     .FirstOrDefault(e => e.Attribute("file")?.Value == targetFile);
+                return sha1Element?.Attribute("digest")?.Value;
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error parsing TSS XML: {ex.Message}\n";
+                return null;
+            }
+        }
+
+        private string ParseContentServerUrlFromTssXml(string filePath, string tssUrl)
+        {
+            try
+            {
+                XDocument doc = XDocument.Load(filePath);
+                var contentServerElement = doc.Descendants("contentserver")
+                                              .FirstOrDefault();
+                if (contentServerElement != null)
+                {
+                    string contentServerUrl = contentServerElement.Value;
+
+                    // Extract the domain from the TSS URL
+                    Uri tssUri = new Uri(tssUrl);
+                    string domain = $"{tssUri.Scheme}://{tssUri.Host}";
+
+                    // Replace the domain in the content server URL
+                    Uri contentServerUri = new Uri(contentServerUrl);
+                    string newContentServerUrl = $"{domain}{contentServerUri.PathAndQuery}";
+
+                    return newContentServerUrl;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error parsing TSS XML for content server URL: {ex.Message}\n";
+                return null;
+            }
+        }
+
+        private async Task<bool> DecryptAndConvertHcdbAsync(string hcdbFilePath, string outputDirectory)
+        {
+            XMLOutputTextBox.Text += $"Starting decryption of HCDB file.... ";
+
+            // Attempt decryption with SHA1
+            byte[]? decryptedData = await DecryptHCDBFilesSHA1Async(hcdbFilePath, outputDirectory, Sha1ForHCDB);
+            if (decryptedData == null)
+            {
+                XMLOutputTextBox.Text += $"SHA1 decryption failed, trying brute force for file: {hcdbFilePath}\n";
+                // Attempt brute force decryption
+                decryptedData = await DecryptHCDBFilesAsync(hcdbFilePath, outputDirectory);
+            }
+
+            if (decryptedData != null)
+            {
+                XMLOutputTextBox.Text += $"Decryption successful for HCDB file: {hcdbFilePath}\n";
+                string fileName = Path.GetFileName(hcdbFilePath);
+                bool processSuccess = await AuditProcessDecryptedHCDB(hcdbFilePath, decryptedData, outputDirectory, fileName);
+                if (processSuccess)
+                {
+                    string sqlFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(fileName) + ".SQL");
+                    XMLOutputTextBox.Text += $"HCDB file converted to SQL successfully: {sqlFilePath}\n";
+                    return true;
+                }
+                else
+                {
+                    XMLOutputTextBox.Text += $"Failed to process decrypted HCDB file to SQL: {hcdbFilePath}\n";
+                    return false;
+                }
+            }
+            else
+            {
+                XMLOutputTextBox.Text += $"Failed to decrypt HCDB file: {hcdbFilePath}\n";
+                return false;
+            }
+        }
+
+
+
+        private async Task<bool> AuditProcessDecryptedHCDB(string filePath, byte[] decryptedData, string outputDirectory, string filename)
+        {
+            try
+            {
+                string baseFilename = Path.GetFileNameWithoutExtension(filename);
+                string cleanFilename = Regex.Replace(baseFilename, "[a-fA-F0-9]{40}", ""); // Remove SHA1 hash
+                cleanFilename = cleanFilename.TrimEnd('_') + ".SQL"; // Ensure it ends with ".sql"
+
+                byte[]? processedData = HCDBUnpack(decryptedData, LogDebugInfo);
+                if (processedData != null)
+                {
+                    string outputPath = Path.Combine(outputDirectory, cleanFilename);
+                    await File.WriteAllBytesAsync(outputPath, processedData);
+                    LogDebugInfo($"Processed HCDB file successfully written to {outputPath}.");
+
+                    // Validate the processed SQL file
+                    if (IsValidSqlFile(outputPath))
+                    {
+                        LogDebugInfo($"Validation passed for SQL file at {outputPath}.");
+
+                        // Export to CSV
+                        string csvFilePath = Path.Combine(outputDirectory, cleanFilename.Replace(".SQL", ".csv"));
+                        bool csvExportSuccess = await AuditExportToCSV(outputPath, csvFilePath);
+                        if (!csvExportSuccess)
+                        {
+                            csvExportSuccess = await AuditExportToCSV(outputPath, csvFilePath); // Retry once
+                        }
+
+                        return csvExportSuccess;
+                    }
+                    else
+                    {
+                        File.Delete(outputPath);
+                        LogDebugInfo($"Invalid SQL file deleted at {outputPath}.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    LogDebugInfo($"Failed to process decrypted data for {filename}.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error processing decrypted data for {filename}: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> AuditExportToCSV(string sqlFilePath, string csvFilePath)
+        {
+            try
+            {
+                this.csvFilePath = csvFilePath; // Save the CSV file path
+
+                using (var writer = new StreamWriter(csvFilePath))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    string connectionString = $"Data Source={sqlFilePath};Version=3;";
+                    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                    {
+                        await connection.OpenAsync();
+
+                        string query = @"
+                SELECT 
+                    o.ObjectIndex, 
+                    o.ObjectId, 
+                    o.Version, 
+                    o.Location, 
+                    o.InventoryEntryType, 
+                    o.ArchiveTimeStamp, 
+                    o.OdcSha1Digest, 
+                    o.EntitlementIndex, 
+                    o.RewardIndex, 
+                    o.UserLocation, 
+                    o.UserDateLastUsed, 
+                    m.KeyName, 
+                    m.Value
+                FROM Objects o
+                LEFT JOIN Metadata m ON o.ObjectIndex = m.ObjectIndex";
+
+                        using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                        {
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                bool headerWritten = false;
+
+                                while (await reader.ReadAsync())
+                                {
+                                    var sqliteReader = (SQLiteDataReader)reader;
+
+                                    if (!headerWritten)
+                                    {
+                                        for (int i = 0; i < sqliteReader.FieldCount; i++)
+                                        {
+                                            csv.WriteField(sqliteReader.GetName(i));
+                                        }
+                                        csv.NextRecord();
+                                        headerWritten = true;
+                                    }
+
+                                    for (int i = 0; i < sqliteReader.FieldCount; i++)
+                                    {
+                                        var value = sqliteReader.GetValue(i);
+
+                                        if (value is DBNull)
+                                        {
+                                            csv.WriteField(string.Empty);
+                                        }
+                                        else if (value is byte[] blob)
+                                        {
+                                            csv.WriteField(ConvertBlobToSha1(blob));
+                                        }
+                                        else if (value is int && (sqliteReader.GetName(i) == "ArchiveTimeStamp" || sqliteReader.GetName(i) == "UserDateLastUsed"))
+                                        {
+                                            // Convert integer timestamps to hexadecimal strings
+                                            csv.WriteField(ConvertTimestampToHex(value.ToString()));
+                                        }
+                                        else
+                                        {
+                                            csv.WriteField(value);
+                                        }
+                                    }
+                                    csv.NextRecord();
+                                }
+                            }
+                        }
+                    }
+                }
+                XMLOutputTextBox.Text += $"Data exported to CSV successfully: {csvFilePath}\n";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Suppress error logging for the first failure
+                return false;
+            }
+        }
+
+        private async Task<bool> AuditDownloadFileAsync(string url, string fileName)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(5); // Increase timeout to 5 minutes
+
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    string downloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audit");
+                    Directory.CreateDirectory(downloadDirectory);
+                    string downloadPath = Path.Combine(downloadDirectory, fileName);
+
+                    using (var fileStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error downloading file from {url}: {ex.Message}\n";
+                return false;
+            }
+        }
+
+        private List<string> failedDownloads = new List<string>();
+        private List<string> sha1VerificationFails = new List<string>();
+
+        private async Task<bool> DecryptSceneListAsync(string sceneListFilePath, string outputDirectory)
+        {
+            XMLOutputTextBox.Text += $"Starting decryption of SceneList.xml... ";
+
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(sceneListFilePath);
+                BruteforceProcess proc = new BruteforceProcess(fileContent);
+                byte[] decryptedContent = proc.StartBruteForce();
+
+                if (decryptedContent != null)
+                {
+                    string outputPath = Path.Combine(outputDirectory, "Decrypted_SceneList.xml");
+                    await File.WriteAllBytesAsync(outputPath, decryptedContent);
+
+                    // Parse the decrypted XML
+                    XDocument doc = XDocument.Load(new MemoryStream(decryptedContent));
+                    var scenes = doc.Descendants("SCENE").Select(scene => new Scene
+                    {
+                        Url = $"{ContentServerURL}Scenes/{scene.Attribute("desc").Value}",
+                        Sha1 = scene.Attribute("sha1").Value,
+                        XElement = scene
+                    }).ToList();
+                    int sceneCount = scenes.Count;
+
+                    XMLOutputTextBox.Text += $"Decryption successful for SceneList file: {sceneListFilePath} with {sceneCount} SCENE items.\n";
+
+                    int totalPaths = scenes.Count;
+                    int downloadedCount = 0;
+                    int failedCount = 0;
+
+                    // Log total SDC paths
+                    UpdateSDCDownloadStatus(totalPaths, downloadedCount, failedCount);
+
+                    // Download SDC files concurrently
+                    await DownloadFilesConcurrently(scenes, outputDirectory, 6, (scene, success) =>
+                    {
+                        if (success)
+                        {
+                            downloadedCount++;
+                        }
+                        else
+                        {
+                            failedCount++;
+                            failedDownloads.Add(scene.Url);
+                        }
+
+                        UpdateSDCDownloadStatus(totalPaths, downloadedCount, failedCount);
+                        // Pause for 20ms to allow status update
+                        Task.Delay(20).Wait();
+                    });
+
+                    // Log the total number of download failures
+                    XMLOutputTextBox.Text += $"\nTotal download failures: {failedDownloads.Count}";
+
+                    // Write download failures to log
+                    string auditFailsLogPath = Path.Combine(outputDirectory, "AuditFails.log");
+                    await File.AppendAllLinesAsync(auditFailsLogPath, failedDownloads.Select(url => $"Download Failure: {url}"));
+
+                    // Now verify the SHA1 of downloaded SDC files
+                    var successfulDownloads = scenes.Where(scene => !failedDownloads.Contains(scene.Url)).ToList();
+                    int sha1VerifiedCount = 0;
+                    int sha1FailedCount = 0;
+                    int totalFilesToVerify = successfulDownloads.Count;
+
+                    foreach (var scene in successfulDownloads)
+                    {
+                        bool sha1VerificationSuccess = await DecryptAndVerifySDC(scene.Url, outputDirectory, scene.Sha1);
+                        if (sha1VerificationSuccess)
+                        {
+                            sha1VerifiedCount++;
+                        }
+                        else
+                        {
+                            sha1FailedCount++;
+                            sha1VerificationFails.Add(scene.Url);
+                        }
+                        UpdateSha1Status(totalFilesToVerify, sha1VerifiedCount, sha1FailedCount);
+                    }
+
+                    // Log the total number of SHA1 verification failures
+                    XMLOutputTextBox.Text += $"\nTotal SHA1 verification failures: {sha1VerificationFails.Count}\n";
+
+                    // Write SHA1 verification failures to log
+                    await File.AppendAllLinesAsync(auditFailsLogPath, sha1VerificationFails.Select(url => $"SHA1 Verification Failure: {url}"));
+
+                    // Remove failed downloads from the SceneList
+                    foreach (var scene in scenes.Where(scene => failedDownloads.Contains(scene.Url)).ToList())
+                    {
+                        scene.XElement.Remove();
+                    }
+
+                    // Update incorrect SHA1 hashes in the SceneList
+                    foreach (var scene in successfulDownloads.Where(scene => sha1VerificationFails.Contains(scene.Url)))
+                    {
+                        // Extract the path without the domain and protocol
+                        Uri contentServerUri = new Uri(ContentServerURL);
+                        string relativePath = scene.Url.Substring(contentServerUri.Scheme.Length + 3 + contentServerUri.Host.Length);
+
+                        // Construct the full path to the decrypted SDC file with the "Decrypted_" prefix
+                        string sdcFileName = "Decrypted_" + Path.GetFileName(relativePath);
+                        string sdcFilePath = Path.Combine(outputDirectory, Path.GetDirectoryName(relativePath).TrimStart(Path.DirectorySeparatorChar), sdcFileName);
+
+                        if (File.Exists(sdcFilePath))
+                        {
+                            byte[] decryptedSdcContent = await File.ReadAllBytesAsync(sdcFilePath);
+                            using (SHA1 sha1 = SHA1.Create())
+                            {
+                                byte[] computedHash = sha1.ComputeHash(decryptedSdcContent);
+                                string computedSha1 = BitConverter.ToString(computedHash).Replace("-", "");
+                                scene.XElement.Attribute("sha1").Value = computedSha1;
+                            }
+                        }
+                        else
+                        {
+                            string warningMessage = $"Warning: SDC file not found for SHA1 verification: {sdcFilePath}\n";
+                            XMLOutputTextBox.Text += warningMessage;
+                            await File.AppendAllLinesAsync(auditFailsLogPath, new[] { warningMessage });
+                        }
+                    }
+
+                    // Save the modified SceneList as Fixed_SceneList.xml
+                    string fixedSceneListPath = Path.Combine(outputDirectory, "Fixed_SceneList.xml");
+                    doc.Save(fixedSceneListPath);
+                    XMLOutputTextBox.Text += $"Fixed SceneList saved as: {fixedSceneListPath}\n";
+
+                    // Call the method to count unique ObjectIndex values in the CSV file
+                    await CountUniqueObjectIndexesAndGenerateUrls();
+
+                    return true;
+                }
+                else
+                {
+                    XMLOutputTextBox.Text += $"Failed to decrypt SceneList file: {sceneListFilePath}\n";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error decrypting SceneList file: {ex.Message}\n";
+                return false;
+            }
+        }
+
+        private async Task CountUniqueObjectIndexesAndGenerateUrls()
+        {
+            if (string.IsNullOrEmpty(csvFilePath))
+            {
+                XMLOutputTextBox.Text += "CSV file path is not set. Cannot count unique ObjectIndexes.\n";
+                return;
+            }
+
+            try
+            {
+                var uniqueObjectIndexes = new HashSet<string>();
+                var objectIdUrls = new Dictionary<string, (string url, string sha1)>();
+
+                using (var reader = new StreamReader(csvFilePath))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    var records = csv.GetRecords<dynamic>().ToList();
+
+                    for (int i = 1; i < records.Count; i++) // Skip header (i = 0)
+                    {
+                        var record = records[i];
+                        string objectIndex = record.ObjectIndex;
+                        string objectId = record.ObjectId;
+                        string version = record.Version;
+                        string sha1 = record.OdcSha1Digest;
+
+                        if (!string.IsNullOrEmpty(objectIndex) && objectIndex != "0")
+                        {
+                            if (!uniqueObjectIndexes.Contains(objectIndex))
+                            {
+                                uniqueObjectIndexes.Add(objectIndex);
+
+                                // Pad the version to 3 characters with leading zeros
+                                string paddedVersion = version.PadLeft(3, '0');
+
+                                // Build the new URL
+                                string newUrl = $"{ContentServerURL}Objects/{objectId}/object";
+
+                                if (paddedVersion != "000")
+                                {
+                                    newUrl += $"_T{paddedVersion}.odc";
+                                }
+                                else
+                                {
+                                    newUrl += ".odc";
+                                }
+
+                                objectIdUrls[objectIndex] = (newUrl, sha1);
+                            }
+                        }
+                    }
+
+                    XMLOutputTextBox.Text += $"Scanning Catalogue.... Total UUIDs Found: {uniqueObjectIndexes.Count}\n";
+                }
+
+                string urlsFilePath = Path.Combine(Path.GetDirectoryName(csvFilePath), "GeneratedUrls.txt");
+                using (var writer = new StreamWriter(urlsFilePath))
+                {
+                    foreach (var urlInfo in objectIdUrls.Values)
+                    {
+                        await writer.WriteLineAsync($"{urlInfo.url},{urlInfo.sha1}");
+                    }
+                }
+
+                XMLOutputTextBox.Text += $"Total URLs generated: {objectIdUrls.Count}. URLs saved to {urlsFilePath}\n";
+
+                // Start downloading the URLs
+                await DownloadGeneratedUrls(urlsFilePath);
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error counting unique ObjectIndexes in CSV file: {ex.Message}\n";
+            }
+        }
+
+
+        private async Task DownloadGeneratedUrls(string urlsFilePath)
+        {
+            try
+            {
+                var urlLines = await File.ReadAllLinesAsync(urlsFilePath);
+                int totalUrls = urlLines.Length;
+                int downloadedCount = 0;
+                int failedCount = 0;
+
+                List<string> failedDownloads = new List<string>();
+                List<(string url, string fileName, string expectedSha1)> successfulDownloads = new List<(string, string, string)>();
+                string failedDownloadsFilePath = Path.Combine(Path.GetDirectoryName(urlsFilePath), "AuditFails.log");
+
+                // Use a SemaphoreSlim to limit the number of concurrent downloads
+                using (SemaphoreSlim concurrencySemaphore = new SemaphoreSlim(6))
+                {
+                    List<Task> downloadTasks = new List<Task>();
+
+                    foreach (var line in urlLines)
+                    {
+                        await concurrencySemaphore.WaitAsync();
+
+                        downloadTasks.Add(Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var parts = line.Split(',');
+                                var url = parts[0];
+                                var expectedSha1 = parts[1];
+
+                                // Extract path and file name
+                                Uri uri = new Uri(url);
+                                string path = uri.AbsolutePath.Substring(1); // Remove leading slash
+                                string fileName = Path.GetFileName(path);
+                                string directory = Path.GetDirectoryName(path);
+
+                                // Create directory if it doesn't exist
+                                string fullDirectoryPath = Path.Combine(Path.GetDirectoryName(urlsFilePath), directory);
+                                Directory.CreateDirectory(fullDirectoryPath);
+
+                                string decryptedFilePath = Path.Combine(fullDirectoryPath, "Decrypted_" + fileName);
+                                if (File.Exists(decryptedFilePath))
+                                {
+                                    // Decrypted file exists, skip download and verify SHA1
+                                    bool verificationSuccess = await VerifyFileSha1(decryptedFilePath, expectedSha1);
+                                    if (verificationSuccess)
+                                    {
+                                        downloadedCount++;
+                                    }
+                                    else
+                                    {
+                                        failedCount++;
+                                        failedDownloads.Add($"SHA1 Verification Failure: {url}");
+                                    }
+                                }
+                                else
+                                {
+                                    bool success = await DownloadFileWithoutProgressAsync(url, Path.Combine(fullDirectoryPath, fileName));
+                                    if (success)
+                                    {
+                                        successfulDownloads.Add((url, Path.Combine(fullDirectoryPath, fileName), expectedSha1));
+                                    }
+                                    else
+                                    {
+                                        failedCount++;
+                                        failedDownloads.Add($"Download Failure: {url}");
+                                    }
+                                }
+
+                                // Additional downloads for URLs containing "object"
+                                if (url.Contains("object"))
+                                {
+                                    string baseObjectUrl = url.Replace("object", "{0}").Replace(".odc", ".png");
+                                    string[] objectSizes = { "small", "large" };
+                                    foreach (var size in objectSizes)
+                                    {
+                                        string sizeUrl = string.Format(baseObjectUrl, size);
+                                        string sizeFileName = Path.GetFileName(sizeUrl);
+                                        string sizeDecryptedFilePath = Path.Combine(fullDirectoryPath, "Decrypted_" + sizeFileName);
+
+                                        if (File.Exists(sizeDecryptedFilePath))
+                                        {
+                                            bool verificationSuccess = await VerifyFileSha1(sizeDecryptedFilePath, expectedSha1);
+                                            if (verificationSuccess)
+                                            {
+                                                downloadedCount++;
+                                            }
+                                            else
+                                            {
+                                                failedCount++;
+                                                failedDownloads.Add($"SHA1 Verification Failure: {sizeUrl}");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            bool success = await DownloadFileWithoutProgressAsync(sizeUrl, Path.Combine(fullDirectoryPath, sizeFileName));
+                                            if (!success)
+                                            {
+                                                failedCount++;
+                                                failedDownloads.Add($"Download Failure: {sizeUrl}");
+                                            }
+                                        }
+                                    }
+                                }
+
+                                UpdateODCDownloadStatus(totalUrls, downloadedCount, failedCount);
+                            }
+                            finally
+                            {
+                                concurrencySemaphore.Release();
+                            }
+                        }));
+                    }
+
+                    await Task.WhenAll(downloadTasks);
+                }
+
+                // Log failed downloads to AuditFails.log
+                await File.AppendAllLinesAsync(failedDownloadsFilePath, failedDownloads);
+
+                // Now verify the SHA1 of downloaded ODC files
+                int sha1VerifiedCount = 0;
+                int sha1FailedCount = 0;
+                int totalFilesToVerify = successfulDownloads.Count;
+
+                foreach (var download in successfulDownloads)
+                {
+                    bool sha1VerificationSuccess = await DecryptAndVerifyODC(download.url, download.fileName, download.expectedSha1);
+                    if (sha1VerificationSuccess)
+                    {
+                        sha1VerifiedCount++;
+                        downloadedCount++;
+                    }
+                    else
+                    {
+                        sha1FailedCount++;
+                        failedDownloads.Add($"SHA1 Verification Failure: {download.url}");
+                    }
+                    UpdateSha1Status(totalFilesToVerify, sha1VerifiedCount, sha1FailedCount);
+                }
+
+                // Log SHA1 verification failures to AuditFails.log
+                await File.AppendAllLinesAsync(failedDownloadsFilePath, failedDownloads);
+
+                XMLOutputTextBox.Text += $"\nDownload completed. Total URLs: {totalUrls}, Successful: {downloadedCount}, Failed: {failedCount}\n";
+                XMLOutputTextBox.Text += $"\nSHA1 verification completed. Total Files: {totalFilesToVerify}, Successful: {sha1VerifiedCount}, Failed: {sha1FailedCount}\n";
+            }
+            catch (Exception ex)
+            {
+                XMLOutputTextBox.Text += $"Error downloading generated URLs: {ex.Message}\n";
+            }
+        }
+
+
+
+        private async Task<bool> DecryptAndVerifyODC(string url, string odcFilePath, string expectedSha1)
+        {
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(odcFilePath);
+                BruteforceProcess proc = new BruteforceProcess(fileContent);
+                byte[] decryptedContent = proc.StartBruteForce();
+
+                if (decryptedContent != null)
+                {
+                    string outputDirectory = Path.GetDirectoryName(odcFilePath);
+                    string outputPath = Path.Combine(outputDirectory, "OBJECT.ODC");
+                    await File.WriteAllBytesAsync(outputPath, decryptedContent);
+
+                    // Delete the original input file
+                    File.Delete(odcFilePath);
+
+                    return await VerifyFileSha1(outputPath, expectedSha1);
+                }
+                else
+                {
+                    await File.AppendAllLinesAsync("AuditFails.log", new[] { $"Decryption Failure: {url}" });
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await File.AppendAllLinesAsync("AuditFails.log", new[] { $"Exception: {url} - {ex.Message}" });
+                return false;
+            }
+        }
+
+        private async Task<bool> DecryptAndVerifySDC(string url, string outputDirectory, string expectedSha1)
+        {
+            try
+            {
+                // Extract path and file name
+                Uri uri = new Uri(url);
+                string path = uri.AbsolutePath.Substring(1); // Remove leading slash
+                string fileName = Path.GetFileName(path);
+                string directory = Path.GetDirectoryName(path);
+
+                string sdcFilePath = Path.Combine(outputDirectory, directory, fileName);
+
+                byte[] fileContent = await File.ReadAllBytesAsync(sdcFilePath);
+                BruteforceProcess proc = new BruteforceProcess(fileContent);
+                byte[] decryptedContent = proc.StartBruteForce();
+
+                if (decryptedContent != null)
+                {
+                    string outputPath = Path.Combine(outputDirectory, directory, "Decrypted_" + fileName);
+                    await File.WriteAllBytesAsync(outputPath, decryptedContent);
+
+                    return await VerifyFileSha1(outputPath, expectedSha1);
+                }
+                else
+                {
+                    await File.AppendAllLinesAsync("AuditFails.log", new[] { $"Decryption Failure: {url}" });
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await File.AppendAllLinesAsync("AuditFails.log", new[] { $"Exception: {url} - {ex.Message}" });
+                return false;
+            }
+        }
+
+
+
+        private void UpdateODCDownloadStatus(int total, int downloaded, int failed)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var lines = XMLOutputTextBox.Text.Split('\n').ToList();
+                string status = $"Total ODC paths found: {total} - Downloaded {downloaded} of {total} - Fails {failed}";
+                if (lines.Count > 1 && lines.Last().StartsWith("Total ODC paths found:"))
+                {
+                    lines[lines.Count - 1] = status;
+                }
+                else
+                {
+                    lines.Add(status);
+                }
+                XMLOutputTextBox.Text = string.Join("\n", lines);
+                XMLOutputTextBox.ScrollToEnd();
+            });
+        }
+
+        private void UpdateSDCDownloadStatus(int total, int downloaded, int failed)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var lines = XMLOutputTextBox.Text.Split('\n').ToList();
+                string status = $"Total SDC paths found: {total} - Downloaded {downloaded} of {total} - Fails {failed}";
+                if (lines.Count > 1 && lines.Last().StartsWith("Total SDC paths found:"))
+                {
+                    lines[lines.Count - 1] = status;
+                }
+                else
+                {
+                    lines.Add(status);
+                }
+                XMLOutputTextBox.Text = string.Join("\n", lines);
+                XMLOutputTextBox.ScrollToEnd();
+            });
+        }
+
+        private async Task<bool> VerifyFileSha1(string filePath, string expectedSha1)
+        {
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                using (SHA1 sha1 = SHA1.Create())
+                {
+                    byte[] computedHash = sha1.ComputeHash(fileContent);
+                    string computedSha1 = BitConverter.ToString(computedHash).Replace("-", "");
+
+                    return computedSha1.Equals(expectedSha1, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        private void UpdateSha1Status(int total, int verified, int failed)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var lines = XMLOutputTextBox.Text.Split('\n').ToList();
+                string status = $"Total SHA1 checks: {total} - Verified {verified} of {total} - Fails {failed}";
+                if (lines.Count > 1 && lines.Last().StartsWith("Total SHA1 checks:"))
+                {
+                    lines[lines.Count - 1] = status;
+                }
+                else
+                {
+                    lines.Add(status);
+                }
+                XMLOutputTextBox.Text = string.Join("\n", lines);
+                XMLOutputTextBox.ScrollToEnd();
+            });
+        }
+
+        private async Task<bool> DownloadFileWithoutProgressAsync(string url, string fileName)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(10); // Increase timeout to 10 minutes
+
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    using (var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        private async Task DownloadFilesConcurrently(List<Scene> sceneList, string outputDirectory, int maxConcurrentDownloads, Action<Scene, bool> onDownloadComplete)
+        {
+            using (SemaphoreSlim concurrencySemaphore = new SemaphoreSlim(maxConcurrentDownloads))
+            {
+                List<Task> downloadTasks = new List<Task>();
+
+                foreach (var scene in sceneList)
+                {
+                    await concurrencySemaphore.WaitAsync();
+
+                    downloadTasks.Add(Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // Extract path and file name
+                            Uri uri = new Uri(scene.Url);
+                            string path = uri.AbsolutePath.Substring(1); // Remove leading slash
+                            string fileName = Path.GetFileName(path);
+                            string directory = Path.GetDirectoryName(path);
+
+                            // Create directory if it doesn't exist
+                            string fullDirectoryPath = Path.Combine(outputDirectory, directory);
+                            Directory.CreateDirectory(fullDirectoryPath);
+
+                            string decryptedFilePath = Path.Combine(fullDirectoryPath, "Decrypted_" + fileName);
+                            if (File.Exists(decryptedFilePath))
+                            {
+                                // Decrypted file exists, skip download and verify SHA1
+                                bool verificationSuccess = await VerifyFileSha1(decryptedFilePath, scene.Sha1);
+                                onDownloadComplete(scene, verificationSuccess);
+                            }
+                            else
+                            {
+                                // Download file
+                                bool downloadSuccess = await DownloadSDCFileAsync(scene.Url, Path.Combine(fullDirectoryPath, fileName));
+                                onDownloadComplete(scene, downloadSuccess);
+                            }
+                        }
+                        catch
+                        {
+                            onDownloadComplete(scene, false);
+                        }
+                        finally
+                        {
+                            concurrencySemaphore.Release();
+                        }
+                    }));
+                }
+
+                await Task.WhenAll(downloadTasks);
+            }
+        }
+
+        private async Task<bool> DownloadSDCFileAsync(string url, string fileName)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(10); // Increase timeout to 10 minutes
+
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    using (var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+      
+
     }
+
 }
+       

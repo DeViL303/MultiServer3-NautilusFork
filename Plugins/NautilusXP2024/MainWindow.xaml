@@ -4,8 +4,8 @@
         xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        Title="Nautilus Toolset v1.00 Beta 00027" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
-        ResizeMode="NoResize" WindowStyle="None" Background="#333333"
+        Title="Nautilus Toolset v1.00 Beta 00028" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
+        ResizeMode="NoResize" WindowStyle="None" Background="#242424"
         BorderBrush="#000000"
                 BorderThickness="1">
     <Window.Resources>
@@ -32,8 +32,8 @@
         </Style>
         <Style x:Key="DarkModeComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#282828"/>
-            <Setter Property="BorderBrush" Value="#333333"/>
+            <Setter Property="Background" Value="#181818"/>
+            <Setter Property="BorderBrush" Value="#242424"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="24"/>
             <Setter Property="Template">
@@ -48,8 +48,8 @@
                                                 <ColumnDefinition />
                                                 <ColumnDefinition Width="20" />
                                             </Grid.ColumnDefinitions>
-                                            <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="3" Background="#282828" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
-                                            <Border Grid.Column="0" CornerRadius="3,0,0,3" Background="#282828" Margin="1"/>
+                                            <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="3" Background="#181818" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+                                            <Border Grid.Column="0" CornerRadius="3,0,0,3" Background="#181818" Margin="1"/>
                                             <Path x:Name="Arrow" Grid.Column="1" Fill="white" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
                                         </Grid>
                                     </ControlTemplate>
@@ -58,7 +58,7 @@
                             <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left" />
                             <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
                                 <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                    <Border x:Name="DropDownBorder" Background="#282828" BorderThickness="1" BorderBrush="#333333"/>
+                                    <Border x:Name="DropDownBorder" Background="#181818" BorderThickness="1" BorderBrush="#242424"/>
                                     <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                     </ScrollViewer>
@@ -72,11 +72,11 @@
                 <Setter.Value>
                     <Style TargetType="ComboBoxItem">
                         <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Background" Value="#282828"/>
+                        <Setter Property="Background" Value="#181818"/>
                         <Setter Property="Padding" Value="10,5"/>
                         <Style.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter Property="Background" Value="#333333"/>
+                                <Setter Property="Background" Value="#242424"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -90,7 +90,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="DarkModeButtonStyle2" TargetType="Button">
             <Setter Property="Height" Value="25"/>
@@ -98,7 +98,7 @@
             <Setter Property="MaxWidth" Value="150"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Foreground" Value="white"/>
-            <Setter Property="Background" Value="#282828"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="1"/>
             <Setter Property="Margin" Value="5,0,5,0"/>
@@ -163,7 +163,7 @@
             <Setter Property="MaxWidth" Value="150"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
-            <Setter Property="Background" Value="#282828"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="5"/>
             <Setter Property="Margin" Value="5,10,5,10"/>
@@ -191,7 +191,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#222222"/>
+                                <Setter Property="Background" Value="#101010"/>
                                 <Setter Property="BorderBrush" Value="#000000"/>
                                 <!-- Move the content and border down by 2 pixels when pressed -->
                                 <Setter TargetName="border" Property="RenderTransform">
@@ -207,7 +207,7 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush" Value="#101010"/>
+                                <Setter Property="BorderBrush" Value="#000000"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -220,7 +220,7 @@
             <Setter Property="Width" Value="Auto"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
-            <Setter Property="Background" Value="#282828"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="6"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -247,7 +247,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#222222"/>
+                                <Setter Property="Background" Value="#101010"/>
                                 <Setter Property="BorderBrush" Value="#000000"/>
                                 <!-- Move the content and border down by 2 pixels when pressed -->
                                 <Setter TargetName="border" Property="RenderTransform">
@@ -309,7 +309,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="CheckMark" Property="Opacity" Value="1"/>
-                                <Setter Property="Background" Value="#1E1E1E"/>
+                                <Setter Property="Background" Value="#101010"/>
                                 <Setter Property="BorderBrush" Value="#000000"/>
                                 <Setter TargetName="RadioButtonBorder" Property="Opacity" Value="1"/>
                                 <Setter TargetName="RadioButtonBorder" Property="RenderTransform">
@@ -320,7 +320,7 @@
                                 <Setter TargetName="RadioButtonBorder" Property="RenderTransformOrigin" Value="0.5,0.5"/>
                                 <Setter TargetName="RadioButtonBorder" Property="Effect">
                                     <Setter.Value>
-                                        <DropShadowEffect Color="#1E1E1E" BlurRadius="2" Opacity="0" ShadowDepth="0" Direction="315"/>
+                                        <DropShadowEffect Color="#101010" BlurRadius="2" Opacity="0" ShadowDepth="0" Direction="315"/>
                                     </Setter.Value>
                                 </Setter>
                                 <Setter TargetName="RadioButtonBorder" Property="BorderThickness" Value="3"/>
@@ -345,7 +345,7 @@
             <Setter Property="Height" Value="24"/>
             <Setter Property="Margin" Value="5,0,15,0"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -358,8 +358,8 @@
                             </Border.Effect>
                             <Grid>
                                 <!-- Adjusted Rectangle with a Stroke for the border -->
-                                <Rectangle x:Name="toggleRectangle" Fill="#1E1E1E" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
-                                <Ellipse x:Name="SwitchThumb" Fill="#FF767676" 
+                                <Rectangle x:Name="toggleRectangle" Fill="#101010" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
+                                <Ellipse x:Name="SwitchThumb" Fill="#444444" 
                                  Width="18" Height="18" 
                                  HorizontalAlignment="Left" 
                                  Margin="2.5"
@@ -373,10 +373,10 @@
                                 <Setter TargetName="SwitchThumb" Property="Opacity" Value="0.9"/>
                                 <Setter TargetName="toggleRectangle" Property="StrokeThickness" Value="2.5"/>
                                 <Setter TargetName="toggleRectangle" Property="Stroke" Value="#101010"/>
-                                <Setter TargetName="toggleRectangle" Property="Fill" Value="#1E1E1E"/>
+                                <Setter TargetName="toggleRectangle" Property="Fill" Value="#101010"/>
                                 <Setter Property="Background" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
                                 <Setter TargetName="SwitchThumb" Property="Fill" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
-                                <!-- Apply transform and drop shadow effect changes to the entire Border -->
+                               
                                 <Setter TargetName="toggleBorder" Property="RenderTransform">
                                     <Setter.Value>
                                         <TranslateTransform X="0" Y="0"/>
@@ -390,11 +390,11 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#333333"/>
+                                <Setter Property="Background" Value="#242424"/>
                                 <Setter TargetName="SwitchThumb" Property="Fill" Value="#FF888888"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <!-- You can add setters here for when the mouse is over the toggle switch -->
+                               
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -408,7 +408,7 @@
             <Setter Property="Height" Value="24"/>
             <Setter Property="Margin" Value="5,0,15,0"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -421,8 +421,8 @@
                             </Border.Effect>
                             <Grid>
                                 <!-- Adjusted Rectangle with a Stroke for the border -->
-                                <Rectangle x:Name="toggleRectangle" Fill="#1E1E1E" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
-                                <Ellipse x:Name="SwitchThumb" Fill="#FF767676" 
+                                <Rectangle x:Name="toggleRectangle" Fill="#101010" RadiusX="12" RadiusY="13" Stroke="#000000" StrokeThickness="1"/>
+                                <Ellipse x:Name="SwitchThumb" Fill="#444444" 
                          Width="18" Height="18" 
                          HorizontalAlignment="Left" 
                          Margin="2.5"
@@ -436,7 +436,7 @@
                                 <Setter TargetName="SwitchThumb" Property="Opacity" Value="0.9"/>
                                 <Setter TargetName="toggleRectangle" Property="StrokeThickness" Value="2.5"/>
                                 <Setter TargetName="toggleRectangle" Property="Stroke" Value="#101010"/>
-                                <Setter TargetName="toggleRectangle" Property="Fill" Value="#1E1E1E"/>
+                                <Setter TargetName="toggleRectangle" Property="Fill" Value="#101010"/>
                                 <Setter Property="Background" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
                                 <Setter TargetName="SwitchThumb" Property="Fill" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
                                 <!-- Apply transform and drop shadow effect changes to the entire Border -->
@@ -453,11 +453,11 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#333333"/>
+                                <Setter Property="Background" Value="#242424"/>
                                 <Setter TargetName="SwitchThumb" Property="Fill" Value="#FF888888"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <!-- You can add setters here for when the mouse is over the toggle switch -->
+                              
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -520,18 +520,18 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
                         <Grid>
-                            <Border x:Name="TabItemBorder" Background="{TemplateBinding Background}" BorderBrush="#333333" BorderThickness="1.5">
+                            <Border x:Name="TabItemBorder" Background="{TemplateBinding Background}" BorderBrush="#242424" BorderThickness="1.5">
                                 <Grid>
                                     <ContentPresenter x:Name="ContentSite"
                                       VerticalAlignment="Center"
                                       HorizontalAlignment="Center"
                                       ContentSource="Header"
-                                      Margin="12,2,15,6"
+                                      Margin="12,2,14,6"
                                       
                                       TextBlock.FontWeight="Normal"
                                       Opacity="1"/>
@@ -539,7 +539,7 @@
                                       VerticalAlignment="Center"
                                       HorizontalAlignment="Center"
                                       ContentSource="Header"
-                                      Margin="12,0,15,6"
+                                      Margin="12,0,14,6"
                                       
                                       TextBlock.FontWeight="bold"
                                       Opacity="0"/>
@@ -552,7 +552,7 @@
                                 <Setter TargetName="ContentSiteBold" Property="Opacity" Value="1"/>
                                 <Setter Property="Foreground" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
                                 <Setter TargetName="TabItemBorder" Property="BorderBrush" Value="#000000"/>
-                                <Setter TargetName="TabItemBorder" Property="Background" Value="#292929"/>
+                                <Setter TargetName="TabItemBorder" Property="Background" Value="#161616"/>
                                 <!-- Move text down and to the right -->
                                 <Setter TargetName="ContentSiteBold" Property="RenderTransform">
                                     <Setter.Value>
@@ -581,7 +581,7 @@
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
 
         <Style x:Key="SmallTextBoxStyle" TargetType="TextBox">
@@ -591,7 +591,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="ReadOnlyTextBoxStyle" TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
@@ -604,7 +604,7 @@
         </Style>
         <Style x:Key="FileListTextBoxStyle" TargetType="TextBox">
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="BorderBrush" Value="white"/>
             <Setter Property="FontSize" Value="12"/>
@@ -619,7 +619,7 @@
         </Style>
         <Style x:Key="FileList2TextBoxStyle" TargetType="TextBox">
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="BorderBrush" Value="white"/>
             <Setter Property="FontSize" Value="12"/>
@@ -673,14 +673,14 @@
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="SceneIdTextBoxStyle" TargetType="TextBox">
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="IsReadOnly" Value="True"/>
         </Style>
         <Style x:Key="Sha1TextBoxStyle" TargetType="TextBox">
@@ -691,7 +691,7 @@
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="SettingsTextBoxStyle" TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
@@ -701,7 +701,7 @@
             <Setter Property="BorderThickness" Value="0.0"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Foreground" Value="#C0BFBF"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="DragAreaStyle" TargetType="Border">
             <Setter Property="AllowDrop" Value="True"/>
@@ -712,7 +712,7 @@
             <Setter Property="BorderBrush" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="DragAreaStyle2" TargetType="Border">
             <Setter Property="AllowDrop" Value="True"/>
@@ -726,7 +726,7 @@
             <Setter Property="BorderBrush" Value="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
         </Style>
         <Style x:Key="DragAreaTextBlockStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
@@ -735,7 +735,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style TargetType="ToolTip" x:Key="CustomToolTipStyle">
-            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Background" Value="#101010"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -797,7 +797,7 @@
 
                 <!-- TAB 1 BAR SHARC SDAT Archive packer unpacker-->
                 <TabItem Header="BAR / SDAT / SHARC" Tag="ArchiveTool">
-                    <StackPanel Background="#333333" HorizontalAlignment="Center" Width="1280" >
+                    <StackPanel Background="#242424" HorizontalAlignment="Center" Width="1280" >
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -901,7 +901,7 @@
 
                 <!-- Tab 2: CDS Tool -->
                 <TabItem Header="CDS Tool" Tag="CDSTool" >
-                    <StackPanel Background="#333333" >
+                    <StackPanel Background="#242424" >
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -962,7 +962,7 @@
 
                 <!-- Tab 3: HCDB Unpacker -->
                 <TabItem Header="HCDB / SQL" Tag="HCDBTool">
-                    <StackPanel Background="#333333">
+                    <StackPanel Background="#242424">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -1018,6 +1018,8 @@
                     </StackPanel>
                 </TabItem>
 
+             
+                
                 <TabItem Header="DB Editor" Tag="SQLTool">
                     <StackPanel>
                         <Border BorderBrush="White" BorderThickness="1" Padding="5" Margin="0">
@@ -1247,19 +1249,19 @@
                                     <ColumnDefinition Width="125"/>
                                     <ColumnDefinition Width="300"/>
                                 </Grid.ColumnDefinitions>
-                                <Label Content="Index" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0"/>
-                                <Label Content="Object UUID" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="1"/>
-                                <Label Content="Vers" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="2"/>
-                                <Label Content="Location" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="3"/>
-                                <Label Content="Type" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="4"/>
-                                <Label Content="Timestamp" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="5"/>
-                                <Label Content="ODC SHA1 Digest" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="6"/>
-                                <Label Content="Ent.Ind" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="7"/>
-                                <Label Content="Rew.Ind" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="8"/>
-                                <Label Content="Usr.Lo" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="9"/>
-                                <Label Content="L.U.D" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="10"/>
-                                <Label Content="Key Name" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="11"/>
-                                <Label Content="Value" FontSize="12" Foreground="White" Background="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="12"/>
+                                <Label Content="Index" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0"/>
+                                <Label Content="Object UUID" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="1"/>
+                                <Label Content="Vers" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="2"/>
+                                <Label Content="Location" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="3"/>
+                                <Label Content="Type" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="4"/>
+                                <Label Content="Timestamp" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="5"/>
+                                <Label Content="ODC SHA1 Digest" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="6"/>
+                                <Label Content="Ent.Ind" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="7"/>
+                                <Label Content="Rew.Ind" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="8"/>
+                                <Label Content="Usr.Lo" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="9"/>
+                                <Label Content="L.U.D" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="10"/>
+                                <Label Content="Key Name" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="11"/>
+                                <Label Content="Value" FontSize="12" Foreground="White" Background="#383838" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="12"/>
                             </Grid>
                             <ScrollViewer x:Name="sqlItemsScrollViewer" Height="490" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,25,0,0">
                                 <Grid Name="SQLItemsGrid" Margin="0"/>
@@ -1278,7 +1280,7 @@
 
                 <!-- Tab 4: TICKET.LST Encrypter / Decrypter -->
                 <TabItem Header="TicketList" Tag="TickLSTTool" Visibility="Collapsed">
-                    <StackPanel Background="#333333">
+                    <StackPanel Background="#242424">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -1337,7 +1339,7 @@
 
                 <!-- Tab 5 Scene IDs -->
                 <TabItem Header="SceneIDs" Tag="SceneIDTool" AllowDrop="True" Drop="SceneIDTabItem_Drop">
-                    <Grid Background="#333333"  >
+                    <Grid Background="#242424"  >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -1382,7 +1384,7 @@
 
                 <!-- Tab 6: LUAC -->
                 <TabItem Header="LUA / LUAC" Tag="LUACTool" >
-                    <StackPanel Background="#333333"  >
+                    <StackPanel Background="#242424"  >
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -1445,7 +1447,7 @@
 
                 <!-- Tab 8 SDC ODC Creator -->
                 <TabItem Header="SDC / ODC" Tag="SDCODCTool">
-                    <Grid Background="#333333"
+                    <Grid Background="#242424"
                           DragEnter="Grid_DragEnter" 
                         Drop="Grid_Drop" 
                         AllowDrop="True" >
@@ -1494,7 +1496,7 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Width="570" Margin="0,10,0,0">
                                 <Label Content="SHA1 Digest:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
-                                <TextBox x:Name="Createdsdcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
+                                <TextBox x:Name="Createdsdcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#181818" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="SDCCopySHA1Button_Click" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,10,0,0">
@@ -1546,7 +1548,7 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Width="570">
                                 <Label Content="SHA1 Digest:" Foreground="White" FontSize="14" VerticalAlignment="Center"  Width="105"/>
-                                <TextBox x:Name="Createdodcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#282828" IsReadOnly="True" Width="375"/>
+                                <TextBox x:Name="Createdodcsha1TextBox" Style="{StaticResource SmallTextBoxStyle}" Background="#181818" IsReadOnly="True" Width="375"/>
                                 <Button Content="Copy" Margin="10,0,0,0" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" FontSize="12" Height="25" Click="ODCCopySHA1Button_Click" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
@@ -1565,14 +1567,18 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
-                <!-- Tab 9: Path2Hash -->
+
+              
+
+
+                <!-- Tab 10: Path2Hash -->
                 <TabItem Header="Path2Hash" Tag="Path2Hash" AllowDrop="True" Drop="Path2HashTabItem_Drop" >
                     <StackPanel>
                         <TextBlock Text="Path to Hash Tool" Margin="10" Style="{StaticResource ToolTitleTextBlockStyle}" AllowDrop="True" Drop="Path2HashTabItem_Drop" />
                         <Border x:Name="Path2HashPatcherDragArea" Style="{StaticResource DragAreaStyle}" Drop="Path2HashTabItem_Drop" Height="81" Margin="0,0,0,5" Width="713">
                             <TextBlock x:Name="Path2HashDragAreaText" Text="Drag a folder or TXT/XML here to hash all paths" Style="{StaticResource DragAreaTextBlockStyle}"/>
                         </Border>
-                        <Border Background="#333333" Padding="10" AllowDrop="True" Drop="Path2HashTabItem_Drop">
+                        <Border Background="#242424" Padding="10" AllowDrop="True" Drop="Path2HashTabItem_Drop">
                             <Grid>
                                 <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center">
                                     <!-- Title -->
@@ -1597,8 +1603,11 @@
 
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="EBOOT" Tag="EbootPatcher" HorizontalAlignment="Left" Width="75">
-                    <StackPanel Background="#333333" HorizontalAlignment="Center" Width="1140">
+
+                
+               
+                <TabItem Header="EBOOT" Tag="EbootPatcher" >
+                    <StackPanel Background="#242424" HorizontalAlignment="Center" Width="1140">
                         <TextBlock Text="Home EBOOT Patcher" Foreground="White" FontWeight="Bold" FontSize="16" Height="18" Margin="0,10,0,15" Width="174"/>
                         <Border x:Name="EBOOTPatcherDragArea" Style="{StaticResource DragAreaStyle}" Drop="EbootPatcherDragDropHandler" MouseLeftButtonUp="ClickToBrowseHandlerEbootPatcher" Height="81" Margin="0,0,0,15" Width="713">
                             <TextBlock x:Name="EbootPatcherDragAreaText" Text="Drag an EBOOT.BIN, .elf or .self here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
@@ -1720,7 +1729,7 @@
 
                 <!-- Tab 10 SHA1 Checker -->
                 <TabItem Header="Checker" Tag="SHAChecker" >
-                    <StackPanel Background="#333333" >
+                    <StackPanel Background="#242424" >
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <!-- Title TextBlock -->
@@ -1753,6 +1762,43 @@
                     </StackPanel>
                 </TabItem>
 
+                <TabItem Header="CDN Audit" Tag="CDNaudit" >
+                    <StackPanel>
+                        <TextBlock Text="CDN Audit" Margin="5" Style="{StaticResource ToolTitleTextBlockStyle}" AllowDrop="True" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Label Content="TSS URL:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="70"/>
+                            <TextBox x:Name="TSSUrlTextBox" Width="400" Style="{StaticResource SmallTextBoxStyle}" Text="http://64.20.35.146/tss/coreHztFmpQrx0002_en-US.xml" Margin="0,0,10,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Label Content="Territory:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="70"/>
+                            <ComboBox x:Name="TerritoryComboBox" Width="100" Style="{StaticResource DarkModeComboBoxStyle}" SelectedIndex="0">
+                                <ComboBoxItem Content="SCEE" />
+                                <ComboBoxItem Content="SCEA" />
+                                <ComboBoxItem Content="SCEJ" />
+                                <ComboBoxItem Content="SCEAsia" />
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Label Content="Skip SDC Verification:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="150"/>
+                            <CheckBox x:Name="SkipSDCVerificationToggle" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            <Label Content="Skip ODC Verification:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="150"/>
+                            <CheckBox x:Name="SkipODCVerificationToggle" Style="{StaticResource ModernToggleSwitchStyle}" />
+                        </StackPanel>
+                        <Border Background="#242424" Padding="10" AllowDrop="True">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                                        <Button Content="Start" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="StartButton_Click" Margin="5,0,5,10"/>
+                                        <Button x:Name="XMLClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="XMLClearListHandler" Margin="5,0,5,10"/>
+                                    </StackPanel>
+                                    <TextBox x:Name="XMLOutputTextBox" Style="{StaticResource FileList2TextBoxStyle}" Margin="0,0,0,0" Height="515" Width="1150" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+
+
                 <TabItem Header="Catalogue" Tag="Catalogue">
                     <Grid>
                         <wv2:WebView2 x:Name="WebView2Control" Margin="0,0,0,7"/>
@@ -1767,7 +1813,7 @@
                 </TabItem>
                 <!-- Combined Tab for Media Tools -->
                 <TabItem Header="Media" Tag="MediaTool">
-                    <StackPanel Background="#333333">
+                    <StackPanel Background="#242424">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -1889,7 +1935,7 @@
                         </Style>
                     </TabItem.Resources>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Background="#333333">
+                        <StackPanel Background="#242424">
                             <!-- CDS Output Directory -->
                             <StackPanel Orientation="Horizontal" Margin="5">
                                 <TextBlock Text="CDS Encrypt Output Directory:" Foreground="White" VerticalAlignment="Center" Width="160" Margin="0,0,5,0"/>
@@ -2028,9 +2074,9 @@
                                                                     <ColumnDefinition Width="20"/>
                                                                 </Grid.ColumnDefinitions>
                                                                 <Border x:Name="ColorDisplay" Grid.Column="0" Background="{TemplateBinding Background}"
-                                            BorderBrush="#1E1E1E" BorderThickness="1">
+                                            BorderBrush="#101010" BorderThickness="1">
                                                                     <Border.Effect>
-                                                                        <DropShadowEffect Color="#1E1E1E" Opacity="0.5" BlurRadius="5" ShadowDepth="2"/>
+                                                                        <DropShadowEffect Color="#101010" Opacity="0.5" BlurRadius="5" ShadowDepth="2"/>
                                                                     </Border.Effect>
                                                                 </Border>
                                                             </Grid>
@@ -2039,7 +2085,7 @@
                                                 </ToggleButton>
                                                 <Popup Name="Popup" IsOpen="{Binding IsChecked, ElementName=DropDownToggle, Mode=TwoWay}" Placement="Right" VerticalOffset="-150" HorizontalOffset="30" PlacementTarget="{Binding ElementName=DropDownToggle}"  StaysOpen="False">
                                                     <Border Name="DropDownBorder" BorderBrush="{Binding SelectedThemeColor, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                BorderThickness="1"  Background="#333333" MaxHeight="200" Margin="0" MaxWidth="200" >
+                                BorderThickness="1"  Background="#242424" MaxHeight="200" Margin="0" MaxWidth="200" >
                                                         <colorpicker:StandardColorPicker x:Name="NewColorPicker" SelectedColor="{Binding ThemeColor, Mode=TwoWay}" Width="200" Height="380" ColorChanged="NewColorPicker_ColorChanged"/>
                                                     </Border>
                                                 </Popup>
@@ -2048,6 +2094,8 @@
                                     </ComboBox.Template>
                                 </ComboBox>
                             </StackPanel>
+
+
                             <TextBlock  FontSize="14" Foreground="White" Margin="0,140,0,0" Width="511" Padding="0 " Height="22"><Run Text="For Support and Information Visit the Home Laboratory Discord Community "/><Hyperlink NavigateUri="https://discord.gg/VZgTgX5yM7" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="HERE"/></Hyperlink></TextBlock>
                         </StackPanel>
                     </ScrollViewer>
