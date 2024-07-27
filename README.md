@@ -166,9 +166,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 #### Coredata Mode:
    - This mode skips normal mapping techniques completely as they are not reliable for coredata, instead it uses a preset list of known coredata file names to rename the files.
-   - Use this mode for COREDATA.SHARC/BAR, COREOBJECTS.SHARC/BAR, SHADERS.SHARC/BAR, CONFIG***.SHARC/BAR
-   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
-   - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
+   - Use this mode for 1.8x COREDATA.SHARC/BAR, COREOBJECTS.SHARC, SHADERS.SHARC/BAR, LOCAL_CORE_OBJECTS.BAR, CONFIG***.SHARC/BAR
+   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIVE.BAR, DYNFILES.BAR etc.
+   - Bonus: This mode Maps all the 0.41 "GDC" era scenes pretty much 100%.
 
 #### Bruteforce UUID:
    - This mode is only VERY rarely needed. DO NOT use it normally to map objects it will be slower and due to hash clashes it can sometimes get the UUID wrong. Under normal circumstances the UUID will be somewhere in the input file path either as part of the sdat name, or the folder its in so it will be automatically picked up.
