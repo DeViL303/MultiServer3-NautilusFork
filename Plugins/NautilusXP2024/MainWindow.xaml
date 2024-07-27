@@ -92,6 +92,15 @@
             <Setter Property="Foreground" Value="#C0BFBF"/>
             <Setter Property="Background" Value="#101010"/>
         </Style>
+        <Style x:Key="SmallTextBoxStyle3" TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#C0BFBF"/>
+            <Setter Property="Background" Value="#101010"/>
+        </Style>
         <Style x:Key="DarkModeButtonStyle2" TargetType="Button">
             <Setter Property="Height" Value="25"/>
             <Setter Property="Width" Value="Auto"/>
@@ -1027,47 +1036,49 @@
                                 <StackPanel Orientation="Horizontal">
                                     <StackPanel>
                                         <TextBlock Text="Index:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtObjectIndex" Width="55" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="1"/>
+                                        <TextBox x:Name="txtObjectIndex" Width="55" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Object UUID:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtObjectId" Width="300" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text=""/>
+                                        <TextBox x:Name="txtObjectId" Width="300" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="" MouseDoubleClick="txtObjectId_MouseDoubleClick"/>
+
+
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Version:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtVersion" Width="50" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="31"/>
+                                        <TextBox x:Name="txtVersion" Width="50" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="31"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Location:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtLocation" Width="60" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="1"/>
+                                        <TextBox x:Name="txtLocation" Width="60" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Entry Type:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtEntryType" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="NULL"/>
+                                        <TextBox x:Name="txtEntryType" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="TimeStamp:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtArchiveTimeStampHex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="FFFFFFFF"/>
+                                        <TextBox x:Name="txtArchiveTimeStampHex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="FFFFFFFF"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="ODC SHA1 digest:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtOdcSha1Digest" Width="315" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text=""/>
+                                        <TextBox x:Name="txtOdcSha1Digest" Width="315" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Entitlement Index:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtEntitlementIndex" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="NULL"/>
+                                        <TextBox x:Name="txtEntitlementIndex" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Reward Index:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtRewardIndex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="NULL"/>
+                                        <TextBox x:Name="txtRewardIndex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="User Location:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtUserLocation" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="0"/>
+                                        <TextBox x:Name="txtUserLocation" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="0"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Last Used Date:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtLastUsed" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Text="NULL"/>
+                                        <TextBox x:Name="txtLastUsed" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
                                     </StackPanel>
                                 </StackPanel>
 

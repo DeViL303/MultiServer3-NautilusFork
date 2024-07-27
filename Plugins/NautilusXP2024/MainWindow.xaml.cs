@@ -14000,7 +14000,10 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
-      
+        private void txtObjectId_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            txtObjectId.Text = GenerateUUID();
+        }
 
     }
 
