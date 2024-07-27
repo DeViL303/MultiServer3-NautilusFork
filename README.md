@@ -321,7 +321,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Add metadata based on matching an existing metadata keyname or value.
 - Allows applying some experimental patches to all items
 
-#### Usage
+#### DB Editor Usage
 - First you will need to Decrypt your HCDB to SQL once with HCDB tab
 - Then in DB editor Tab open the SQL - You can keep editing and repacking this same SQL from now on.
 - To add an item, Drag in the ODC. It does not matter if its encrypted or plaintext. This will set all top row fields correctly.
