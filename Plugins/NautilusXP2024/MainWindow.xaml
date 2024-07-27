@@ -619,8 +619,8 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="10"/>
             <Setter Property="AllowDrop" Value="True"/>
-            <Setter Property="Height" Value="430"/>
-            <Setter Property="Width" Value="600"/>
+            <Setter Property="Height" Value="445"/>
+            <Setter Property="Width" Value="610"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="AcceptsReturn" Value="True"/>
@@ -822,6 +822,13 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="Timestamp:" Style="{StaticResource Sha1TextBlockStyle}"/>
                                     <TextBox x:Name="ArchiveCreatorTimestampTextBox" Text="FFFFFFFF" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="8" Width="70"/>
+                                    <TextBlock Text="SDAT Version:" Style="{StaticResource Sha1TextBlockStyle}" Margin="20,8,8,5" Foreground="White"/>
+                                    <ComboBox x:Name="SDATAVersion" MaxDropDownHeight="420" FontSize="12" Padding="2" Width="115" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="SDATAVersion_SelectionChanged_1">
+                                        <ComboBoxItem Content="N/A"/>
+                                        <ComboBoxItem Content="SDATA 2.4.0.W"/>
+                                        <ComboBoxItem Content="SDATA 3.3.0.W"/>
+                                        <ComboBoxItem Content="SDATA 4.0.0.W"/>
+                                    </ComboBox>
                                 </StackPanel>
                                 <!-- Radio Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
@@ -858,7 +865,7 @@
                 AllowDrop="True"
                 Drop="ArchiveCreatorDragDropHandler">
                                     <TextBox x:Name="ArchiveCreatorTextBox"
-                     Height="350"
+                     Height="370"
                      Style="{StaticResource FileListTextBoxStyle}"
                      AllowDrop="False"
                      MouseDoubleClick="ArchiveCreatorTextBox_MouseDoubleClick"/>
@@ -901,7 +908,7 @@
                                     <Button x:Name="ArchiveUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
                                 </StackPanel>
                                 <!-- Text Area -->
-                                <TextBox x:Name="ArchiveUnpackerTextBox" Height="350" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="ArchiveUnpackerDragDropHandler" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="ArchiveUnpackerTextBox" Height="370" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="ArchiveUnpackerDragDropHandler" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -1054,7 +1061,7 @@
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Entry Type:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtEntryType" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
+                                        <TextBox x:Name="txtEntryType" Width="55" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="TimeStamp:" FontSize="10" Margin="3,0" Foreground="White"/>
@@ -1062,7 +1069,7 @@
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="ODC SHA1 digest:" FontSize="10" Margin="3,0" Foreground="White"/>
-                                        <TextBox x:Name="txtOdcSha1Digest" Width="315" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
+                                        <TextBox x:Name="txtOdcSha1Digest" Width="335" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="Entitlement Index:" FontSize="10" Margin="3,0" Foreground="White"/>
@@ -1370,13 +1377,13 @@
                                 <Button x:Name="encryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearListHandler"/>
                             </StackPanel>
                             <TextBlock Text="Encrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                            <TextBox x:Name="encryptedSceneIDTextBox" Height="440" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
+                            <TextBox x:Name="encryptedSceneIDTextBox" Height="490" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
                         </StackPanel>
 
                         <!-- Right Side: SceneID Decrypter -->
                         <StackPanel Grid.Column="1" HorizontalAlignment="Center">
                             <TextBlock Text="SceneID Decrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
-                            <TextBlock Text="Enter one or more SceneIDs / ChannelIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                            <TextBlock Text="Enter SceneIDs / ChannelIDs (Or drag SceneList here):" Style="{StaticResource SceneIdTextBlockStyle}"/>
                             <TextBox x:Name="SceneIDDecryptInputTextBox" AcceptsReturn="True" TextWrapping="Wrap" Padding="0,2,0,0" Height="24" Width="290" Style="{StaticResource SceneIdInputTextBoxStyle}"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <TextBlock Text="Legacy Mode:" Style="{StaticResource SceneIdTextBlockStyle}"/>
@@ -1387,7 +1394,7 @@
                                 <Button x:Name="DecryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSceneIDTextHandler"/>
                             </StackPanel>
                             <TextBlock Text="Decrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                            <TextBox x:Name="DecryptedSceneIDTextBox" Height="440" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
+                            <TextBox x:Name="DecryptedSceneIDTextBox" Height="490" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -1606,7 +1613,7 @@
                                     <TextBox x:Name="Path2HashOutputTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="90" />
                                 </StackPanel>
                                 <StackPanel AllowDrop="True" Drop="Path2HashTabItem_Drop">
-                                    <TextBox x:Name="Path2HashOutputExtraTextBox" Style="{StaticResource FileList2TextBoxStyle}" Margin="0,130,0,0" Height="400" Width="1150" />
+                                    <TextBox x:Name="Path2HashOutputExtraTextBox" Style="{StaticResource FileList2TextBoxStyle}" Margin="0,130,0,0" Height="430" Width="1150" />
                                 </StackPanel>
                             </Grid>
 
@@ -1769,7 +1776,7 @@
                         </StackPanel>
 
                         <!-- File List Box -->
-                        <TextBox x:Name="Sha1TextBox" Height="420" Width="1150" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+                        <TextBox x:Name="Sha1TextBox" Height="490" Width="1250" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </TabItem>
 
@@ -1886,7 +1893,7 @@
                                 </StackPanel>
 
                                 <!-- File List Box -->
-                                <TextBox x:Name="VideoTextBox" Height="350" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto" />
+                                <TextBox x:Name="VideoTextBox" Height="370" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto" />
                             </StackPanel>
 
                             <!-- Right Side: BNK Unpacker -->
@@ -1920,7 +1927,7 @@
                                     <Button Content="Unpack and Map" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="BNKUnpackerExecuteButtonClick" />
                                     <Button x:Name="BNKUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearBNKUnpackerListHandler" />
                                 </StackPanel>
-                                <TextBox x:Name="BNKUnpackerTextBox" Height="350" Margin="0,55,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" MouseDoubleClick="BNKUnpackerTextBox_MouseDoubleClick" Drop="BNKUnpackerDragDropHandler" />
+                                <TextBox x:Name="BNKUnpackerTextBox" Height="370" Margin="0,55,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" MouseDoubleClick="BNKUnpackerTextBox_MouseDoubleClick" Drop="BNKUnpackerDragDropHandler" />
 
                                 <!-- Text Area -->
                             </StackPanel>
