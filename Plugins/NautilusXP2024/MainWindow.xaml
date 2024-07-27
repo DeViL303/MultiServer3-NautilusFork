@@ -824,7 +824,7 @@
                                     <TextBox x:Name="ArchiveCreatorTimestampTextBox" Text="FFFFFFFF" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="8" Width="70"/>
                                     <TextBlock Text="SDAT Version:" Style="{StaticResource Sha1TextBlockStyle}" Margin="20,8,8,5" Foreground="White"/>
                                     <ComboBox x:Name="SDATAVersion" MaxDropDownHeight="420" FontSize="12" Padding="2" Width="115" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="SDATAVersion_SelectionChanged_1">
-                                        <ComboBoxItem Content="N/A"/>
+                                        <ComboBoxItem x:Name="ComboBoxItemNA" Content="N/A"/>
                                         <ComboBoxItem Content="SDATA 2.4.0.W"/>
                                         <ComboBoxItem Content="SDATA 3.3.0.W"/>
                                         <ComboBoxItem Content="SDATA 4.0.0.W"/>

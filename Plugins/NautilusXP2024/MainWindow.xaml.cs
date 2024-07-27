@@ -964,6 +964,7 @@ namespace NautilusXP2024
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.BAR;
                 SettingsManager.SaveSettings(_settings);
                 SDATAVersion.SelectedItem = FindComboBoxItem("N/A");
+                SDATAVersion.IsEnabled = false;
             }
         }
 
@@ -974,6 +975,7 @@ namespace NautilusXP2024
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.BAR_S;
                 SettingsManager.SaveSettings(_settings);
                 SDATAVersion.SelectedItem = FindComboBoxItem("N/A");
+                SDATAVersion.IsEnabled = false;
             }
         }
 
@@ -983,6 +985,7 @@ namespace NautilusXP2024
             {
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.SDAT;
                 SettingsManager.SaveSettings(_settings);
+                SDATAVersion.IsEnabled = true;
                 SDATAVersion.SelectedItem = FindComboBoxItem("SDATA 2.4.0.W");
             }
         }
@@ -993,6 +996,7 @@ namespace NautilusXP2024
             {
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.SDAT_SHARC;
                 SettingsManager.SaveSettings(_settings);
+                SDATAVersion.IsEnabled = true;
                 SDATAVersion.SelectedItem = FindComboBoxItem("SDATA 4.0.0.W");
             }
         }
@@ -1004,6 +1008,7 @@ namespace NautilusXP2024
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.CORE_SHARC;
                 SettingsManager.SaveSettings(_settings);
                 SDATAVersion.SelectedItem = FindComboBoxItem("N/A");
+                SDATAVersion.IsEnabled = false;
             }
         }
 
@@ -1014,6 +1019,7 @@ namespace NautilusXP2024
                 _settings.ArchiveTypeSettingRem = ArchiveTypeSetting.CONFIG_SHARC;
                 SettingsManager.SaveSettings(_settings);
                 SDATAVersion.SelectedItem = FindComboBoxItem("N/A");
+                SDATAVersion.IsEnabled = false;
             }
         }
 
