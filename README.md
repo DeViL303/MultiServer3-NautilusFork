@@ -328,8 +328,10 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Alternatively you can enter in top row details manually.
   - The Fields with NULL do not need to be touched normally, just enter your new items UUID, Version and SHA1.
   - The Object Index should automatically get set to the next available index when you load an SQL.
-  - If needed double clicking the UUID textbox on top row will generate a random UUID.   
-- Once top row is set, then choose type in first keyname dropdown such as CLOTHING, FURNITURE etc. This will fill out all other required fields with default values. 
+  - When you click Add Item the Object Index will increment by 1 to the next available index.
+  - Note: If needed double clicking the UUID textbox on top row will generate a random UUID.   
+- Once top row fields are set, then choose type in first keyname dropdown such as CLOTHING, FURNITURE, MINIGAME etc.
+- This will fill out all other required fields with default values making it easy to see what needs to be set for each type.
 - Choose subtype in first Value dropdown, CHAIR, HAIR etc. Subtype Options will change depending on which Keyname was chosen.
 - For entitlement it sets CLOTHING and FURNITURE as LUA_REWARD by default.
 - When you have set the dropdown menus click Add Item. If you have more items to add repeat the above.
