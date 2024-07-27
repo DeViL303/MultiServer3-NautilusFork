@@ -320,6 +320,21 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Simple Find and Replace for Metadata values
 - Add metadata based on matching an existing metadata keyname or value.
 - Allows applying some experimental patches to all items
+
+#### Usage
+- First you will need to Decrypt your HCDB to SQL once with HCDB tab
+- Then in DB editor Tab open the SQL - You can keep editing and repacking this same SQL from now on.
+- To add an item, Drag in the ODC. It does not matter if its encrypted or plaintext. This will set all top row fields correctly.
+- Alternatively you can enter in top row details manually. If needed double clicking the UUID textbox on top row will generate a random UUID.   
+- Once top row is set, then choose type in first keyname dropdown such as CLOTHING, FURNITURE etc. This will fill out all other required fields with default values. 
+- Choose subtype in first Value dropdown, CHAIR, HAIR etc. Subtype Options will change depending on which Keyname was chosen.
+- For entitlement it sets CLOTHING and FURNITURE as LUA_REWARD by default.
+- When you have set the dropdown menus click Add Item. If you have more items to add repeat the above.
+- When all items have been added, click Export HCDB, it will create all 4 HCDB files and provide the segs SHA1 aka HCDB decryption key (Needed for TSS) 
+ 
+click add item
+change entitlement if you dont want default LUA_REWARD
+click export to HCDB when finished adding items
   
 <div align="center">
 
