@@ -1762,7 +1762,7 @@
                     </StackPanel>
                 </TabItem>
 
-                <TabItem Header="CDN Audit" Tag="CDNaudit" >
+                <TabItem Header="CDN Audit" Tag="CDNaudit" Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="CDN Audit" Margin="5" Style="{StaticResource ToolTitleTextBlockStyle}" AllowDrop="True" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">

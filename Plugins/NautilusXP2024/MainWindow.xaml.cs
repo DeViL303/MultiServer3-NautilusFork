@@ -6130,6 +6130,12 @@ namespace NautilusXP2024
             string timestamp = sdcTimestampTextBox.Text;
             string thumbnailSuffix = sdcThumbnailSuffixTextBox.Text;
 
+            // Pad the thumbnail suffix to 3 digits if it is not empty
+            if (!string.IsNullOrEmpty(thumbnailSuffix))
+            {
+                thumbnailSuffix = thumbnailSuffix.PadLeft(3, '0');
+            }
+
             // Construct the thumbnail image file names
             string makerImageSuffix = string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}";
             string smallImageSuffix = string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}";
@@ -6235,6 +6241,8 @@ namespace NautilusXP2024
 
             return sdcFileName;
         }
+
+
 
         private XElement CreateArchiveElement(string archivePath, string archiveSize, string timestamp)
         {
@@ -6442,6 +6450,12 @@ namespace NautilusXP2024
             string thumbnailSuffix = odcThumbnailSuffixTextBox.Text;
             string uuid = odcUUIDTextBox.Text;
             string timestamp = odcTimestampTextBox.Text;
+
+            // Pad the thumbnail suffix to 3 digits if it is not empty
+            if (!string.IsNullOrEmpty(thumbnailSuffix))
+            {
+                thumbnailSuffix = thumbnailSuffix.PadLeft(3, '0');
+            }
 
             // Construct the thumbnail image file names
             string makerImage = $"[THUMBNAIL_ROOT]maker{(string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}")}.png";
