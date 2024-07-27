@@ -84,6 +84,13 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
    - Enter a timestamp here. The default is FFFFFFFF. If less than 8 bytes are entered, they will be padded to 8 bytes with a prefix of 0.
    - If a timestamp.txt file is present in your input folder, this GUI field will normally be disregarded.
 
+##### SDAT Version:
+   - This only applies to SDAT and SDAT (SHARC).
+   - Will change to 2.4.0.W automatically when you choose SDAT
+   - Will change to 4.0.0.W automatically when you choose SDAT (SHARC)
+   - You can override the version if you want after choosing archive type but its recommended to leave it on default.
+
+
 ##### Types of Archives:
 - **BAR:** The most basic form of Home Archive, historically used in early retail home editions and later restricted to developer versions. These archives are the quickest to read, mount, create, and dump due to their simple zlib compression and lack of additional security layers.
 - **BAR Secure:** An encrypted version of BAR used in conjunction with SHA1 in the TSS in some of the earlier pre-sharc versions of Home.
