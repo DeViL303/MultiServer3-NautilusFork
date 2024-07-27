@@ -49,7 +49,8 @@ Note: Due to the nature of Homes millions of assets and the many edge cases invo
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d6683e1b-5494-4f0f-a88a-403c0c58c885)
+![image](https://github.com/user-attachments/assets/9da32f4d-180a-4d69-9162-3c2f96512dc9)
+
 
 
 
@@ -202,7 +203,8 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/eb18af83-a54d-4c64-8619-0964fb32f243)
+![image](https://github.com/user-attachments/assets/21607753-dc7f-40d6-beee-4bf90cd5fffb)
+
 
 
 
@@ -262,7 +264,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/6028c426-f9b7-4ce9-8041-f507176f60a5)
+![image](https://github.com/user-attachments/assets/a77fec3d-8208-493f-95e2-2941fdbbc09b)
+
 
 
 
@@ -282,7 +285,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/4c2753a7-4888-4dfb-a66a-ddf969ffe939)
+![image](https://github.com/user-attachments/assets/7f594fdb-aff9-4ea1-a875-25fc2b5adbcb)
+
 
 
 
@@ -321,7 +325,8 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/94ebe836-6b6a-4569-9944-d4c415ef77bb)
+![image](https://github.com/user-attachments/assets/7cbf7471-f353-4573-9f38-0e1f9829f6cc)
+
 
 
 </div>
@@ -383,7 +388,8 @@ Scene IDs, also known as Channel IDs, are critical for instancing in PlayStation
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/0915629a-b85b-4a15-b993-f237f39f85a5)
+![image](https://github.com/user-attachments/assets/4d2561fa-6372-4466-992d-64c0fcc2d710)
+
 
 
 
@@ -457,7 +463,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a37847e9-5f67-4da3-83e1-3b424e930e0c)
+![image](https://github.com/user-attachments/assets/12dd6107-cde9-47bf-9498-6301cb870f0d)
+
 
 </div>
 
@@ -505,7 +512,8 @@ You could also switch out the JAR files for others if you find better solutions.
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/79c8f10e-f22b-4975-a804-e16eded39d8d)
+![image](https://github.com/user-attachments/assets/072b3f03-e49a-454d-af33-679580e837d3)
+
 
 
 
@@ -531,7 +539,8 @@ If you know the path to a file and it refuses to map normally, you can add the p
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/900dba64-b5e5-491b-aa45-acf0b9201a95)
+![image](https://github.com/user-attachments/assets/4c768663-3207-4960-ac06-906126016ec7)
+
 
 
 
@@ -557,7 +566,8 @@ View and or Patch various fields in Home EBOOTS.
 
 <div align="center">
    
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/a95cad13-cdbb-448e-89fe-5f61f65cf6b8)
+![image](https://github.com/user-attachments/assets/37f30312-b4c5-4e72-b905-e389f77d4e16)
+
 
 
 
@@ -583,7 +593,7 @@ Validate Files: This is a standalone version of the file validator used in the m
    Tab 11: Content Catalogue
 </h1>
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/7ef1604a-858b-42fb-8b92-2c38abdd4dbb)
+![image](https://github.com/user-attachments/assets/2c30be3f-90ba-46b6-a0d0-0c3cc3adb280)
 
 
 
@@ -613,7 +623,8 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/d72e4f73-abaf-4387-87ae-1e698f1b2229)
+![image](https://github.com/user-attachments/assets/6574e738-f02e-4874-b3cc-ff87fd857e43)
+
 
 
 
@@ -650,7 +661,8 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 <div align="center">
 
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/f2d4ce66-a0d6-4e99-b1e1-caac5f55bca7)
+![image](https://github.com/user-attachments/assets/1e2ff9fc-fac2-4e1b-8df0-0cda8698177f)
+
 
 
 
