@@ -166,9 +166,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 #### Coredata Mode:
    - This mode skips normal mapping techniques completely as they are not reliable for coredata, instead it uses a preset list of known coredata file names to rename the files.
-   - Use this mode for COREDATA.SHARC/BAR, COREOBJECTS.SHARC/BAR, SHADERS.SHARC/BAR, CONFIG***.SHARC/BAR
-   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIBE.BAr, DYNFILES.BAR etc.
-   - Bonus: This mode Maps all the 0.41 era scenes pretty much 100%.
+   - Use this mode for 1.8x COREDATA.SHARC/BAR, COREOBJECTS.SHARC, SHADERS.SHARC/BAR, LOCAL_CORE_OBJECTS.BAR, CONFIG***.SHARC/BAR
+   - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIVE.BAR, DYNFILES.BAR etc.
+   - Bonus: This mode Maps all the 0.41 "GDC" era scenes pretty much 100%.
 
 #### Bruteforce UUID:
    - This mode is only VERY rarely needed. DO NOT use it normally to map objects it will be slower and due to hash clashes it can sometimes get the UUID wrong. Under normal circumstances the UUID will be somewhere in the input file path either as part of the sdat name, or the folder its in so it will be automatically picked up.
@@ -320,6 +320,24 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Simple Find and Replace for Metadata values
 - Add metadata based on matching an existing metadata keyname or value.
 - Allows applying some experimental patches to all items
+
+#### DB Editor Usage
+- First you will need to Decrypt your HCDB to SQL once with HCDB tab (SHA1 Required)
+- Then in DB editor Tab open the SQL - You can keep editing and repacking this same SQL from now on.
+- To add an item, Drag in the ODC. It does not matter if its encrypted or plaintext. This will set all top row fields correctly.
+- Alternatively you can enter in top row details manually.
+  - The Fields with NULL do not need to be touched normally, just enter your new items UUID, Version and SHA1.
+  - The Object Index should automatically get set to the next available index when you load an SQL.
+  - When you click Add Item the Object Index will increment by 1 to the next available index.
+  - Note: If needed double clicking the UUID textbox on top row will generate a random UUID.   
+- Once top row fields are set, then choose type in first keyname dropdown such as CLOTHING, FURNITURE, MINIGAME etc.
+- This will fill out all other required fields with default values making it easy to see what needs to be set for each type.
+- Choose subtype in first Value dropdown, CHAIR, HAIR etc. Subtype Options will change depending on which Keyname was chosen.
+- For entitlement it sets CLOTHING and FURNITURE as LUA_REWARD by default.
+- When you have set the dropdown menus click Add Item. If you have more items to add repeat the above.
+- When all items have been added, click Export HCDB, it will create all 4 HCDB files and provide the segs SHA1 aka HCDB decryption key (Needed for TSS) 
+ 
+
   
 <div align="center">
 
