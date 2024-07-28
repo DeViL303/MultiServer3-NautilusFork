@@ -315,11 +315,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
   
 </div>
 
-### Bulk Metadata Editor
-- Add new Metadata fields to all items easily
-- Simple Find and Replace for Metadata values
-- Add metadata based on matching an existing metadata keyname or value.
-- Allows applying some experimental patches to all items
 
 #### DB Editor Usage
 - First you will need to Decrypt your HCDB to SQL once with HCDB tab (SHA1 Required)
@@ -340,15 +335,13 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
  
 
 
-### Bulk Object Metadata Editor
-- Add an entry to all items
-- Basic find and replace for all items
-- Conditional find and replace based on finding an existing string in any metadata keyname or value.
+### Bulk Metadata Editor
+- Add new Metadata fields to all items easily
+- Simple Find and Replace for Metadata values
+- Add metadata based on matching an existing metadata keyname or value.
+- Allows applying some experimental patches to all items
 
-- A bunch of experimental patches added for fun
-- Adding both rigs to all clothing makes all clothing work on both genders
-- Other patches added here are not properly tested - Added for research purposes.
-- 
+
 <div align="center">
 
 ![image](https://github.com/user-attachments/assets/b0fa4b8e-bb0c-4651-a912-70a9b7352a3c)
