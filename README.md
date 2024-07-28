@@ -1,5 +1,5 @@
 <h1 align="center">
-   Nautilus Toolset v1.00 Beta Build 00026
+   Nautilus Toolset v1.00 Build 00028
 </h1>
 
 <h2 align="center">
@@ -166,9 +166,9 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
 
 #### Coredata Mode:
    - This mode skips normal mapping techniques completely as they are not reliable for coredata, instead it uses a preset list of known coredata file names to rename the files.
-   - Use this mode for 1.8x COREDATA.SHARC/BAR, COREOBJECTS.SHARC, SHADERS.SHARC/BAR, LOCAL_CORE_OBJECTS.BAR, CONFIG***.SHARC/BAR
+   - Use this mode for 1.8x COREDATA.SHARC/BAR, CORE_OBJECTS.SHARC, SHADERS.SHARC/BAR, LOCAL_CORE_OBJECTS.BAR, CONFIG***.SHARC/BAR
    - Also works on older builds with varying degrees of success. NPBOOT.BAR, CHARACTERS.BAR, LOCAL_CORE_OBJECTS.BAR, FURNITURE.BAR, DEV_ARCHIVE.BAR, DYNFILES.BAR etc.
-   - Bonus: This mode Maps all the 0.41 "GDC" era scenes pretty much 100%.
+   - Bonus: This mode Maps all the 0.41 "GDC" era scenes and coredata pretty much 100% (Not including 0.41 Arcade BARs which are currently not mappable)
 
 #### Bruteforce UUID:
    - This mode is only VERY rarely needed. DO NOT use it normally to map objects it will be slower and due to hash clashes it can sometimes get the UUID wrong. Under normal circumstances the UUID will be somewhere in the input file path either as part of the sdat name, or the folder its in so it will be automatically picked up.
@@ -315,11 +315,6 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
   
 </div>
 
-### Bulk Metadata Editor
-- Add new Metadata fields to all items easily
-- Simple Find and Replace for Metadata values
-- Add metadata based on matching an existing metadata keyname or value.
-- Allows applying some experimental patches to all items
 
 #### DB Editor Usage
 - First you will need to Decrypt your HCDB to SQL once with HCDB tab (SHA1 Required)
@@ -334,14 +329,23 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - This will fill out all other required fields with default values making it easy to see what needs to be set for each type.
 - Choose subtype in first Value dropdown, CHAIR, HAIR etc. Subtype Options will change depending on which Keyname was chosen.
 - For entitlement it sets CLOTHING and FURNITURE as LUA_REWARD by default.
+- Note: IF you try to add an item with an existing object index or UUID, it will ask if you want to replace the existing item. 
 - When you have set the dropdown menus click Add Item. If you have more items to add repeat the above.
 - When all items have been added, click Export HCDB, it will create all 4 HCDB files and provide the segs SHA1 aka HCDB decryption key (Needed for TSS) 
  
 
-  
+
+### Bulk Metadata Editor
+- Add new Metadata fields to all items easily
+- Simple Find and Replace for Metadata values
+- Add metadata based on matching an existing metadata keyname or value.
+- Allows applying some experimental patches to all items
+
+
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/ddfcae32-593e-417d-acea-fc8d9b1eae9e)
+![image](https://github.com/user-attachments/assets/b0fa4b8e-bb0c-4651-a912-70a9b7352a3c)
+
 
 </div>
 
