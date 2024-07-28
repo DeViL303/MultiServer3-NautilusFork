@@ -339,10 +339,20 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - When all items have been added, click Export HCDB, it will create all 4 HCDB files and provide the segs SHA1 aka HCDB decryption key (Needed for TSS) 
  
 
-  
+
+### Bulk Object Metadata Editor
+- Add an entry to all items
+- Basic find and replace for all items
+- Conditional find and replace based on finding an existing string in any metadata keyname or value.
+
+- A bunch of experimental patches added for fun
+- Adding both rigs to all clothing makes all clothing work on both genders
+- Other patches added here are not properly tested - Added for research purposes.
+- 
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/ddfcae32-593e-417d-acea-fc8d9b1eae9e)
+![image](https://github.com/user-attachments/assets/b0fa4b8e-bb0c-4651-a912-70a9b7352a3c)
+
 
 </div>
 
