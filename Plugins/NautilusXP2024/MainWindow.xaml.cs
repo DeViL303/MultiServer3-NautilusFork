@@ -1758,12 +1758,15 @@ namespace NautilusXP2024
             if (CheckBoxArchiveCreatorRenameCDN.IsChecked == true &&
                 (RadioButtonArchiveCreatorBAR.IsChecked == true || RadioButtonArchiveCreatorSDAT.IsChecked == true || RadioButtonArchiveCreatorSDAT_SHARC.IsChecked == true))
             {
+                LogDebugInfo("Rename for CDN is enabled.");
+
                 // Get all files in the output directory
                 var outputFiles = Directory.GetFiles(_settings.BarSdatSharcOutputDirectory);
 
                 foreach (var outputFilePath in outputFiles)
                 {
                     string outputFileName = Path.GetFileName(outputFilePath);
+                    LogDebugInfo($"Processing file: {outputFileName}");
 
                     // Delete .map files found in the root directory
                     if (Path.GetExtension(outputFileName).Equals(".map", StringComparison.OrdinalIgnoreCase))
@@ -1771,7 +1774,7 @@ namespace NautilusXP2024
                         try
                         {
                             File.Delete(outputFilePath);
-                            LogDebugInfo($"Archive Creation: Deleted {outputFileName}");
+                            LogDebugInfo($"Deleted .map file: {outputFileName}");
                             await Dispatcher.InvokeAsync(() =>
                             {
                                 ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Deleted {outputFileName}";
@@ -1780,7 +1783,7 @@ namespace NautilusXP2024
                         }
                         catch (Exception ex)
                         {
-                            LogDebugInfo($"Archive Creation: Failed to delete {outputFileName}: {ex.Message}");
+                            LogDebugInfo($"Failed to delete .map file: {outputFileName}, {ex.Message}");
                             await Dispatcher.InvokeAsync(() =>
                             {
                                 ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to delete {outputFileName}: {ex.Message}";
@@ -1791,10 +1794,13 @@ namespace NautilusXP2024
                         continue; // Skip further processing for this file
                     }
 
-                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
+                    string pattern = @"^[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}_T\d{3}\..+$";
+
+                    LogDebugInfo($"Checking if file matches pattern: {pattern}");
 
                     if (Regex.IsMatch(outputFileName, pattern, RegexOptions.IgnoreCase))
                     {
+                        LogDebugInfo($"File matches pattern: {outputFileName}");
                         string newFileName = Regex.Replace(outputFileName, @"(_T\d{3})(\..+)$", "/object$1$2", RegexOptions.IgnoreCase);
 
                         // Remove '_T000' from the file name if present
@@ -1817,7 +1823,7 @@ namespace NautilusXP2024
                         try
                         {
                             File.Move(outputFilePath, uniqueFilePath);
-                            LogDebugInfo($"Archive Creation: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
+                            LogDebugInfo($"Renamed file: {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
                             await Dispatcher.InvokeAsync(() =>
                             {
                                 ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Renamed {outputFileName} to {Path.GetFileName(uniqueFilePath)}";
@@ -1826,7 +1832,7 @@ namespace NautilusXP2024
                         }
                         catch (Exception ex)
                         {
-                            LogDebugInfo($"Archive Creation: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}");
+                            LogDebugInfo($"Failed to rename file: {outputFileName} to {Path.GetFileName(uniqueFilePath)}, {ex.Message}");
                             await Dispatcher.InvokeAsync(() =>
                             {
                                 ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to rename {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}";
@@ -1836,6 +1842,8 @@ namespace NautilusXP2024
                     }
                     else
                     {
+                        LogDebugInfo($"File does not match pattern: {outputFileName}");
+
                         // Check for a $ in the filename if it doesn't match the pattern
                         if (outputFileName.Contains("$"))
                         {
@@ -1858,7 +1866,7 @@ namespace NautilusXP2024
                             try
                             {
                                 File.Move(outputFilePath, uniqueFilePath);
-                                LogDebugInfo($"Archive Creation: Moved {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
+                                LogDebugInfo($"Moved file: {outputFileName} to {Path.GetFileName(uniqueFilePath)}");
                                 await Dispatcher.InvokeAsync(() =>
                                 {
                                     ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Moved {outputFileName} to {Path.GetFileName(uniqueFilePath)}";
@@ -1867,7 +1875,7 @@ namespace NautilusXP2024
                             }
                             catch (Exception ex)
                             {
-                                LogDebugInfo($"Archive Creation: Failed to move {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}");
+                                LogDebugInfo($"Failed to move file: {outputFileName} to {Path.GetFileName(uniqueFilePath)}, {ex.Message}");
                                 await Dispatcher.InvokeAsync(() =>
                                 {
                                     ArchiveCreatorTextBox.Text += $"{Environment.NewLine}Archive Creator: Failed to move {outputFileName} to {Path.GetFileName(uniqueFilePath)}: {ex.Message}";
