@@ -5,7 +5,6 @@ using CastleLibrary.Utils.Conversion;
 using CyberBackendLibrary.DataTypes;
 using EndianTools;
 using HomeTools.Crypto;
-using System.Xml.Linq;
 
 
 namespace HomeTools.UnBAR
@@ -143,28 +142,10 @@ namespace HomeTools.UnBAR
             numArray[1] = 80;
             numArray[2] = 68;
             numArray[3] = 0;
-
-            // Read the SDATA version from the settings file
-            string sdataVersion = GetSDATAVersionFromXml();
-            switch (sdataVersion)
-            {
-                case "SDATA 2.4.0.W":
-                    numArray[7] = 2;
-                    break;
-                case "SDATA 3.3.0.W":
-                    numArray[7] = 3;
-                    break;
-                case "SDATA 4.0.0.W":
-                    numArray[7] = 4;
-                    break;
-                default:
-                    numArray[7] = 1; // Default to SDATA 1.0.0.W
-                    break;
-            }
-
             numArray[4] = 0;
             numArray[5] = 0;
             numArray[6] = 0;
+            numArray[7] = 3;
             numArray[8] = 0;
             numArray[9] = 0;
             numArray[10] = 0;
@@ -205,7 +186,6 @@ namespace HomeTools.UnBAR
             npdPtr[0] = NPD.createNPD(numArray);
             return numArray;
         }
-
 
         public int decryptFile(string inFile, string outFile)
         {
@@ -384,37 +364,6 @@ namespace HomeTools.UnBAR
             return output;
         }
 
-        private string GetSDATAVersionFromXml()
-        {
-            string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.xml");
-            if (!File.Exists(settingsFilePath))
-            {
-                return "SDATA 1.0.0.W"; // Default to SDATA 1.0.0.W if the settings file does not exist
-            }
-
-            try
-            {
-                XDocument doc = XDocument.Load(settingsFilePath);
-                XElement root = doc.Element("AppSettings");
-                if (root != null)
-                {
-                    XElement sdataVersionElement = root.Element("SDATAVersion");
-                    if (sdataVersionElement != null)
-                    {
-                        return sdataVersionElement.Value;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the exception if necessary
-                System.Diagnostics.Debug.WriteLine("Error reading settings file: " + ex.Message);
-            }
-
-            return "SDATA 1.0.0.W"; // Default to SDATA 1.0.0.W if any error occurs
-        }
-
-
         private int encryptData(FileStream ii, FileStream o, NPD npd, EDATData data, byte[] rifkey)
         {
             int num1 = (int)((data.getFileLen() + (BigInteger)data.getBlockSize() - (BigInteger)1) / (BigInteger)data.getBlockSize());
@@ -476,30 +425,10 @@ namespace HomeTools.UnBAR
                 o.Write(numArray6, 0, numArray6.Length);
                 o.Write(numArray1, 0, numArray1.Length);
             }
-
-            // Read the SDATA version from the settings file
-            string sdataVersion = GetSDATAVersionFromXml();
-            byte[] byteArray1;
-            switch (sdataVersion)
-            {
-                case "SDATA 2.4.0.W":
-                    byteArray1 = ConversionUtils.getByteArray("534441544120322E342E302E57000000");
-                    break;
-                case "SDATA 3.3.0.W":
-                    byteArray1 = ConversionUtils.getByteArray("534441544120332E332E302E57000000");
-                    break;
-                case "SDATA 4.0.0.W":
-                    byteArray1 = ConversionUtils.getByteArray("534441544120342E302E302E57000000");
-                    break;
-                default:
-                    byteArray1 = ConversionUtils.getByteArray("534441544120312E302E302E57000000"); // Default to SDATA 1.0.0.W
-                    break;
-            }
+            byte[] byteArray1 = ConversionUtils.getByteArray("534441544120332E332E302E57000000");
             o.Write(byteArray1, 0, byteArray1.Length);
             return STATUS_OK;
         }
-
-
 
         private int decryptData(FileStream ii, int version, FileStream o, NPD npd, EDATData data, byte[] rifkey)
         {

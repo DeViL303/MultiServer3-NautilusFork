@@ -34,7 +34,6 @@ namespace NautilusXP2024
         public RememberLastTabUsed LastTabUsed { get; set; }
         public bool IsOfflineMode { get; set; }
 
-        public string SDATAVersion { get; set; }
 
         // Constructor to initialize default values
         public AppSettings()
@@ -61,8 +60,6 @@ namespace NautilusXP2024
             ArchiveMapperSettingRem = ArchiveMapperSetting.EXP;
             LastTabUsed = RememberLastTabUsed.ArchiveTool;
             IsOfflineMode = false; // Default to online mode
-            SDATAVersion = "SDATA 2.4.0.W"; // Default SDATA version
-
         }
     }
 

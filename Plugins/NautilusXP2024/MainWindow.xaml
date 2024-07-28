@@ -4,7 +4,7 @@
         xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        Title="Nautilus Toolset v1.00 Beta 00028" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
+        Title="Nautilus Toolset v1.01" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
         ResizeMode="NoResize" WindowStyle="None" Background="#242424"
         BorderBrush="#000000"
                 BorderThickness="1">
@@ -822,13 +822,7 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="Timestamp:" Style="{StaticResource Sha1TextBlockStyle}"/>
                                     <TextBox x:Name="ArchiveCreatorTimestampTextBox" Text="FFFFFFFF" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="8" Width="70"/>
-                                    <TextBlock Text="SDAT Version:" Style="{StaticResource Sha1TextBlockStyle}" Margin="20,8,8,5" Foreground="White"/>
-                                    <ComboBox x:Name="SDATAVersion" MaxDropDownHeight="420" FontSize="12" Padding="2" Width="115" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="SDATAVersion_SelectionChanged_1">
-                                        <ComboBoxItem x:Name="ComboBoxItemNA" Content="N/A"/>
-                                        <ComboBoxItem Content="SDATA 2.4.0.W"/>
-                                        <ComboBoxItem Content="SDATA 3.3.0.W"/>
-                                        <ComboBoxItem Content="SDATA 4.0.0.W"/>
-                                    </ComboBox>
+                                   
                                 </StackPanel>
                                 <!-- Radio Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
@@ -880,7 +874,7 @@
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="UUID or Path Prefix:" Style="{StaticResource Sha1TextBlockStyle}"/>
-                                    <TextBox x:Name="ArchiveUnpackerPathTextBox" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="500" Width="311"/>
+                                    <TextBox x:Name="ArchiveUnpackerPathTextBox" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="500" Width="331"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,5" Width="670">
                                     <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
@@ -958,7 +952,7 @@
                                 <!-- SHA1 TextBox -->
                                 <StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Center">
                                     <TextBlock Text="Original SHA1 (Optional):" Style="{StaticResource Sha1TextBlockStyle}"/>
-                                    <TextBox x:Name="CDSDecrypterSha1TextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="300" MaxLength="40"/>
+                                    <TextBox x:Name="CDSDecrypterSha1TextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="330" MaxLength="40"/>
                                 </StackPanel>
 
                                 <!-- Buttons -->
@@ -1018,7 +1012,7 @@
                                 <!-- SHA1 TextBox -->
                                 <StackPanel Orientation="Horizontal"  Margin="5" HorizontalAlignment="Center">
                                     <TextBlock Text="Segs SHA1 (HCDB Decryption key):" Style="{StaticResource Sha1TextBlockStyle}"/>
-                                    <TextBox x:Name="HCDBDecrypterSha1TextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="300" MaxLength="40"/>
+                                    <TextBox x:Name="HCDBDecrypterSha1TextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="330" MaxLength="40"/>
                                 </StackPanel>
 
                                 <!-- Buttons -->
@@ -1918,8 +1912,6 @@
                                     <TextBlock Text="WAV:" Style="{StaticResource Sha1TextBlockStyle}" Foreground="White" IsEnabled="True" Margin="7,10" VerticalAlignment="Center" />
                                     <RadioButton x:Name="BNKRadioButtonWAV" GroupName="BNKOutputFormat" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" />
 
-                                    <TextBlock Text="MP3:" Style="{StaticResource Sha1TextBlockStyle}" Foreground="White"  IsEnabled="False"  Margin="7,10" VerticalAlignment="Center" />
-                                    <RadioButton x:Name="BNKRadioButtonMP3" GroupName="BNKOutputFormat"  IsEnabled="False"  Style="{StaticResource ModernRadioButtonStyle}" />
                                 </StackPanel>
 
                                 <!-- Buttons Row -->
