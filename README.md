@@ -1,5 +1,5 @@
 <h1 align="center">
-   Nautilus Toolset v1.00 Beta Build 00026
+   Nautilus Toolset v1.00 Build 00026
 </h1>
 
 <h2 align="center">
@@ -334,6 +334,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - This will fill out all other required fields with default values making it easy to see what needs to be set for each type.
 - Choose subtype in first Value dropdown, CHAIR, HAIR etc. Subtype Options will change depending on which Keyname was chosen.
 - For entitlement it sets CLOTHING and FURNITURE as LUA_REWARD by default.
+- Note: IF you try to add an item with an existing object index or UUID, it will ask if you want to replace the existing item. 
 - When you have set the dropdown menus click Add Item. If you have more items to add repeat the above.
 - When all items have been added, click Export HCDB, it will create all 4 HCDB files and provide the segs SHA1 aka HCDB decryption key (Needed for TSS) 
  
