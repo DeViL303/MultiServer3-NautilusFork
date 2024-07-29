@@ -121,7 +121,14 @@ namespace NautilusXP2024
             PS3IPforFTPTextBox.TextChanged += PS3IPforFTPTextBox_TextChanged;
 
             InitializeComboBoxEventHandlers();
+            this.Loaded += MainWindow_Loaded;
+        }
 
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Set the default state for CheckBoxArchiveCreatorRenameCDN
+            CheckBoxArchiveCreatorRenameCDN.IsChecked = true;
+            CheckBoxArchiveMapperDeleteFilestxt.IsChecked = true;
         }
 
         public Color ThemeColor
@@ -2318,7 +2325,6 @@ namespace NautilusXP2024
 
             CurrentUUID = string.Empty;
             GuessedUUID = string.Empty;
-            SceneFolderAkaID = string.Empty;
             UUIDFoundInPath = string.Empty;
             UserSuppliedPathPrefix = string.Empty;
             Stopwatch MappingStopwatch = Stopwatch.StartNew();
@@ -2708,27 +2714,50 @@ namespace NautilusXP2024
             else if (!directoryName.StartsWith("object_", StringComparison.OrdinalIgnoreCase) && !directoryName.Contains("object", StringComparison.OrdinalIgnoreCase))
             {
                 // Handling when SceneFolderAkaID is set and CurrentUUID is not or directory does not have "object" in the name
+                LogDebugInfo($"Checking if SceneFolderAkaID is set and CurrentUUID is not or directory does not contain 'object'.");
+
                 if (!string.IsNullOrEmpty(SceneFolderAkaID))
                 {
-                    newDirectoryName = Path.Combine(parentDirectoryPath, SceneFolderAkaID + "$" + directoryName);
+                    LogDebugInfo($"SceneFolderAkaID is set: {SceneFolderAkaID}. Proceeding with renaming.");
 
+                    newDirectoryName = Path.Combine(parentDirectoryPath, SceneFolderAkaID + "$" + directoryName);
+                    LogDebugInfo($"Initial new directory name: {newDirectoryName}");
+                    SceneFolderAkaID = string.Empty;
                     // Check if new directory name already exists and create a new name if necessary
                     string baseNewDirectoryName = newDirectoryName;
                     int counter = 2;
                     while (Directory.Exists(newDirectoryName))
                     {
+                        LogDebugInfo($"Directory {newDirectoryName} already exists. Generating new name.");
                         newDirectoryName = $"{baseNewDirectoryName} ({counter++})";
+                        LogDebugInfo($"New directory name generated: {newDirectoryName}");
                     }
 
                     // Rename directory if new name is different
                     if (newDirectoryName != directoryPath)
                     {
-                        Directory.Move(directoryPath, newDirectoryName);
-                        LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
-                        directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
+                        try
+                        {
+                            Directory.Move(directoryPath, newDirectoryName);
+                            LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
+                            directoryPath = newDirectoryName; // Update directoryPath for subsequent operations
+                        }
+                        catch (Exception ex)
+                        {
+                            LogDebugInfo($"Failed to rename directory from '{directoryPath}' to '{newDirectoryName}'. Exception: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        LogDebugInfo($"New directory name is the same as the original. No renaming necessary.");
                     }
                 }
+                else
+                {
+                    LogDebugInfo($"SceneFolderAkaID is not set. Skipping renaming.");
+                }
             }
+
 
             string file1 = Path.Combine(directoryPath, "1BA97CA6");
             string file2 = Path.Combine(directoryPath, "7AB93954");

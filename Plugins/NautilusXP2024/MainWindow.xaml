@@ -894,7 +894,7 @@
                                     <TextBlock Text="Compatibility Patches:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="0,5,0,5" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="CheckBoxArchiveMapperPatchMDLs" Style="{StaticResource ModernToggleSwitchStyle}" />
                                     <TextBlock Text="Delete Files.txt/Manifest:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="CheckBoxArchiveMapperDeleteFilestxt" Style="{StaticResource ModernToggleSwitchStyle}" />
+                                    <CheckBox x:Name="CheckBoxArchiveMapperDeleteFilestxt" IsChecked="True" Style="{StaticResource ModernToggleSwitchStyle}" />
                                 </StackPanel>
                                 <!-- Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
