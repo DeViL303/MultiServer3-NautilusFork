@@ -4,7 +4,7 @@
 
 <h2 align="center">
    
-Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NuatilusFork/releases/download/WIP00026/Nautilus_Beta_00026.zip)
+Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NautilusFork/releases/download/Release_v1.01/Nautilus_Toolset_v1.01_Final.zip)
 
 </h2>
 
@@ -49,7 +49,8 @@ Note: Due to the nature of Homes millions of assets and the many edge cases invo
 
 <div align="center">
    
-![image](https://github.com/user-attachments/assets/a08309ee-ac9f-422a-9b0e-57ec03e67eaa)
+![image](https://github.com/user-attachments/assets/8b85d050-6428-49d5-91f7-b97424119655)
+
 
 
 
