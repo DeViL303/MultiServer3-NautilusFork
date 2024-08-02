@@ -76,6 +76,7 @@ namespace NautilusXP2024
         private XElement loadedXmlData;
         private Dictionary<int, string> uuidMappings;
         private static bool DeployHCDBFlag = false;
+        private static bool DeploySceneListFlag = false;
         public SolidColorBrush SelectedThemeColor
         {
             get { return _selectedThemeColor; }
@@ -12887,96 +12888,136 @@ VALUES (@objectIndex, @keyName, @value)";
         }
 
 
-       private void ShowSuccessMessageBox(string segsFileSHA1, string saveDirectory)
-{
-    // Update the LatestHCDBSHA1textbox and set the visibility of LatestHCDBSHA1panel
-    Dispatcher.Invoke(() =>
-    {
-        // Find the LatestHCDBSHA1textbox and set its text to the computed SHA1 hash
-        var latestHCDBSHA1textbox = (TextBox)FindName("LatestHCDBSHA1textbox");
-        if (latestHCDBSHA1textbox != null)
+        private void ShowSuccessMessageBox(string segsFileSHA1, string saveDirectory)
         {
-            latestHCDBSHA1textbox.Text = segsFileSHA1;
+            // Update the LatestHCDBSHA1textbox and set the visibility of LatestHCDBSHA1panel
+            Dispatcher.Invoke(() =>
+            {
+                // Find the LatestHCDBSHA1textbox and set its text to the computed SHA1 hash
+                var latestHCDBSHA1textbox = (TextBox)FindName("LatestHCDBSHA1textbox");
+                if (latestHCDBSHA1textbox != null)
+                {
+                    latestHCDBSHA1textbox.Text = segsFileSHA1;
+                }
+                else
+                {
+                    MessageBox.Show("LatestHCDBSHA1textbox not found!");
+                }
+
+                // Find the LatestHCDBSHA1panel and set its visibility to visible
+                var latestHCDBSHA1panel = (StackPanel)FindName("LatestHCDBSHA1panel");
+                if (latestHCDBSHA1panel != null)
+                {
+                    latestHCDBSHA1panel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    MessageBox.Show("LatestHCDBSHA1panel not found!");
+                }
+            });
+
+            // Create the success message box
+            var messageBox = new Window
+            {
+                Title = "4 x HCDB Created Successfully",
+                Width = 350,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Background = (Brush)new BrushConverter().ConvertFromString("#242424"),
+                Foreground = Brushes.White,
+                WindowStyle = WindowStyle.None,
+                BorderBrush = (Brush)new BrushConverter().ConvertFromString("#000000"),
+                BorderThickness = new Thickness(1)
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Thickness(10)
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = "HCDB Creation was successful.\n\nSHA1 of the .segs file:",
+                Margin = new Thickness(0, 0, 0, 10),
+                FontSize = 14,
+                Foreground = Brushes.White
+            };
+
+            var sha1TextBox = new TextBox
+            {
+                Text = segsFileSHA1,
+                IsReadOnly = true,
+                Margin = new Thickness(0, 0, 0, 10),
+                FontSize = 14,
+                Width = 330,
+                Foreground = (Brush)new BrushConverter().ConvertFromString("#C0BFBF"),
+                Background = (Brush)new BrushConverter().ConvertFromString("#121212"),
+                BorderThickness = new Thickness(0)
+            };
+
+            var copyButton = new Button
+            {
+                Content = "Copy SHA1",
+                Width = 100,
+                Height = 20,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontSize = 11,
+                Foreground = Brushes.White,
+                Background = (Brush)new BrushConverter().ConvertFromString("#181818"),
+                FontWeight = FontWeights.Bold,
+                Padding = new Thickness(3),
+                Margin = new Thickness(0, 0, 0, 10),
+                BorderThickness = new Thickness(1),
+                BorderBrush = (Brush)new BrushConverter().ConvertFromString("#000000")
+            };
+            copyButton.Click += (s, e) =>
+            {
+                Clipboard.SetText(segsFileSHA1);
+                string originalContent = copyButton.Content.ToString();
+                copyButton.Content = "Copied";
+
+                var timer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(1)
+                };
+                timer.Tick += (sender, args) =>
+                {
+                    copyButton.Content = originalContent;
+                    timer.Stop();
+                };
+                timer.Start();
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 20,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontSize = 11,
+                Foreground = Brushes.White,
+                Background = (Brush)new BrushConverter().ConvertFromString("#181818"),
+                FontWeight = FontWeights.Bold,
+                Padding = new Thickness(3),
+                BorderThickness = new Thickness(1),
+                BorderBrush = (Brush)new BrushConverter().ConvertFromString("#000000")
+            };
+            okButton.Click += (s, e) =>
+            {
+                messageBox.Close();
+            };
+
+            stackPanel.Children.Add(textBlock);
+            stackPanel.Children.Add(sha1TextBox);
+            stackPanel.Children.Add(copyButton);
+            stackPanel.Children.Add(okButton);
+
+            messageBox.Content = stackPanel;
+            messageBox.ShowDialog();
         }
-        else
-        {
-            MessageBox.Show("LatestHCDBSHA1textbox not found!");
-        }
 
-        // Find the LatestHCDBSHA1panel and set its visibility to visible
-        var latestHCDBSHA1panel = (StackPanel)FindName("LatestHCDBSHA1panel");
-        if (latestHCDBSHA1panel != null)
-        {
-            latestHCDBSHA1panel.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            MessageBox.Show("LatestHCDBSHA1panel not found!");
-        }
-    });
 
-    // Create the success message box
-    var messageBox = new Window
-    {
-        Title = "Conversion Successful",
-        Width = 400,
-        Height = 200,
-        WindowStartupLocation = WindowStartupLocation.CenterScreen,
-        ResizeMode = ResizeMode.NoResize
-    };
-
-    var stackPanel = new StackPanel
-    {
-        Margin = new Thickness(10)
-    };
-
-    var textBlock = new TextBlock
-    {
-        Text = "HCDB Conversion was successful.\n\nSHA1 of the .segs file:",
-        Margin = new Thickness(0, 0, 0, 10)
-    };
-
-    var sha1TextBox = new TextBox
-    {
-        Text = segsFileSHA1,
-        IsReadOnly = true,
-        Margin = new Thickness(0, 0, 0, 10)
-    };
-
-    var copyButton = new Button
-    {
-        Content = "Copy SHA1",
-        Width = 100,
-        Height = 30,
-        HorizontalAlignment = HorizontalAlignment.Center
-    };
-    copyButton.Click += (s, e) =>
-    {
-        Clipboard.SetText(segsFileSHA1);
-        MessageBox.Show("SHA1 copied to clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
-    };
-
-    var okButton = new Button
-    {
-        Content = "OK",
-        Width = 100,
-        Height = 30,
-        HorizontalAlignment = HorizontalAlignment.Center
-    };
-    okButton.Click += (s, e) =>
-    {
-        messageBox.Close();
-        Process.Start("explorer.exe", saveDirectory); // Open the save directory
-    };
-
-    stackPanel.Children.Add(textBlock);
-    stackPanel.Children.Add(sha1TextBox);
-    stackPanel.Children.Add(copyButton);
-    stackPanel.Children.Add(okButton);
-
-    messageBox.Content = stackPanel;
-    messageBox.ShowDialog();
-}
 
         private async Task<string> ComputeFileSHA1(string filePath)
         {
@@ -14251,8 +14292,9 @@ VALUES (@objectIndex, @keyName, @value)";
         }
 
 
-        private void SaveSceneListXmlButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveSceneListXmlButton_Click(object sender, RoutedEventArgs e)
         {
+            DeploySceneListFlag = false;
             var doc = new XDocument(
                 new XElement("SCENELIST",
                     from scene in Scenes
@@ -14289,13 +14331,86 @@ VALUES (@objectIndex, @keyName, @value)";
                 // Change the visibility of the panel to visible
                 LatestSceneListSHA1panel.Visibility = Visibility.Visible;
 
-                MessageBox.Show($"XML Saved Successfully at {filePath}");
+                string outputFilePath = System.IO.Path.Combine(exeLocation, "Output", "ToDeploy", "SceneList.xml");
+
+                // Check if encryption is enabled
+                if (CheckBoxEncryptSceneList.IsChecked == true)
+                {
+                    // Encrypt the saved XML file
+                    bool encryptionSuccess = await EncryptAndSaveFileAsync(filePath, outputFilePath);
+
+                    if (encryptionSuccess)
+                    {
+                        
+                        MessageBox.Show("XML saved and encrypted successfully.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to encrypt XML");
+                    }
+                }
+                else
+                {
+                    // Copy the file without encryption
+                    File.Copy(filePath, outputFilePath, overwrite: true);
+                    MessageBox.Show("XML saved successfully without encryption.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Failed to save XML: " + ex.Message);
             }
         }
+
+        public async Task<bool> EncryptAndSaveFileAsync(string filePath, string outputFilePath)
+        {
+            bool isProcessed = true;
+            string filename = Path.GetFileName(filePath);
+            try
+            {
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                byte[] encryptedContent = null;
+                string inputSHA1 = "";
+
+                // Generate SHA1 hash from file content before encryption
+                using (SHA1 sha1 = SHA1.Create())
+                {
+                    byte[] SHA1Data = sha1.ComputeHash(fileContent);
+                    inputSHA1 = BitConverter.ToString(SHA1Data).Replace("-", "").ToLowerInvariant();
+                    LogDebugInfo($"Input SHA1 for {filename}: {inputSHA1}");
+
+                    // Encrypt the file content
+                    string computedSha1 = inputSHA1.Substring(0, 16);
+                    encryptedContent = CDSProcess.CDSEncrypt_Decrypt(fileContent, computedSha1);
+                }
+
+             
+                if (encryptedContent != null)
+                {
+                    // Ensure the output directory exists
+                    string outputDirectory = Path.GetDirectoryName(outputFilePath);
+                    if (!Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                        LogDebugInfo($"Output directory {outputDirectory} created.");
+                    }
+                    await File.WriteAllBytesAsync(outputFilePath, encryptedContent);
+                    LogDebugInfo($"File {filename} encrypted and written to {outputFilePath}.");
+                }
+                else
+                {
+                    isProcessed = false;
+                    LogDebugInfo($"Encryption failed for {filename}, no data written.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error encrypting {filename}: {ex.Message}");
+                isProcessed = false;
+            }
+            return isProcessed;
+        }
+
 
         private string ComputeSHA1(string filePath)
         {
@@ -14304,10 +14419,11 @@ VALUES (@objectIndex, @keyName, @value)";
                 using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     byte[] hash = sha1.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
                 }
             }
         }
+
         private void DeleteSceneListXMLLineButton_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
@@ -14396,9 +14512,17 @@ VALUES (@objectIndex, @keyName, @value)";
                 string fileExtension = Path.GetExtension(defaultFileName);
                 string basePath = Path.Combine(directoryPath, defaultFileName);
 
+                // Update the VERSION field with the current date and time
+                var versionElement = loadedXmlData.Descendants("VERSION").FirstOrDefault();
+                if (versionElement != null)
+                {
+                    versionElement.Value = DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss tt").ToUpper();
+                }
+
                 if (CheckBoxTSSAllregions.IsChecked == true)
                 {
                     string[] regionCodes = {
+                // List of region codes
                 "en-GB", "fr-FR", "it-IT", "de-DE", "es-ES", "ja-JP", "ko-KR", "zh-TW", "zh-HK", "en-SG", "en-ID", "en-MY", "en-TH",
                 "af-ZA", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IQ", "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA",
                 "ar-SA", "ar-SY", "ar-TN", "ar-YE", "az-AZ", "be-BY", "bg-BG", "bs-BA", "ca-ES", "cs-CZ", "cy-GB", "da-DK", "de-AT",
@@ -14431,7 +14555,6 @@ VALUES (@objectIndex, @keyName, @value)";
                     }
 
                     LoadTSSXMLButton_Click(sender, e);
-                    
                 }
                 else
                 {
@@ -14445,7 +14568,6 @@ VALUES (@objectIndex, @keyName, @value)";
                     }
 
                     LoadTSSXMLButton_Click(sender, e);
-                    
                 }
 
                 // Extra stuff if DeployHCDBFlag is true
@@ -14530,6 +14652,25 @@ VALUES (@objectIndex, @keyName, @value)";
                             MessageBox.Show("LatestSceneListSHA1textbox not found!");
                         }
                     });
+                }
+
+                // Extra stuff if DeploySceneListFlag is true
+                if (DeploySceneListFlag)
+                {
+                    string sourceSceneListPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Output", "ToDeploy", "SceneList.xml");
+                    string targetSceneListPath = Path.Combine(TSSeditorSavePathtextbox.Text, "Environments", "SceneList.xml");
+
+                    // Ensure the target directory exists
+                    string targetSceneListDirectory = Path.GetDirectoryName(targetSceneListPath);
+                    if (!Directory.Exists(targetSceneListDirectory))
+                    {
+                        Directory.CreateDirectory(targetSceneListDirectory);
+                    }
+
+                    if (File.Exists(sourceSceneListPath))
+                    {
+                        File.Move(sourceSceneListPath, targetSceneListPath, true);
+                    }
                 }
             }
             catch (Exception ex)
@@ -17129,6 +17270,8 @@ VALUES (@objectIndex, @keyName, @value)";
                     digestTextBox.Text = newSha1;
                 }
             }
+
+            DeploySceneListFlag = true;
         }
 
 

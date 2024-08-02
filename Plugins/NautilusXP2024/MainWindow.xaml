@@ -4,7 +4,7 @@
         xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        Title="Nautilus Toolset v1.01" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
+        Title="Nautilus Toolset v1.02" Height="800" Width="1380" MaxHeight="800" MaxWidth="1380"
         ResizeMode="NoResize" WindowStyle="None" Background="#242424"
         BorderBrush="#000000"
                 BorderThickness="1">
@@ -1068,7 +1068,7 @@
                 
                 <TabItem Header="DB Editor" Tag="SQLTool">
                     <StackPanel>
-                        <Border BorderBrush="White" BorderThickness="1" Padding="5" Margin="0">
+                        <Border BorderBrush="White" BorderThickness="1" CornerRadius="3,3,0,0" Padding="5" Margin="0">
                             <StackPanel Margin="0,0,0,5">
                                 <StackPanel Orientation="Horizontal">
                                     <StackPanel>
@@ -1265,7 +1265,7 @@
                             </Border>
                         </Canvas>
 
-                        <Border BorderBrush="White" BorderThickness="1" Margin="0,-1,0,0">
+                        <Border BorderBrush="White" BorderThickness="1" Margin="0,-1,0,0" CornerRadius="0,0,3,3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
                                 <TextBlock Text="Index/Range:" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="5"/>
                                 <TextBox x:Name="txtGoToIndex" Width="110" Margin="5" Style="{StaticResource SmallTextBoxStyle}" />
@@ -1385,34 +1385,38 @@
                 </TabItem>
 
 
-                <TabItem Header="SceneList" Tag="SceneList" Visibility="Collapsed">
+                <TabItem Header="SceneList" Tag="SceneList" Visibility="Visible">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,15,0,15">
-                            <TextBlock Text="SceneList:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="White"/>
-                            <TextBox x:Name="SceneListPathURLtextbox2" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
-             Text="http://64.20.35.146/Environments/SceneList_Plane.xml" 
-             IsReadOnly="False" Width="400" Margin="5,0,5,0"/>
-                            <Button Content="Load" Width="45" VerticalAlignment="Center" 
-            Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
-            Click="LoadSceneListXMLv2intoEditorButton_Click" Margin="5,0,20,0" />
-                            <TextBlock Text="Save to:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="White"/>
-                            <TextBox x:Name="SceneListSavePathtextbox" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
-             Text="C:\PSMultiserver\static\wwwroot\Environments\SceneList_Plane_New.xml" 
-             IsReadOnly="False" Width="520" Margin="5,0,5,0"/>
-                            <Button Content="Save" Width="45" VerticalAlignment="Center"
-Style="{StaticResource ResourceKey=DarkModeButtonStyle2}"
-Click="SaveSceneListXmlButton_Click" Margin="5,0,0,0" />
-                            <TextBlock Text="Save Encrypted Copy:" Foreground="White" FontSize="11" Margin="15,5,0,5" VerticalAlignment="Center"/>
-                            <CheckBox x:Name="CheckBoxTSSAllregion1s" IsChecked="True" Style="{StaticResource ModernToggleSwitchStyle}" />
 
-                        </StackPanel>
+                        <!-- Border around the StackPanel -->
+                        <Border BorderBrush="white" BorderThickness="1" CornerRadius="3" Margin="0,5,0,15" Grid.Row="0" Padding="10">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SceneList:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBox x:Name="SceneListPathURLtextbox2" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
+                         Text="http://64.20.35.146/Environments/SceneList_Plane.xml" 
+                         IsReadOnly="False" Width="400" Margin="5,0,5,0"/>
+                                <Button Content="Load" Width="45" VerticalAlignment="Center" 
+                        Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
+                        Click="LoadSceneListXMLv2intoEditorButton_Click" Margin="5,0,20,0" />
+                                <TextBlock Text="Save to:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBox x:Name="SceneListSavePathtextbox" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
+                         Text="C:\PSMultiserver\static\wwwroot\Environments\SceneList_Plane.xml" 
+                         IsReadOnly="False" Width="520" Margin="5,0,5,0"/>
+                                <Button Content="Save" Width="45" VerticalAlignment="Center"
+                        Style="{StaticResource ResourceKey=DarkModeButtonStyle2}"
+                        Click="SaveSceneListXmlButton_Click" Margin="5,0,0,0" />
+                                <TextBlock Text="Save Encrypted Copy:" Foreground="White" FontSize="11" Margin="15,5,0,5" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="CheckBoxEncryptSceneList" IsChecked="True" Style="{StaticResource ModernToggleSwitchStyle}" />
+                            </StackPanel>
+                        </Border>
+
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="scenesList" VirtualizingStackPanel.IsVirtualizing="True" 
-                  VirtualizingStackPanel.VirtualizationMode="Recycling">
+                          VirtualizingStackPanel.VirtualizationMode="Recycling">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Margin="0">
@@ -1431,9 +1435,9 @@ Click="SaveSceneListXmlButton_Click" Margin="5,0,0,0" />
                                             <TextBlock Text="SHA1:" Style="{StaticResource SmallTextBlockStyleScenelist}"/>
                                             <TextBox Text="{Binding SHA1}" Width="305" Style="{StaticResource SmallTextBoxStyleScenelist}"/>
                                             <Button Content="Delete" FontSize="10" Foreground="red" Height="22" Style="{StaticResource ResourceKey=DarkModeButtonStyle2}"
-Click="DeleteSceneListXMLLineButton_Click"
-DataContext="{Binding}"
-Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkElement}}}"/>
+                                    Click="DeleteSceneListXMLLineButton_Click"
+                                    DataContext="{Binding}"
+                                    Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkElement}}}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -1441,6 +1445,7 @@ Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkEleme
                         </ScrollViewer>
                     </Grid>
                 </TabItem>
+
 
 
 
@@ -1455,7 +1460,7 @@ Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkEleme
                         </Grid.RowDefinitions>
 
                         <!-- Border around the first two StackPanels -->
-                        <Border Grid.Row="0" Grid.RowSpan="2" BorderBrush="White" BorderThickness="1" Margin="0,5,0,5">
+                        <Border Grid.Row="0" Grid.RowSpan="2" BorderBrush="White" CornerRadius="3" BorderThickness="1" Margin="0,5,0,5">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="10,10,0,5">
                                     <TextBlock Text="TSS:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="white"/>
@@ -1476,27 +1481,28 @@ Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type FrameworkEleme
                     Click="SaveNewTSSXMLButton_Click" Margin="5,0,0,0" />
                                     <TextBlock  x:Name="TSSsaveWarningTextblock"  Text="Warning: Unsaved Changes!" Foreground="Yellow" FontSize="17" Margin="15,0,0,2" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="5,0,0,5" >
-                                    <StackPanel x:Name="LatestHCDBSHA1panel" Orientation="Horizontal" Margin="5,5,0,5" Visibility="Collapsed">
-                                        <TextBlock Text="New HCDB Detected:" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Foreground="yellow"/>
+                                <StackPanel Orientation="Horizontal" Margin="2,0,0,5" >
+                                    <StackPanel x:Name="LatestSceneListSHA1panel" Orientation="Horizontal" Margin="2,0,0,5" Visibility="Collapsed">
+                                        <TextBlock Text="New SceneList Ready to Deploy:" FontWeight="Bold" Margin="2,0,2,0" FontSize="14" VerticalAlignment="Center" Foreground="yellow"/>
+                                        <TextBox x:Name="LatestSceneListSHA1textbox" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
+ Text="You must Export a SceneList in SceneList Tab First" 
+ IsReadOnly="False" Width="370" Margin="5,0,5,0"/>
+                                        <Button Content="Apply SHA1" Width="80" Height="24" Foreground="yellow" VerticalAlignment="Center" 
+Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
+Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
+                                    </StackPanel>
+                                    <StackPanel x:Name="LatestHCDBSHA1panel" Orientation="Horizontal" Margin="2,0,0,5" Visibility="Collapsed">
+                                        <TextBlock Text="New HCDB Ready to Deploy:" FontWeight="Bold" Margin="5,0,0,0" FontSize="14" VerticalAlignment="Center" Foreground="yellow"/>
                                         <TextBox x:Name="LatestHCDBSHA1textbox" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
      Text="You must Export a HCDB in DB Editor Tab First" 
      IsReadOnly="False" Width="370" Margin="5,0,5,0"/>
-                                        <Button Content="Apply New SHA1" Width="110" Height="24" Foreground="yellow" VerticalAlignment="Center" 
+                                        <Button Content="Apply SHA1" Width="80" Height="24" Foreground="yellow" VerticalAlignment="Center" 
     Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
     Click="ApplyNewHCDBSHA1Button_Click" Margin="5,0,35,0"/>
                                     </StackPanel>
 
 
-                                    <StackPanel x:Name="LatestSceneListSHA1panel" Orientation="Horizontal" Margin="5,0,0,5" Visibility="Collapsed">
-                                        <TextBlock Text="New SceneList Detected:" FontWeight="Bold" Margin="5,0,5,0" FontSize="14" VerticalAlignment="Center" Foreground="yellow"/>
-                                        <TextBox x:Name="LatestSceneListSHA1textbox" Style="{StaticResource ResourceKey=SmallTextBoxStyle}" 
-                     Text="You must Export a SceneList in SceneList Tab First" 
-                     IsReadOnly="False" Width="370" Margin="5,0,5,0"/>
-                                        <Button Content="Apply New SHA1" Width="110" Height="24" Foreground="yellow" VerticalAlignment="Center" 
-                    Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
-                    Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,20,0" />
-                                    </StackPanel>
+                                    
                                 </StackPanel>
                             </StackPanel>
                         </Border>
