@@ -308,7 +308,7 @@ namespace NautilusXP2024
                 WebView2Control.Source = new Uri("http://psho.me/pshome_index.html");
             }
 
-            WebView2Control.ZoomFactor = 0.80;
+            WebView2Control.ZoomFactor = 0.75;
             WebView2Control.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
         }
 
@@ -10418,6 +10418,53 @@ namespace NautilusXP2024
             }
         }
 
+        private void Border_DragSQLEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    string fileExtension = Path.GetExtension(files[0]).ToLower();
+                    if (fileExtension == ".sql")
+                    {
+                        e.Effects = DragDropEffects.Copy;
+                    }
+                    else
+                    {
+                        e.Effects = DragDropEffects.None;
+                    }
+                }
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        private void Border_SQLDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    string filePath = files[0];
+                    string fileExtension = Path.GetExtension(filePath).ToLower();
+
+                    if (fileExtension == ".sql")
+                    {
+                        HandleSQLFile(filePath);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Only SQL files are supported for drag and drop.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            e.Handled = true;
+        }
 
 
         private async void HandleSQLFile(string filePath)
@@ -10740,18 +10787,18 @@ namespace NautilusXP2024
             var columnWidths = new Dictionary<string, GridLength>
     {
         { "ObjectIndex", new GridLength(50) },
-        { "ObjectId", new GridLength(240) },
-        { "Version", new GridLength(38) },
-        { "Location", new GridLength(52) },
-        { "InventoryEntryType", new GridLength(38) },
-        { "ArchiveTimeStamp", new GridLength(67) },
-        { "OdcSha1Digest", new GridLength(290) },
-        { "EntitlementIndex", new GridLength(44) },
-        { "RewardIndex", new GridLength(49) },
-        { "UserLocation", new GridLength(45) },
-        { "UserDateLastUsed", new GridLength(38) },
-        { "KeyName", new GridLength(125) },
-        { "Value", new GridLength(300) }
+        { "ObjectId", new GridLength(245) },
+        { "Version", new GridLength(48) },
+        { "Location", new GridLength(57) },
+        { "InventoryEntryType", new GridLength(43) },
+        { "ArchiveTimeStamp", new GridLength(72) },
+        { "OdcSha1Digest", new GridLength(300) },
+        { "EntitlementIndex", new GridLength(54) },
+        { "RewardIndex", new GridLength(59) },
+        { "UserLocation", new GridLength(55) },
+        { "UserDateLastUsed", new GridLength(48) },
+        { "KeyName", new GridLength(135) },
+        { "Value", new GridLength(310) }
     };
 
             // Clear existing children and column definitions
@@ -11367,6 +11414,12 @@ namespace NautilusXP2024
                     chkBox1.IsChecked = false;
                     chkBox1.IsEnabled = false;
                     SetHeatTextBoxes(string.Empty, true);
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
                 }
                 else if (selectedKey == "FURNITURE")
                 {
@@ -11383,10 +11436,47 @@ namespace NautilusXP2024
                     // Ensure the checkbox is enabled for FURNITURE
                     chkBox1.IsEnabled = true;
                 }
+                else if (selectedKey == "PORTABLE")
+                {
+                    SelectComboBoxItem(txtKeyName2, "ENTITLEMENT_ID");
+                    ResetComboBox(txtKeyName3, txtCustomKeyName3);
+                    ResetComboBox(txtValue3, txtCustomValue3);
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
+
+                    // Ensure the checkbox is enabled for FURNITURE
+                    chkBox1.IsEnabled = true;
+                }
+                else if (selectedKey == "MINIGAME")
+                {
+                    ResetComboBox(txtKeyName2, txtCustomKeyName2);
+                    ResetComboBox(txtValue2, txtCustomValue2);
+                    ResetComboBox(txtKeyName3, txtCustomKeyName3);
+                    ResetComboBox(txtValue3, txtCustomValue3);
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
+
+                    // Ensure the checkbox is enabled for FURNITURE
+                    chkBox1.IsEnabled = true;
+                }
                 else if (selectedKey == "SCENE_ENTITLEMENT")
                 {
                     SelectComboBoxItem(txtKeyName2, "SCENE_TYPE");
                     SelectComboBoxItem(txtKeyName3, "ENTITLEMENT_ID");
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
 
                     // Swap Value1 to a TextBox
                     customValueTextBox.Visibility = Visibility.Visible;
@@ -11401,6 +11491,12 @@ namespace NautilusXP2024
                     txtValue1.Visibility = Visibility.Collapsed;
                     txtCustomValue2.Visibility = Visibility.Visible;
                     txtValue2.Visibility = Visibility.Collapsed;
+                    ResetComboBox(txtKeyName4, txtCustomKeyName4);
+                    ResetComboBox(txtValue4, txtCustomValue4);
+                    ResetComboBox(txtKeyName5, txtCustomKeyName5);
+                    ResetComboBox(txtValue5, txtCustomValue5);
+                    ResetComboBox(txtKeyName6, txtCustomKeyName6);
+                    ResetComboBox(txtValue6, txtCustomValue6);
                 }
                 else
                 {
@@ -12960,7 +13056,7 @@ VALUES (@objectIndex, @keyName, @value)";
             {
                 Content = "Copy SHA1",
                 Width = 100,
-                Height = 20,
+                Height = 24,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 FontSize = 11,
                 Foreground = Brushes.White,
@@ -12992,8 +13088,8 @@ VALUES (@objectIndex, @keyName, @value)";
             var okButton = new Button
             {
                 Content = "OK",
-                Width = 100,
-                Height = 20,
+                Width = 70,
+                Height = 24,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 FontSize = 11,
                 Foreground = Brushes.White,
@@ -14261,8 +14357,6 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
-
-
         public static IEnumerable<SceneListEditor> ParseXmlToSceneList(string xmlPath)
         {
             using (XmlReader reader = XmlReader.Create(xmlPath))
@@ -14291,9 +14385,28 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox != null)
+            {
+                textBox.Foreground = Brushes.Yellow;
+
+                var unsavedChangesTextBlock = this.FindName("UnsavedSceneListChanges") as TextBlock;
+                if (unsavedChangesTextBlock != null)
+                {
+                    unsavedChangesTextBlock.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+
 
         private async void SaveSceneListXmlButton_Click(object sender, RoutedEventArgs e)
         {
+            // Reset the text color of all TextBox elements to white
+            ResetTextBoxColors();
+
             DeploySceneListFlag = false;
             var doc = new XDocument(
                 new XElement("SCENELIST",
@@ -14341,8 +14454,14 @@ VALUES (@objectIndex, @keyName, @value)";
 
                     if (encryptionSuccess)
                     {
-                        
+                        var unsavedChangesTextBlock = this.FindName("UnsavedSceneListChanges") as TextBlock;
+                        if (unsavedChangesTextBlock != null)
+                        {
+                            unsavedChangesTextBlock.Visibility = Visibility.Collapsed;
+                        }
                         MessageBox.Show("XML saved and encrypted successfully.");
+                        // Call the method to save TSS XML
+                        LoadTSSXMLButton_Click(sender, e);
                     }
                     else
                     {
@@ -14352,8 +14471,15 @@ VALUES (@objectIndex, @keyName, @value)";
                 else
                 {
                     // Copy the file without encryption
+                    var unsavedChangesTextBlock = this.FindName("UnsavedSceneListChanges") as TextBlock;
+                    if (unsavedChangesTextBlock != null)
+                    {
+                        unsavedChangesTextBlock.Visibility = Visibility.Collapsed;
+                    }
                     File.Copy(filePath, outputFilePath, overwrite: true);
                     MessageBox.Show("XML saved successfully without encryption.");
+                    // Call the method to save TSS XML
+                    LoadTSSXMLButton_Click(sender, e);
                 }
             }
             catch (Exception ex)
@@ -14361,6 +14487,44 @@ VALUES (@objectIndex, @keyName, @value)";
                 MessageBox.Show("Failed to save XML: " + ex.Message);
             }
         }
+
+
+        private void ResetTextBoxColors()
+        {
+            foreach (var item in scenesList.Items)
+            {
+                var container = scenesList.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
+                if (container != null)
+                {
+                    var textBoxes = FindVisualChildren<TextBox>(container);
+                    foreach (var textBox in textBoxes)
+                    {
+                        textBox.Foreground = Brushes.White;
+                    }
+                }
+            }
+        }
+
+        private IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                    if (child != null && child is T)
+                    {
+                        yield return (T)child;
+                    }
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                    {
+                        yield return childOfChild;
+                    }
+                }
+            }
+        }
+
 
         public async Task<bool> EncryptAndSaveFileAsync(string filePath, string outputFilePath)
         {
@@ -14431,7 +14595,13 @@ VALUES (@objectIndex, @keyName, @value)";
             if (itemToRemove != null)
             {
                 Scenes.Remove(itemToRemove); // Removes the item from the ObservableCollection
+                var unsavedChangesTextBlock = this.FindName("UnsavedSceneListChanges") as TextBlock;
+                if (unsavedChangesTextBlock != null)
+                {
+                    unsavedChangesTextBlock.Visibility = Visibility.Visible;
+                }
             }
+
         }
 
         private async void LoadTSSXMLButton_Click(object sender, RoutedEventArgs e)
@@ -14524,18 +14694,26 @@ VALUES (@objectIndex, @keyName, @value)";
                     string[] regionCodes = {
                 // List of region codes
                 "en-GB", "fr-FR", "it-IT", "de-DE", "es-ES", "ja-JP", "ko-KR", "zh-TW", "zh-HK", "en-SG", "en-ID", "en-MY", "en-TH",
-                "af-ZA", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IQ", "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA",
-                "ar-SA", "ar-SY", "ar-TN", "ar-YE", "az-AZ", "be-BY", "bg-BG", "bs-BA", "ca-ES", "cs-CZ", "cy-GB", "da-DK", "de-AT",
-                "de-CH", "de-LI", "de-LU", "dv-MV", "el-GR", "en-AU", "en-BZ", "en-CA", "en-CB", "en-IE", "en-JM", "en-NZ", "en-PH",
-                "en-TT", "en-ZA", "en-ZW", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-DO", "es-EC", "es-GT", "es-HN", "es-MX",
-                "es-NI", "es-PA", "es-PE", "es-PR", "es-PY", "es-SV", "es-UY", "es-VE", "et-EE", "eu-ES", "fa-IR", "fi-FI", "fo-FO",
-                "fr-BE", "fr-CA", "fr-CH", "fr-LU", "fr-MC", "gl-ES", "gu-IN", "he-IL", "hi-IN", "hr-BA", "hr-HR", "hu-HU", "hy-AM",
-                "id-ID", "is-IS", "it-CH", "ka-GE", "kk-KZ", "kn-IN", "ky-KG", "lt-LT", "lv-LV", "mi-NZ", "mk-MK", "mn-MN", "mr-IN",
-                "ms-BN", "ms-MY", "mt-MT", "nb-NO", "nl-BE", "nl-NL", "nn-NO", "ns-ZA", "pa-IN", "pl-PL", "ps-AR", "pt-BR", "pt-PT",
-                "qu-BO", "qu-EC", "qu-PE", "ro-RO", "ru-RU", "sa-IN", "se-FI", "se-NO", "se-SE", "sk-SK", "sl-SI", "sq-AL", "sr-BA",
-                "sr-SP", "sv-FI", "sv-SE", "sw-KE", "ta-IN", "te-IN", "th-TH", "tl-PH", "tn-ZA", "tr-TR", "tt-RU", "uk-UA", "ur-PK",
-                "uz-UZ", "vi-VN", "xh-ZA", "zh-CN", "zh-MO", "zh-SG", "en-DK", "en-FI", "en-NO", "no-NO", "en-SE", "en-AE", "en-CZ",
-                "en-SA", "en-PL", "en-GR", "en-HK", "en-TW", "en-TR", "en-RO", "en-QA", "en-HU", "en-IS", "en-BG", "en-HR", "en-US"
+"af-ZA", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IQ", "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA",
+"ar-SA", "ar-SY", "ar-TN", "ar-YE", "az-AZ", "be-BY", "bg-BG", "bs-BA", "ca-ES", "cs-CZ", "cy-GB", "da-DK", "de-AT",
+"de-CH", "de-LI", "de-LU", "dv-MV", "el-GR", "en-AU", "en-BZ", "en-CA", "en-CB", "en-IE", "en-JM", "en-NZ", "en-PH",
+"en-TT", "en-ZA", "en-ZW", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-DO", "es-EC", "es-GT", "es-HN", "es-MX",
+"es-NI", "es-PA", "es-PE", "es-PR", "es-PY", "es-SV", "es-UY", "es-VE", "et-EE", "eu-ES", "fa-IR", "fi-FI", "fo-FO",
+"fr-BE", "fr-CA", "fr-CH", "fr-LU", "fr-MC", "gl-ES", "gu-IN", "he-IL", "hi-IN", "hr-BA", "hr-HR", "hu-HU", "hy-AM",
+"id-ID", "is-IS", "it-CH", "ka-GE", "kk-KZ", "kn-IN", "ky-KG", "lt-LT", "lv-LV", "mi-NZ", "mk-MK", "mn-MN", "mr-IN",
+"ms-BN", "ms-MY", "mt-MT", "nb-NO", "nl-BE", "nl-NL", "nn-NO", "ns-ZA", "pa-IN", "pl-PL", "ps-AR", "pt-BR", "pt-PT",
+"qu-BO", "qu-EC", "qu-PE", "ro-RO", "ru-RU", "sa-IN", "se-FI", "se-NO", "se-SE", "sk-SK", "sl-SI", "sq-AL", "sr-BA",
+"sr-SP", "sv-FI", "sv-SE", "sw-KE", "ta-IN", "te-IN", "th-TH", "tl-PH", "tn-ZA", "tr-TR", "tt-RU", "uk-UA", "ur-PK",
+"uz-UZ", "vi-VN", "xh-ZA", "zh-CN", "zh-MO", "zh-SG", "en-DK", "en-FI", "en-NO", "no-NO", "en-SE", "en-AE", "en-CZ",
+"en-SA", "en-PL", "en-GR", "en-HK", "en-TW", "en-TR", "en-RO", "en-QA", "en-HU", "en-IS", "en-BG", "en-HR", "en-US",
+"en-DK", "en-FI", "en-NO", "no-NO", "en-SE", "en-AE", "en-CZ", "en-SA", "en-PL", "en-GR", "en-HK", "en-TW", "en-TR",
+"en-RO", "en-QA", "en-HU", "en-IS", "en-BG", "en-HR", "en-DZ", "en-AF", "en-AL", "en-AD", "en-AO", "en-AG", "en-AR",
+"en-AM", "en-AT", "en-AZ", "en-BD", "en-BB", "en-BJ", "en-BT", "en-CV", "en-CF", "en-TD", "en-CG", "en-CD", "en-DJ",
+"en-DM", "en-GQ", "en-ER", "en-GA", "en-GM", "en-GN", "en-GW", "en-GY", "en-HT", "en-KI", "en-LS", "en-LR", "en-MG",
+"en-MW", "en-MV", "en-ML", "en-MR", "en-MU", "en-MC", "en-ME", "en-MZ", "en-MM", "en-NA", "en-NR", "en-NP", "en-NE",
+"en-PW", "en-PA", "en-PG", "en-ST", "en-SM", "en-SN", "en-RS", "en-SC", "en-SL", "en-SB", "en-LK", "en-SD", "en-SR",
+"en-SZ", "en-SY", "en-TJ", "en-TZ", "en-TL", "en-TG", "en-TO", "en-TM", "en-TV", "en-UG", "en-VU"
+
             };
 
                     baseFileName = baseFileName.Replace("_en-US", "");
@@ -14630,27 +14808,7 @@ VALUES (@objectIndex, @keyName, @value)";
                             MessageBox.Show("LatestHCDBSHA1textbox not found!");
                         }
 
-                        // Find the LatestSceneListSHA1panel and set its visibility to Collapsed
-                        var latestSceneListSHA1panel = (StackPanel)FindName("LatestSceneListSHA1panel");
-                        if (latestSceneListSHA1panel != null)
-                        {
-                            latestSceneListSHA1panel.Visibility = Visibility.Collapsed;
-                        }
-                        else
-                        {
-                            MessageBox.Show("LatestSceneListSHA1panel not found!");
-                        }
-
-                        // Clear the LatestSceneListSHA1textbox
-                        var latestSceneListSHA1textbox = (TextBox)FindName("LatestSceneListSHA1textbox");
-                        if (latestSceneListSHA1textbox != null)
-                        {
-                            latestSceneListSHA1textbox.Clear();
-                        }
-                        else
-                        {
-                            MessageBox.Show("LatestSceneListSHA1textbox not found!");
-                        }
+                       
                     });
                 }
 
@@ -14670,7 +14828,30 @@ VALUES (@objectIndex, @keyName, @value)";
                     if (File.Exists(sourceSceneListPath))
                     {
                         File.Move(sourceSceneListPath, targetSceneListPath, true);
+                        
                     }
+                    // Find the LatestSceneListSHA1panel and set its visibility to Collapsed
+                    var latestSceneListSHA1panel = (StackPanel)FindName("LatestSceneListSHA1panel");
+                    if (latestSceneListSHA1panel != null)
+                    {
+                        latestSceneListSHA1panel.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        MessageBox.Show("LatestSceneListSHA1panel not found!");
+                    }
+
+                    // Clear the LatestSceneListSHA1textbox
+                    var latestSceneListSHA1textbox = (TextBox)FindName("LatestSceneListSHA1textbox");
+                    if (latestSceneListSHA1textbox != null)
+                    {
+                        latestSceneListSHA1textbox.Clear();
+                    }
+                    else
+                    {
+                        MessageBox.Show("LatestSceneListSHA1textbox not found!");
+                    }
+                    DeploySceneListFlag = false;
                 }
             }
             catch (Exception ex)
@@ -17274,7 +17455,139 @@ VALUES (@objectIndex, @keyName, @value)";
             DeploySceneListFlag = true;
         }
 
+        private void Border_DragSDCEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    string fileExtension = Path.GetExtension(files[0]).ToLower();
+                    if (fileExtension == ".xml" || fileExtension == ".sdc")
+                    {
+                        e.Effects = DragDropEffects.Copy;
+                        e.Handled = true;
+                    }
+                }
+            }
+        }
 
+        private void Border_SDCDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    string filePath = files[0];
+                    string fileExtension = Path.GetExtension(filePath).ToLower();
+                    if (fileExtension == ".xml" || fileExtension == ".sdc")
+                    {
+                        ParseFileAndFillFields(filePath);
+                    }
+                }
+            }
+        }
+
+        private void ParseFileAndFillFields(string filePath)
+        {
+            try
+            {
+                string fileContent = File.ReadAllText(filePath);
+                string sha1Hash = GenerateSHA1(fileContent);
+
+                // Fill out the SHA1 TextBox
+                txtSdcsha1Digest.Text = sha1Hash;
+
+                // Parse the XML to extract the required fields
+                var xmlDoc = new XmlDocument();
+                xmlDoc.LoadXml(fileContent);
+
+                var archiveNode = xmlDoc.SelectSingleNode("//ARCHIVES/ARCHIVE");
+                if (archiveNode != null && archiveNode.InnerText.StartsWith("file://"))
+                {
+                    var fileUri = new Uri(archiveNode.InnerText);
+                    var filePathInArchive = fileUri.LocalPath.Replace("\\", "/").TrimStart('/');
+
+                    // Extract folder name and file name from the path
+                    string folderName = Path.GetFileName(Path.GetDirectoryName(filePathInArchive));
+                    string fileName = Path.GetFileName(filePathInArchive);
+
+                    // Replace .sdat or .BAR with .sdc
+                    string sdcPath = $"{folderName}/{fileName}".Replace(".sdat", ".sdc", StringComparison.OrdinalIgnoreCase)
+                                                         .Replace(".BAR", ".sdc", StringComparison.OrdinalIgnoreCase);
+
+                    // Fill out the SDC Path TextBox
+                    txtSdcPath.Text = sdcPath;
+
+                    // Fill out the SDC Name TextBox with the extracted folder name
+                    txtSdcName.Text = folderName;
+
+                    // Extract version number from the file name
+                    var match = Regex.Match(fileName, @"_T(\d{3})", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        txtSDCversion.Text = match.Groups[1].Value;
+                    }
+                }
+                else
+                {
+                    // Fall back to using the parent directory if ARCHIVES/ARCHIVE is not present
+                    string parentDirectory = Path.GetFileName(Path.GetDirectoryName(filePath));
+                    string fileName = Path.GetFileName(filePath);
+                    string sdcPath = $"{parentDirectory}/{fileName}".Replace(".sdat", ".sdc", StringComparison.OrdinalIgnoreCase)
+                                                                   .Replace(".BAR", ".sdc", StringComparison.OrdinalIgnoreCase);
+
+                    // Fill out the SDC Path TextBox
+                    txtSdcPath.Text = sdcPath;
+
+                    // Fill out the SDC Name TextBox with the parent directory name
+                    txtSdcName.Text = parentDirectory;
+                }
+
+                // Generate and encrypt the random number for Channel ID
+                EncryptAndSetChannelID();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error processing file: {ex.Message}");
+            }
+        }
+
+        private string GenerateSHA1(string input)
+        {
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                byte[] hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+                StringBuilder sb = new StringBuilder(hashBytes.Length * 2);
+                foreach (byte b in hashBytes)
+                {
+                    sb.AppendFormat("{0:X2}", b);
+                }
+                return sb.ToString();
+            }
+        }
+
+        private void EncryptAndSetChannelID()
+        {
+            try
+            {
+                Random random = new Random();
+                int randomNumber = random.Next(30303, 40304); // Generates a number between 30303 and 40303
+
+                ushort sceneID = (ushort)randomNumber; // Cast to ushort
+
+                bool isLegacyMode = legacyModeCheckBox.IsChecked ?? false;
+                SceneKey key = isLegacyMode ? SIDKeyGenerator.Instance.Generate(sceneID)
+                                            : SIDKeyGenerator.Instance.GenerateNewerType(sceneID);
+
+                txtChannelID.Text = key.ToString();
+            }
+            catch (Exception ex)
+            {
+                txtChannelID.Text = $"Error during encryption: {ex.Message}";
+            }
+        }
     }
 
 }
