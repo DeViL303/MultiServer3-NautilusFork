@@ -17483,88 +17483,177 @@ VALUES (@objectIndex, @keyName, @value)";
                     string fileExtension = Path.GetExtension(filePath).ToLower();
                     if (fileExtension == ".xml" || fileExtension == ".sdc")
                     {
-                        ParseFileAndFillFields(filePath);
+                        ProcessDroppedSDCFile(filePath);
                     }
                 }
             }
         }
 
-        private void ParseFileAndFillFields(string filePath)
+        private async void ProcessDroppedSDCFile(string filePath)
+        {
+            LogDebugInfo($"Processing dropped SDC file: {filePath}");
+
+            try
+            {
+                if (!TryProcessSDCFile(filePath))
+                {
+                    LogDebugInfo($"Failed to process file normally, attempting decryption: {filePath}");
+                    string baseOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "work");
+                    bool decrypted = await DecryptSDCFileAsync(filePath, baseOutputDirectory);
+                    if (decrypted)
+                    {
+                        string decryptedFilePath = Path.Combine(baseOutputDirectory, Path.GetFileName(filePath));
+                        if (!TryProcessSDCFile(decryptedFilePath))
+                        {
+                            LogDebugInfo("Failed to process the decrypted file.");
+                        }
+                        else
+                        {
+                            SetSceneType(decryptedFilePath);
+                        }
+                    }
+                    else
+                    {
+                        LogDebugInfo("Failed to decrypt the file.");
+                    }
+                }
+                else
+                {
+                    SetSceneType(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"An error occurred while processing the file: {ex.Message}");
+            }
+        }
+
+        private bool TryProcessSDCFile(string filePath)
         {
             try
             {
+                LogDebugInfo($"Trying to process SDC file: {filePath}");
                 string fileContent = File.ReadAllText(filePath);
-                string sha1Hash = GenerateSHA1(fileContent);
 
-                // Fill out the SHA1 TextBox
-                txtSdcsha1Digest.Text = sha1Hash;
-
-                // Parse the XML to extract the required fields
                 var xmlDoc = new XmlDocument();
                 xmlDoc.LoadXml(fileContent);
 
                 var archiveNode = xmlDoc.SelectSingleNode("//ARCHIVES/ARCHIVE");
-                if (archiveNode != null && archiveNode.InnerText.StartsWith("file://"))
+                if (archiveNode != null)
                 {
-                    var fileUri = new Uri(archiveNode.InnerText);
-                    var filePathInArchive = fileUri.LocalPath.Replace("\\", "/").TrimStart('/');
+                    string archivePath = archiveNode.InnerText.Replace("[CONTENT_SERVER_ROOT]", "").TrimStart('/');
+                    string folderName = Path.GetFileName(Path.GetDirectoryName(archivePath));
+                    string fileName = Path.GetFileName(archivePath);
 
-                    // Extract folder name and file name from the path
-                    string folderName = Path.GetFileName(Path.GetDirectoryName(filePathInArchive));
-                    string fileName = Path.GetFileName(filePathInArchive);
-
-                    // Replace .sdat or .BAR with .sdc
                     string sdcPath = $"{folderName}/{fileName}".Replace(".sdat", ".sdc", StringComparison.OrdinalIgnoreCase)
-                                                         .Replace(".BAR", ".sdc", StringComparison.OrdinalIgnoreCase);
+                                                             .Replace(".BAR", ".sdc", StringComparison.OrdinalIgnoreCase);
 
-                    // Fill out the SDC Path TextBox
                     txtSdcPath.Text = sdcPath;
-
-                    // Fill out the SDC Name TextBox with the extracted folder name
                     txtSdcName.Text = folderName;
 
-                    // Extract version number from the file name
                     var match = Regex.Match(fileName, @"_T(\d{3})", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
                         txtSDCversion.Text = match.Groups[1].Value;
                     }
+
+                    EncryptAndSetChannelID();
+
+                    // Calculate SHA1 checksum after successfully processing the file
+                    string sha1Digest = CalculateSHA1Checksum(filePath);
+                    txtSdcsha1Digest.Text = sha1Digest;
+                    LogDebugInfo($"SHA1 checksum: {sha1Digest}");
+
+                    LogDebugInfo("Successfully processed the SDC file.");
+                    return true;
                 }
                 else
                 {
-                    // Fall back to using the parent directory if ARCHIVES/ARCHIVE is not present
-                    string parentDirectory = Path.GetFileName(Path.GetDirectoryName(filePath));
-                    string fileName = Path.GetFileName(filePath);
-                    string sdcPath = $"{parentDirectory}/{fileName}".Replace(".sdat", ".sdc", StringComparison.OrdinalIgnoreCase)
-                                                                   .Replace(".BAR", ".sdc", StringComparison.OrdinalIgnoreCase);
-
-                    // Fill out the SDC Path TextBox
-                    txtSdcPath.Text = sdcPath;
-
-                    // Fill out the SDC Name TextBox with the parent directory name
-                    txtSdcName.Text = parentDirectory;
+                    LogDebugInfo("ARCHIVE node not found.");
                 }
-
-                // Generate and encrypt the random number for Channel ID
-                EncryptAndSetChannelID();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error processing file: {ex.Message}");
+                LogDebugInfo($"Error processing file: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        private string CalculateSHA1Checksum(string filePath)
+        {
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    var hash = sha1.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
+                }
             }
         }
 
-        private string GenerateSHA1(string input)
+
+        private async Task<bool> DecryptSDCFileAsync(string filePath, string baseOutputDirectory)
         {
-            using (SHA1Managed sha1 = new SHA1Managed())
+            bool allFilesProcessed = true;
+            string filename = Path.GetFileName(filePath);
+
+            try
             {
-                byte[] hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-                StringBuilder sb = new StringBuilder(hashBytes.Length * 2);
-                foreach (byte b in hashBytes)
+                LogDebugInfo($"Decrypting file: {filePath}");
+                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+
+                BruteforceProcess proc = new BruteforceProcess(fileContent);
+                byte[] decryptedContent = proc.StartBruteForce();
+
+                if (decryptedContent != null)
                 {
-                    sb.AppendFormat("{0:X2}", b);
+                    string outputDirectory = baseOutputDirectory;
+                    if (!Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                        LogDebugInfo($"Created output directory: {outputDirectory}");
+                    }
+                    string outputPath = Path.Combine(outputDirectory, filename);
+                    await File.WriteAllBytesAsync(outputPath, decryptedContent);
+                    LogDebugInfo($"Decrypted content written to: {outputPath}");
+
+                    if (!IsValidDecryptedSDCFile(outputPath))
+                    {
+                        File.Delete(outputPath);
+                        LogDebugInfo($"Invalid decrypted SDC file, deleted: {outputPath}");
+                        allFilesProcessed = false;
+                    }
                 }
-                return sb.ToString();
+                else
+                {
+                    allFilesProcessed = false;
+                    LogDebugInfo("Decryption failed.");
+                }
+            }
+            catch (Exception ex)
+            {
+                allFilesProcessed = false;
+                LogDebugInfo($"Error decrypting file: {ex.Message}");
+            }
+
+            return allFilesProcessed;
+        }
+
+        private bool IsValidDecryptedSDCFile(string filePath)
+        {
+            try
+            {
+                LogDebugInfo($"Validating decrypted SDC file: {filePath}");
+                XDocument doc = XDocument.Load(filePath);
+                bool isValid = doc.Root.Element("SDC_VERSION") != null;
+                LogDebugInfo($"Validation result: {isValid}");
+                return isValid;
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error in IsValidDecryptedSDCFile: {ex.Message}");
+                return false;
             }
         }
 
@@ -17573,21 +17662,65 @@ VALUES (@objectIndex, @keyName, @value)";
             try
             {
                 Random random = new Random();
-                int randomNumber = random.Next(30303, 40304); // Generates a number between 30303 and 40303
+                int randomNumber = random.Next(30303, 40304);
 
-                ushort sceneID = (ushort)randomNumber; // Cast to ushort
+                ushort sceneID = (ushort)randomNumber;
 
                 bool isLegacyMode = legacyModeCheckBox.IsChecked ?? false;
                 SceneKey key = isLegacyMode ? SIDKeyGenerator.Instance.Generate(sceneID)
                                             : SIDKeyGenerator.Instance.GenerateNewerType(sceneID);
 
                 txtChannelID.Text = key.ToString();
+                LogDebugInfo($"Channel ID set: {txtChannelID.Text}");
             }
             catch (Exception ex)
             {
+                LogDebugInfo($"Error during encryption: {ex.Message}");
                 txtChannelID.Text = $"Error during encryption: {ex.Message}";
             }
         }
+
+        private void ResetSDCInfo_Click(object sender, RoutedEventArgs e)
+        {
+            txtSdcsha1Digest.Text = string.Empty;
+            txtSdcName.Text = string.Empty;
+            txtSdcPath.Text = string.Empty;
+            txtSDCversion.Text = string.Empty;
+            txtChannelID.Text = string.Empty;
+            txtsceneconfig.Text = string.Empty;
+            txthomeuuid.Text = string.Empty;
+            txtflags.Text = string.Empty;
+
+            LogDebugInfo("SDC information reset.");
+        }
+
+        private void SetSceneType(string filePath)
+        {
+            try
+            {
+                LogDebugInfo($"Setting scene type and host based on file content: {filePath}");
+                string fileContent = File.ReadAllText(filePath).ToLower();
+
+                if (fileContent.Contains("apartment") || fileContent.Contains("private"))
+                {
+                    txtSceneType.SelectedItem = txtSceneType.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "Home");
+                    txtdHost.SelectedItem = txtdHost.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "");
+                    LogDebugInfo("Scene type set to Home and host set to nothing.");
+                }
+                else
+                {
+                    txtSceneType.SelectedItem = txtSceneType.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "GlobalSpace");
+                    txtdHost.SelectedItem = txtdHost.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "en-US");
+                    LogDebugInfo("Scene type set to GlobalSpace and host set to en-US.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Error setting scene type and host: {ex.Message}");
+            }
+        }
+
+
     }
 
 }
