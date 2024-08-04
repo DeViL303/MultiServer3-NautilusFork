@@ -3718,7 +3718,7 @@ namespace NautilusXP2024
                 using (var stream = File.OpenRead(filePath))
                 {
                     var hash = sha1.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
                 }
             }
         }
@@ -5785,12 +5785,59 @@ namespace NautilusXP2024
             string timestamp = sdcTimestampTextBox.Text;
             string thumbnailSuffix = sdcThumbnailSuffixTextBox.Text;
 
+            // Get the text from sdcServerArchivePathTextBox
+            string sdcServerArchivePath = sdcServerArchivePathTextBox.Text;
+
+            // Trim "Scenes/" off the start if it exists
+            if (sdcServerArchivePath.StartsWith("Scenes/", StringComparison.OrdinalIgnoreCase))
+            {
+                sdcServerArchivePath = sdcServerArchivePath.Substring(7);
+            }
+
+            // Replace ".BAR" or ".sdat" with ".sdc" (case insensitive)
+            sdcServerArchivePath = Regex.Replace(sdcServerArchivePath, @"(\.BAR|\.sdat)$", ".sdc", RegexOptions.IgnoreCase);
+
+            // Write the result to txtSdcPath
+            txtSdcPath.Text = sdcServerArchivePath;
+
+            // Extract the name for txtSdcName
+            string sdcName = string.Empty;
+
+            // Find the first occurrence of '/' or '\'
+            int slashIndex = sdcServerArchivePath.IndexOfAny(new char[] { '/', '\\' });
+            if (slashIndex != -1)
+            {
+                sdcName = sdcServerArchivePath.Substring(0, slashIndex);
+            }
+            else
+            {
+                // If no '/' or '\' is found, find the first occurrence of '.'
+                int dotIndex = sdcServerArchivePath.IndexOf('.');
+                if (dotIndex != -1)
+                {
+                    sdcName = sdcServerArchivePath.Substring(0, dotIndex);
+                }
+            }
+
+            // Write the result to txtSdcName
+            txtSdcName.Text = sdcName;
+            EncryptAndSetChannelID();
+
             // Pad the thumbnail suffix to 3 digits if it is not empty
             if (!string.IsNullOrEmpty(thumbnailSuffix))
             {
                 thumbnailSuffix = thumbnailSuffix.PadLeft(3, '0');
             }
 
+            // Write the version to txtVersion with leading zeros trimmed off
+            if (string.IsNullOrEmpty(thumbnailSuffix))
+            {
+                txtSDCversion.Text = "0";
+            }
+            else
+            {
+                txtSDCversion.Text = thumbnailSuffix.TrimStart('0');
+            }
             // Construct the thumbnail image file names
             string makerImageSuffix = string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}";
             string smallImageSuffix = string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}";
@@ -5846,7 +5893,7 @@ namespace NautilusXP2024
             // Calculate SHA1 hash and update the text box
             string sha1Hash = await Task.Run(() => CalculateSha1Hash(tempFilePath));
             Createdsdcsha1TextBox.Text = sha1Hash;
-
+            txtSdcsha1Digest.Text = sha1Hash;
             // Read the content of the temporary file and set it to the sdcCreatorTextbox
             string sdcContent = await File.ReadAllTextAsync(tempFilePath);
             SDCCreatorTextbox.Text = sdcContent;
@@ -6097,6 +6144,14 @@ namespace NautilusXP2024
 
         private async void ODCCreateODC_Click(object sender, RoutedEventArgs e)
         {
+
+            // Generate a UUID if odcUUIDTextBox is empty
+            if (string.IsNullOrEmpty(odcUUIDTextBox.Text))
+            {
+                odcUUIDTextBox.Text = GenerateUUID();
+            }
+            txtObjectId.Text = odcUUIDTextBox.Text;
+            txtArchiveTimeStampHex.Text = odcTimestampTextBox.Text;
             // Gather data from the form
             string name = odcNameTextBox.Text;
             string description = odcDescriptionTextBox.Text;
@@ -6112,6 +6167,15 @@ namespace NautilusXP2024
                 thumbnailSuffix = thumbnailSuffix.PadLeft(3, '0');
             }
 
+            // Write the version to txtVersion with leading zeros trimmed off
+            if (string.IsNullOrEmpty(thumbnailSuffix))
+            {
+                txtVersion.Text = "0";
+            }
+            else
+            {
+                txtVersion.Text = thumbnailSuffix.TrimStart('0');
+            }
             // Construct the thumbnail image file names
             string makerImage = $"[THUMBNAIL_ROOT]maker{(string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}")}.png";
             string smallImage = $"[THUMBNAIL_ROOT]small{(string.IsNullOrEmpty(thumbnailSuffix) ? "" : $"_T{thumbnailSuffix}")}.png";
@@ -6173,7 +6237,7 @@ namespace NautilusXP2024
             // Calculate SHA1 hash and update the text box
             string sha1Hash = await Task.Run(() => CalculateSDCODCSha1Hash(tempFilePath));
             Createdodcsha1TextBox.Text = sha1Hash;
-
+            txtOdcSha1Digest.Text = sha1Hash;
             // Read the content of the temporary file and set it to the ODCCreatorTextbox
             string odcContent = await File.ReadAllTextAsync(tempFilePath);
             ODCCreatorTextbox.Text = odcContent;
@@ -6214,7 +6278,7 @@ namespace NautilusXP2024
                 using (var stream = File.OpenRead(filePath))
                 {
                     var hash = sha1.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
                 }
             }
         }
@@ -17158,7 +17222,7 @@ VALUES (@objectIndex, @keyName, @value)";
 
                     txtSdcPath.Text = sdcPath;
                     txtSdcName.Text = folderName;
-                    txtsceneconfig.Text = "YOU MUST ADD SCENE FILE PATH HERE";
+                    txtsceneconfig.Text = "ADD SCENE FILE PATH HERE";
 
                     var match = Regex.Match(fileName, @"_T(\d{3})", RegexOptions.IgnoreCase);
                     if (match.Success)
@@ -17305,8 +17369,13 @@ VALUES (@objectIndex, @keyName, @value)";
             txthomeuuid.Text = string.Empty;
             txtflags.Text = string.Empty;
 
+            // Reset the ComboBoxes
+            txtSceneType.SelectedItem = null;
+            txtdHost.SelectedItem = null;
+
             LogDebugInfo("SDC information reset.");
         }
+
 
         private void SetSceneType(string filePath)
         {
