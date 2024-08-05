@@ -714,8 +714,8 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="10"/>
             <Setter Property="AllowDrop" Value="True"/>
-            <Setter Property="Height" Value="445"/>
-            <Setter Property="Width" Value="610"/>
+            <Setter Property="Height" Value="495"/>
+            <Setter Property="Width" Value="650"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="AcceptsReturn" Value="True"/>
@@ -901,11 +901,11 @@
 
                 <!-- TAB 1 BAR SHARC SDAT Archive packer unpacker-->
                 <TabItem Header="BAR / SDAT / SHARC" Tag="ArchiveTool">
-                    <StackPanel Background="#242424" HorizontalAlignment="Center" Width="1280" >
+                    <StackPanel Background="#242424" HorizontalAlignment="Center"  >
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="700"/>
+                                <ColumnDefinition Width="700"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Left Side: Home Archive Creator -->
@@ -954,7 +954,8 @@
                 AllowDrop="True"
                 Drop="ArchiveCreatorDragDropHandler">
                                     <TextBox x:Name="ArchiveCreatorTextBox"
-                     Height="370"
+                                             Width="650"
+                     Height="420"
                      Style="{StaticResource FileListTextBoxStyle}"
                      AllowDrop="False"
                      MouseDoubleClick="ArchiveCreatorTextBox_MouseDoubleClick"/>
@@ -997,7 +998,7 @@
                                     <Button x:Name="ArchiveUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
                                 </StackPanel>
                                 <!-- Text Area -->
-                                <TextBox x:Name="ArchiveUnpackerTextBox" Height="370" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="ArchiveUnpackerDragDropHandler" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
+                                <TextBox x:Name="ArchiveUnpackerTextBox" Width="650" Height="420" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" Drop="ArchiveUnpackerDragDropHandler" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -1413,10 +1414,10 @@ Drop="Border_SQLDrop">
                                 <StackPanel Orientation="Horizontal" Margin="0">
                                     <TextBlock Text="Name (ID):" Width="70" FontSize="14" Margin="0,3,0,5" Foreground="White"/>
                                     <TextBox x:Name="txtSdcName" Width="265" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="" MouseDoubleClick="txtObjectId_MouseDoubleClick"/>
-                                    <TextBlock Text="Config (SCENE):" Width="99" FontSize="14" Margin="10,3,0,5" Foreground="White"/>
-                                    <TextBox x:Name="txtsceneconfig" Width="350" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
+                                    <TextBlock Text="Config:" Width="50" FontSize="14" Margin="10,3,0,5" Foreground="White"/>
+                                    <TextBox x:Name="txtsceneconfig" Width="400" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
                                     <TextBlock Text="Scene Type:" Width="72" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
-                                    <ComboBox x:Name="txtSceneType" Height="22" Padding="2" Width="105" FontSize="12" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName3_SelectionChanged">
+                                    <ComboBox x:Name="txtSceneType" Height="22" Padding="2" Width="105" FontSize="12" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtSceneType_SelectionChanged">
                                         <ComboBoxItem Content="GlobalSpace"/>
                                         <ComboBoxItem Content="Home"/>
                                         <ComboBoxItem Content="PublicLobby"/>
@@ -1427,24 +1428,26 @@ Drop="Border_SQLDrop">
                                         <ComboBoxItem Content="PrivateNoVideo"/>
                                         <ComboBoxItem Content="ArcadeSpace"/>
                                     </ComboBox>
+
                                     <TextBlock Text="Host:" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
-                                    <ComboBox x:Name="txtdHost" Height="22" Padding="2" Width="55" FontSize="12" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName3_SelectionChanged">
+                                    <ComboBox x:Name="txtdHost" Height="22" Padding="2" Width="55" FontSize="12" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}">
                                         <ComboBoxItem Content="en-US"/>
                                         <ComboBoxItem Content="en-GB"/>
                                         <ComboBoxItem Content="ja-JP"/>
                                         <ComboBoxItem Content=""/>
                                     </ComboBox>
-                                    <TextBlock Text="Vers:" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
-                                    <TextBox x:Name="txtSDCversion" Width="30" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
+                                   
                                     <TextBlock Text="HOMEUID:" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
                                     <TextBox x:Name="txthomeuuid" Width="35" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
+                                    <TextBlock Text="Vers:" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
+                                    <TextBox x:Name="txtSDCversion" Width="30" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
                                     <Button Content="Reset" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="6,0,0,0" VerticalAlignment="Center" Click="ResetSDCInfo_Click"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0">
                                     <TextBlock Text="ChannelID:" Width="70" FontSize="14" Margin="0,3,0,5" Foreground="White"/>
                                     <TextBox x:Name="txtChannelID" Width="265" Margin="1,3" Style="{StaticResource SmallTextBoxStyle3}" Text="" MouseDoubleClick="txtChannelID_MouseDoubleClick"/>
-                                    <TextBlock Text="Desc (SDC):" Width="99" FontSize="14" Margin="10,3,0,5" Foreground="White"/>
-                                    <TextBox x:Name="txtSdcPath" Width="350" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
+                                    <TextBlock Text="Desc:" Width="50" FontSize="14" Margin="10,3,0,5" Foreground="White"/>
+                                    <TextBox x:Name="txtSdcPath" Width="400" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
                                     <TextBlock Text="SDC SHA1:" Width="72" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
                                     <TextBox x:Name="txtSdcsha1Digest" Width="325" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
                                     <TextBlock Text="Flags:" FontSize="14" Margin="10,3,5,5" Foreground="White"/>
@@ -1473,7 +1476,7 @@ Drop="Border_SQLDrop">
                                 <Button Content="Save SceneList" Width="100" VerticalAlignment="Center"
                     Style="{StaticResource ResourceKey=DarkModeButtonStyle2}"
                     Click="SaveSceneListXmlButton_Click" Margin="0,0,0,0" />
-                                <TextBlock x:Name="UnsavedSceneListChanges" Width="190" Text="Warning: Unsaved Changes!" Visibility="Hidden" FontSize="15" Foreground="yellow" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock x:Name="UnsavedSceneListChanges" Width="190" Text="Warning: Unsaved Changes!" Visibility="Hidden" FontSize="15" Foreground="yellow" VerticalAlignment="Center" Margin="20,0,0,0"/>
                             </StackPanel>
                         </Border>
 
@@ -1569,7 +1572,7 @@ Drop="Border_SQLDrop">
                                     <Button Content="Save TSS and Deploy All" Width="160" Height="24" VerticalAlignment="Center" 
                     Style="{StaticResource ResourceKey=DarkModeButtonStyle2}" 
                     Click="SaveNewTSSXMLButton_Click" Margin="5,0,0,0" />
-                                    <TextBlock  x:Name="TSSsaveWarningTextblock"  Text="Warning: Unsaved Changes!" Foreground="Yellow" FontSize="15" Margin="15,0,0,2" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                    <TextBlock  x:Name="TSSsaveWarningTextblock"  Text="Warning: Unsaved Changes!" Foreground="Yellow" FontSize="14" Margin="15,0,0,2" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="2,0,0,5" >
                                     <StackPanel x:Name="LatestSceneListSHA1panel" Orientation="Horizontal" Margin="2,0,0,5" Visibility="Collapsed">
@@ -1628,7 +1631,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                                 <Button x:Name="encryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearListHandler"/>
                             </StackPanel>
                             <TextBlock Text="Encrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                            <TextBox x:Name="encryptedSceneIDTextBox" Height="490" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
+                            <TextBox x:Name="encryptedSceneIDTextBox" Height="530" Width="600" Style="{StaticResource SceneIdTextBoxStyle}"/>
                         </StackPanel>
 
                         <!-- Right Side: SceneID Decrypter -->
@@ -1645,7 +1648,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                                 <Button x:Name="DecryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSceneIDTextHandler"/>
                             </StackPanel>
                             <TextBlock Text="Decrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
-                            <TextBox x:Name="DecryptedSceneIDTextBox" Height="490" Width="500" Style="{StaticResource SceneIdTextBoxStyle}"/>
+                            <TextBox x:Name="DecryptedSceneIDTextBox" Height="530" Width="600" Style="{StaticResource SceneIdTextBoxStyle}"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -1778,7 +1781,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                             </StackPanel>
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                                 <TextBlock Text="SDC Content" Style="{StaticResource SceneIdTextBlockStyle}" Margin="0,10,0,-7"/>
-                                <TextBox x:Name="SDCCreatorTextbox" Width="550" Height="300" Style="{StaticResource FileListTextBoxStyle}"/>
+                                <TextBox x:Name="SDCCreatorTextbox" Width="600" Height="350" Style="{StaticResource FileListTextBoxStyle}"/>
                             </StackPanel>
                         </StackPanel>
                         <!-- Right Form for ODC File Creation -->
@@ -1830,7 +1833,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                             </StackPanel>
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                                 <TextBlock Text="ODC Content" Style="{StaticResource SceneIdTextBlockStyle}" Margin="0,10,0,-7"/>
-                                <TextBox x:Name="ODCCreatorTextbox" Width="550" Height="300" Style="{StaticResource FileListTextBoxStyle}"/>
+                                <TextBox x:Name="ODCCreatorTextbox" Width="600" Height="350" Style="{StaticResource FileListTextBoxStyle}"/>
                             </StackPanel>
                             
                         </StackPanel>
@@ -1867,7 +1870,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                                     <TextBox x:Name="Path2HashOutputTextBox" Style="{StaticResource SmallTextBoxStyle}" Width="90" />
                                 </StackPanel>
                                 <StackPanel AllowDrop="True" Drop="Path2HashTabItem_Drop">
-                                    <TextBox x:Name="Path2HashOutputExtraTextBox" Style="{StaticResource FileList2TextBoxStyle}" Margin="0,130,0,0" Height="430" Width="1150" />
+                                    <TextBox x:Name="Path2HashOutputExtraTextBox" Style="{StaticResource FileList2TextBoxStyle}" Margin="0,130,0,0" Height="480" Width="1350" />
                                 </StackPanel>
                             </Grid>
 
@@ -2030,7 +2033,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                         </StackPanel>
 
                         <!-- File List Box -->
-                        <TextBox x:Name="Sha1TextBox" Height="490" Width="1250" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+                        <TextBox x:Name="Sha1TextBox" Height="540" Width="1350" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </TabItem>
 
@@ -2148,7 +2151,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                                 </StackPanel>
 
                                 <!-- File List Box -->
-                                <TextBox x:Name="VideoTextBox" Height="370" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto" />
+                                <TextBox x:Name="VideoTextBox" Height="420" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto" />
                             </StackPanel>
 
                             <!-- Right Side: BNK Unpacker -->
@@ -2180,7 +2183,7 @@ Click="ApplyNewSceneListSHA1Button_Click" Margin="5,0,15,0" />
                                     <Button Content="Unpack and Map" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="BNKUnpackerExecuteButtonClick" />
                                     <Button x:Name="BNKUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearBNKUnpackerListHandler" />
                                 </StackPanel>
-                                <TextBox x:Name="BNKUnpackerTextBox" Height="370" Margin="0,55,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" MouseDoubleClick="BNKUnpackerTextBox_MouseDoubleClick" Drop="BNKUnpackerDragDropHandler" />
+                                <TextBox x:Name="BNKUnpackerTextBox" Height="420" Margin="0,55,0,0" Style="{StaticResource FileListTextBoxStyle}" AllowDrop="True" MouseDoubleClick="BNKUnpackerTextBox_MouseDoubleClick" Drop="BNKUnpackerDragDropHandler" />
 
                                 <!-- Text Area -->
                             </StackPanel>

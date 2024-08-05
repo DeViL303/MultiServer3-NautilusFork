@@ -125,6 +125,9 @@ namespace NautilusXP2024
 
             InitializeComboBoxEventHandlers();
             this.Loaded += MainWindow_Loaded;
+
+            txtSceneType.SelectedItem = txtSceneType.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "GlobalSpace");
+            txtdHost.SelectedItem = txtdHost.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "en-US");
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -5922,7 +5925,7 @@ namespace NautilusXP2024
             {
                 await File.WriteAllBytesAsync(saveFileDialog.FileName, fileContent);
             }
-
+            LoadSceneListXMLv2intoEditorButton_Click(sender, e);
             // Clean up temporary file
             File.Delete(tempFilePath);
         }
@@ -17400,6 +17403,40 @@ VALUES (@objectIndex, @keyName, @value)";
             catch (Exception ex)
             {
                 LogDebugInfo($"Error setting scene type and host: {ex.Message}");
+            }
+        }
+
+        private void txtSceneType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (txtSceneType.SelectedItem is ComboBoxItem selectedItem)
+            {
+                switch (selectedItem.Content.ToString())
+                {
+                    case "Home":
+                        txtdHost.SelectedItem = null;
+                        txtdHost.IsEnabled = false;
+                        txthomeuuid.Text = string.Empty;
+                        txthomeuuid.IsEnabled = true;
+                        break;
+                    case "PrivateNoVideo":
+                        txtdHost.SelectedItem = null;
+                        txtdHost.IsEnabled = false;
+                        txthomeuuid.Text = string.Empty;
+                        txthomeuuid.IsEnabled = true;
+                        break;
+                    case "GlobalSpace":
+                        txtdHost.SelectedItem = txtdHost.Items.OfType<ComboBoxItem>().FirstOrDefault(item => item.Content.ToString() == "en-US");
+                        txtdHost.IsEnabled = true;
+                        txthomeuuid.Text = string.Empty;
+                        txthomeuuid.IsEnabled = false;
+                        break;
+                    default:
+                        txtdHost.SelectedItem = null;
+                        txtdHost.IsEnabled = true;
+                        txthomeuuid.Text = string.Empty;
+                        txthomeuuid.IsEnabled = false;
+                        break;
+                }
             }
         }
 
