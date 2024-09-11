@@ -26,6 +26,14 @@ namespace NautilusXP2024
         public string ThemeColor { get; set; }
         public string PS3IPforFTP { get; set; }
         public string PS3TitleID { get; set; }
+
+        public string SceneListSavePath { get; set; }
+
+        public string SceneListPathURL { get; set; }
+
+        public string TSSURL { get; set; }
+
+        public string TSSeditorSavePath { get; set; }
         public OverwriteBehavior FileOverwriteBehavior { get; set; }
         public SaveDebugLog SaveDebugLogToggle { get; set; }
         public bool LiteCatalogueEnabled { get; set; }
@@ -51,8 +59,12 @@ namespace NautilusXP2024
             AudioOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Audio");
             VideoOutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Video");
             RPCS3OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "RPCS3");
-            PS3IPforFTP = "192.168.199.113"; // Default IP address
-            PS3TitleID = "NPIA00005"; // Default IP address
+            PS3IPforFTP = "192.168.199.121"; // Default IP address
+            PS3TitleID = "PSHLQA186"; 
+            SceneListSavePath = "C:\\PSMultiserver\\static\\wwwroot\\Environments\\"; 
+            SceneListPathURL = "https://pshomeologylab.net/Environments/SceneList_dec.xml"; 
+            TSSURL = "https://pshomeologylab.net/tss/coreHztFmpQrx0002_en-US.xml"; 
+            TSSeditorSavePath = "C:\\PSMultiserver\\static\\wwwroot\\"; 
             ThemeColor = "#fc030f"; // Default color as a string
             SaveDebugLogToggle = SaveDebugLog.True;
             LiteCatalogueEnabled = true;

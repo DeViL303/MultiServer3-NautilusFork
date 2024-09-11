@@ -168,6 +168,10 @@ namespace NautilusXP2024
             Rpcs3Dev_hdd0_DirectoryTextBox.Text = _settings.RPCS3OutputDirectory;
             PS3IPforFTPTextBox.Text = _settings.PS3IPforFTP;
             PS3TitleIDTextBox.Text = _settings.PS3TitleID;
+            SceneListSavePathtextbox.Text = _settings.SceneListSavePath;
+            SceneListPathURLtextbox2.Text = _settings.SceneListPathURL;
+            TSSURLtextbox.Text = _settings.TSSURL;
+            TSSeditorSavePathtextbox.Text = _settings.TSSeditorSavePath;
             ToggleSwitchLiteCatalogue.IsChecked = _settings.LiteCatalogueEnabled;
             ThemeColorPicker.SelectedColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(_settings.ThemeColor);
             switch (_settings.ArchiveTypeSettingRem)
@@ -233,10 +237,11 @@ namespace NautilusXP2024
             var environment = await CoreWebView2Environment.CreateAsync(null, null, new CoreWebView2EnvironmentOptions("--disable-web-security --user-data-dir=C:\\temp"));
             await WebView2Control.EnsureCoreWebView2Async(environment);
 
+            // Set the source or load the custom HTML as per your existing logic
             if (ToggleSwitchOfflinePshome.IsChecked == false)
             {
                 string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string htmlFileName = ToggleSwitchLiteCatalogue.IsChecked == true ? "pshome_index_Lite.html" : "pshome_index.html";
+                string htmlFileName = ToggleSwitchLiteCatalogue.IsChecked == false ? "index_Lite.html" : "index.html";
                 string htmlFilePath = Path.Combine(exeDirectory, "dependencies", "psho.me", htmlFileName);
 
                 if (File.Exists(htmlFilePath))
@@ -246,74 +251,142 @@ namespace NautilusXP2024
                 }
                 else
                 {
+                    // Load the custom HTML if the file is not found
                     string customHtml = @"
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {
-                background-color: #111111;
-                color: #fff;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                font-family: Arial, sans-serif;
-                text-align: center;
-                margin: 0;
-            }
-            .container {
-                max-width: 600px;
-                padding: 20px;
-                border: 2px solid #fff;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            }
-            h1 {
-                font-size: 24px;
-                margin-bottom: 10px;
-            }
-            p {
-                font-size: 16px;
-                line-height: 1.5;
-            }
-            a {
-                color: #00f;
-                text-decoration: underline;
-                cursor: pointer;
-            }
-        </style>
-        <script>
-            function openGoogleDrive() {
-                window.chrome.webview.postMessage('openGoogleDrive');
-            }
-            function openGithub() {
-                window.chrome.webview.postMessage('openGithub');
-            }
-        </script>
-    </head>
-    <body>
-        <div class='container'>
-            <h1>Files Not Found!</h1>
-            <p>Local database files could not be found.</p>
-            <p>To use a local catalogue, you can download <a onclick='openGoogleDrive()'>THIS</a> 2.3GB database addon first or provide your own database.</p>
-            <p>Please ensure the extracted files are placed in the 'dependencies/psho.me/' directory.</p>
-            <p>For information on how to create your own database, See Multiserver 3 Nautilus Fork on Gihub <a onclick='openGithub()'>HERE</a></p>
-        </div>
-    </body>
-    </html>";
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #111111;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        a {
+            color: #00f;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function openGoogleDrive() {
+            window.chrome.webview.postMessage('openGoogleDrive');
+        }
+        function openGithub() {
+            window.chrome.webview.postMessage('openGithub');
+        }
+    </script>
+</head>
+<body>
+    <div class='container'>
+        <h1>Files Not Found!</h1>
+        <p>Local database files could not be found.</p>
+        <p>To use a local catalogue, You must provide your own database.</p>
+        <p>Please ensure the extracted files are placed in the 'dependencies/psho.me/' directory.</p>
+        <p>For information on how to create your own database, See Multiserver 3 Nautilus Fork on Github <a onclick='openGithub()'>HERE</a></p>
+    </div>
+</body>
+</html>";
 
                     WebView2Control.NavigateToString(customHtml);
                 }
             }
             else
             {
-                WebView2Control.Source = new Uri("http://psho.me/pshome_index.html");
+                WebView2Control.Source = new Uri("http://psho.me/index.html");
             }
 
-            WebView2Control.ZoomFactor = 0.75;
+            WebView2Control.ZoomFactor = 0.80;
             WebView2Control.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            WebView2Control.CoreWebView2.DownloadStarting += CoreWebView2_DownloadStarting; // Add this line
         }
+
+        private void CoreWebView2_DownloadStarting(object sender, CoreWebView2DownloadStartingEventArgs e)
+        {
+            // Define the desired download folder relative to the application
+            string downloadFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", "Downloads");
+
+            // Ensure the download folder exists
+            Directory.CreateDirectory(downloadFolder);
+
+            // Set the initial download path to the specified folder
+            string fileName = Path.GetFileName(e.ResultFilePath); // Extract the file name from the default path
+            string newFilePath = Path.Combine(downloadFolder, fileName);
+
+            // Check if the file already exists, and adjust the filename accordingly
+            newFilePath = GetUniqueFilePath(newFilePath);
+
+            // Set the new file path
+            e.ResultFilePath = newFilePath;
+
+            // Automatically approve the download without asking the user
+            e.Handled = true;
+
+            // Optional: Show a notification for the download start
+            var notificationMessage = JsonConvert.SerializeObject(new { action = "showNotification", text = $"Downloading to {newFilePath}" });
+            WebView2Control.CoreWebView2.PostWebMessageAsString(notificationMessage);
+
+            // Handle download completion event to open the folder after download completes
+            e.DownloadOperation.StateChanged += (s, args) =>
+            {
+                if (e.DownloadOperation.State == CoreWebView2DownloadState.Completed)
+                {
+                    // Open the folder after download completes successfully
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = downloadFolder,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+                else if (e.DownloadOperation.State == CoreWebView2DownloadState.Interrupted)
+                {
+                    // Optionally handle download failure
+                    var failedNotification = JsonConvert.SerializeObject(new { action = "showNotification", text = "Download failed" });
+                    WebView2Control.CoreWebView2.PostWebMessageAsString(failedNotification);
+                }
+            };
+        }
+
+        // Helper method to generate a unique file path by appending _2, _3, etc., if the file already exists
+        private string GetUniqueFilePath(string filePath)
+        {
+            string directory = Path.GetDirectoryName(filePath);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+            int fileIndex = 1;
+
+            // Generate a unique file path
+            while (File.Exists(filePath))
+            {
+                filePath = Path.Combine(directory, $"{fileNameWithoutExtension}_{fileIndex}{extension}");
+                fileIndex++;
+            }
+
+            return filePath;
+        }
+
 
 
         private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -321,7 +394,7 @@ namespace NautilusXP2024
             var message = e.TryGetWebMessageAsString();
             if (message == "openGoogleDrive")
             {
-                OpenUrlInDefaultBrowser("https://drive.google.com/file/d/1PLTA0MLximW84DQmZhep8vZpnHiQbT4R/view?usp=sharing");
+                OpenUrlInDefaultBrowser("https://google.ie");
             }
             else if (message == "openGithub")
             {
@@ -380,6 +453,7 @@ namespace NautilusXP2024
                 }
             }
         }
+
         private async void SaveListToFileAsPKG(string listJson, int listNumber)
         {
             try
@@ -418,7 +492,7 @@ namespace NautilusXP2024
                 // Run the executable to create the PKG file
                 string exePath = Path.Combine(exeDirectory, "dependencies", "create_pkg", "pkg_custom.exe");
                 string contentId = $"EP9000-{ps3TitleID}_00-HOME000000000001";
-                string pkgFileName = $"PSHOME_ITEM_LIST_{listNumber}.pkg";
+                string pkgFileName = $"ITEM_LIST_{listNumber}.pkg";
                 string pkgOutputPath = Path.Combine(outputDir, pkgFileName);
 
                 var processStartInfo = new ProcessStartInfo
@@ -774,7 +848,7 @@ namespace NautilusXP2024
 
 
 
-        private void ToggleSwitchOfflinePshome_CheckedChanged(object sender, RoutedEventArgs e)
+        private void ToggleSwitchOfflineCheckedChanged(object sender, RoutedEventArgs e)
         {
             // Update the setting based on the toggle switch state
             _settings.IsOfflineMode = ToggleSwitchOfflinePshome.IsChecked == true;
@@ -914,6 +988,151 @@ namespace NautilusXP2024
             {
                 _settings.PS3TitleID = PS3TitleIDTextBox.Text;
                 SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void SceneListPathURLtextbox2_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.SceneListPathURL = SceneListPathURLtextbox2.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void SceneListSavePathtextbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.SceneListSavePath = SceneListSavePathtextbox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void TSSURLtextbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.TSSURL = TSSURLtextbox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void TSSeditorSavePathtextbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settings != null)
+            {
+                _settings.TSSeditorSavePath = TSSeditorSavePathtextbox.Text;
+                SettingsManager.SaveSettings(_settings);
+            }
+        }
+
+        private void SceneListSavePathtextbox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Create a FolderBrowserDialog to allow the user to select a folder
+            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+
+            // Show the dialog and check if the user selected a folder
+            if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                // Set the selected folder path in the TextBox
+                SceneListSavePathtextbox.Text = folderDialog.SelectedPath;
+            }
+        }
+
+        private void TSSeditorSavePathtextbox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Create a FolderBrowserDialog to allow the user to select a folder
+            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+
+            // Show the dialog and check if the user selected a folder
+            if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                // Set the selected folder path in the TextBox
+                TSSeditorSavePathtextbox.Text = folderDialog.SelectedPath;
+            }
+        }
+
+        private void TSSURLtextbox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Create an OpenFileDialog to allow the user to select an XML file
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Select an XML file"
+            };
+
+            // Show the dialog and check if the user selected a file
+            if (openFileDialog.ShowDialog() == true)
+            {
+                // Set the selected file path in the TextBox
+                TSSURLtextbox.Text = openFileDialog.FileName;
+            }
+        }
+
+
+
+        private void SceneListPathURLtextbox2_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Create an OpenFileDialog to allow the user to select an XML file
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Select an XML file"
+            };
+
+            // Show the dialog and check if the user selected a file
+            if (openFileDialog.ShowDialog() == true)
+            {
+                // Set the selected file path in the TextBox
+                SceneListPathURLtextbox2.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void Border_ODCMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Create an OpenFileDialog to allow the user to select an .odc or .xml file
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "ODC files (*.odc)|*.odc|XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Select an ODC or XML file"
+            };
+
+            // Show the dialog and check if the user selected a file
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+
+                // Simulate the drop functionality
+                LogDebugInfo($"File selected: {selectedFilePath}");
+                ProcessDroppedFile(selectedFilePath);
+            }
+        }
+
+        private void Border_SQLMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Create an OpenFileDialog to allow the user to select an .sql file
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "SQL files (*.sql)|*.sql|All files (*.*)|*.*",
+                Title = "Select an SQL file"
+            };
+
+            // Show the dialog and check if the user selected a file
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+                string fileExtension = Path.GetExtension(selectedFilePath).ToLower();
+
+                // Ensure the selected file is a .sql file
+                if (fileExtension == ".sql")
+                {
+                    HandleSQLFile(selectedFilePath);
+                }
+                else
+                {
+                    MessageBox.Show("Only SQL files are supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -1834,6 +2053,16 @@ namespace NautilusXP2024
                             counter++;
                         }
 
+                        // Additional debug check to avoid incorrect naming
+                        while (File.Exists(uniqueFilePath))
+                        {
+                            // Log each step of the filename modification
+                            LogDebugInfo($"File exists, generating new filename to avoid conflict: {uniqueFilePath}");
+
+                            uniqueFilePath = Path.Combine(Path.GetDirectoryName(newFilePath), $"{Path.GetFileNameWithoutExtension(newFilePath)}({counter}){Path.GetExtension(newFilePath)}");
+                            counter++;
+                        }
+
                         try
                         {
                             File.Move(outputFilePath, uniqueFilePath);
@@ -2028,76 +2257,53 @@ namespace NautilusXP2024
 
 
 
-        private void ArchiveUnpackerDragDropHandler(object sender, DragEventArgs e)
+       private void ArchiveUnpackerDragDropHandler(object sender, DragEventArgs e)
+{
+    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+    {
+        string[] droppedItems = (string[])e.Data.GetData(DataFormats.FileDrop);
+        List<string> validFiles = new List<string>();
+        var validExtensions = new HashSet<string>(new[] { ".bar", ".sdat", ".sharc", ".dat" }, StringComparer.OrdinalIgnoreCase);
+
+        // Use parallel processing to speed up file discovery
+        Parallel.ForEach(droppedItems, item =>
         {
-            LogDebugInfo("Archive Unpacker: Drag and Drop Initiated");
-            TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, "Processing....", 2000);
-
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (Directory.Exists(item))
             {
-                string[] droppedItems = (string[])e.Data.GetData(DataFormats.FileDrop);
-                List<string> validFiles = new List<string>();
+                var filesInDirectory = Directory.EnumerateFiles(item, "*.*", SearchOption.AllDirectories)
+                    .Where(file => validExtensions.Contains(Path.GetExtension(file)))
+                    .ToList();
 
-                var validExtensions = new[] { ".bar", ".sdat", ".sharc", ".dat" };
-                foreach (var item in droppedItems)
+                lock (validFiles) // Locking to avoid race condition when adding to the shared list
                 {
-                    if (Directory.Exists(item))
-                    {
-                        var filesInDirectory = Directory.GetFiles(item, "*.*", SearchOption.AllDirectories)
-                            .Where(file => validExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                            .ToList();
-                        if (filesInDirectory.Count > 0)
-                        {
-                            validFiles.AddRange(filesInDirectory);
-                        }
-                    }
-                    else if (File.Exists(item) && validExtensions.Contains(Path.GetExtension(item).ToLowerInvariant()))
-                    {
-                        validFiles.Add(item);
-                    }
-                }
-
-                int newFilesCount = 0;
-                int duplicatesCount = 0;
-                string message = string.Empty;
-                int displayTime = 2000;
-
-                if (validFiles.Count > 0)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        var existingFilesSet = new HashSet<string>(ArchiveUnpackerTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
-                        int initialCount = existingFilesSet.Count;
-
-                        existingFilesSet.UnionWith(validFiles); // Automatically removes duplicates
-                        newFilesCount = existingFilesSet.Count - initialCount;
-                        duplicatesCount = validFiles.Count - newFilesCount;
-
-                        ArchiveUnpackerTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
-
-                        message = $"{newFilesCount} file(s) added";
-                        if (duplicatesCount > 0)
-                        {
-                            message += $", {duplicatesCount} duplicate(s) filtered";
-                        }
-                        TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, 2000);
-
-                        LogDebugInfo($"Archive Unpacker: {newFilesCount} files added, {duplicatesCount} duplicates filtered from Drag and Drop.");
-                    });
-                }
-                else
-                {
-                    LogDebugInfo("Archive Unpacker: Drag and Drop - No valid files found.");
-                    message = "No valid files found.";
-                    TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, message, 2000);
+                    validFiles.AddRange(filesInDirectory);
                 }
             }
-            else
+            else if (File.Exists(item) && validExtensions.Contains(Path.GetExtension(item)))
             {
-                LogDebugInfo("Archive Unpacker: Drag and Drop - No Data Present.");
-                TemporaryMessageHelper.ShowTemporaryMessage(ArchiveUnpackerDragAreaText, "Drag and Drop operation failed - No Data Present.", 3000);
+                lock (validFiles) // Locking for thread safety
+                {
+                    validFiles.Add(item);
+                }
             }
+        });
+
+        if (validFiles.Count > 0)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var existingFilesSet = new HashSet<string>(ArchiveUnpackerTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                int initialCount = existingFilesSet.Count;
+
+                existingFilesSet.UnionWith(validFiles); // Automatically removes duplicates
+
+                // Use StringBuilder for efficient string concatenation
+                ArchiveUnpackerTextBox.Text = string.Join(Environment.NewLine, existingFilesSet);
+            });
         }
+    }
+}
+
 
 
 
@@ -2213,8 +2419,7 @@ namespace NautilusXP2024
                 // Log start of processing to ArchiveUnpackerTextBox
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: Processing file {currentFilePath}";
-                    ArchiveUnpackerTextBox.ScrollToEnd();
+                  
                 });
 
                 if (File.Exists(filePath))
@@ -2298,8 +2503,7 @@ namespace NautilusXP2024
                     // Log completion of processing to ArchiveUnpackerTextBox
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: Success {filename} processed.";
-                        ArchiveUnpackerTextBox.ScrollToEnd();
+                        
                     });
 
                     // Allow UI to process its queue
@@ -2313,8 +2517,7 @@ namespace NautilusXP2024
             // Log completion of all files to ArchiveUnpackerTextBox
             await Dispatcher.InvokeAsync(() =>
             {
-                ArchiveUnpackerTextBox.Text += $"{Environment.NewLine}Archive Unpacker: All files processed successfully.\nArchive Unpacker: Double click here to open the output folder.";
-                ArchiveUnpackerTextBox.ScrollToEnd();
+               
             });
 
             return true;
@@ -2678,7 +2881,7 @@ namespace NautilusXP2024
             if (string.IsNullOrEmpty(CurrentUUID) && directoryName.EndsWith("_DAT"))
             {
                 newDirectoryName = await FindAndRenameForSceneFile(directoryPath, directoryName, parentDirectoryPath);
-                if (newDirectoryName != directoryPath)
+                if (newDirectoryName != directoryPath && !Directory.Exists(newDirectoryName))
                 {
                     Directory.Move(directoryPath, newDirectoryName);
                     LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
@@ -2702,16 +2905,8 @@ namespace NautilusXP2024
                     newDirectoryName = Path.Combine(parentDirectoryPath, CurrentUUID + "_UNKN_" + directoryName);
                 }
 
-                // Check if new directory name already exists and create a new name if necessary
-                string baseNewDirectoryName = newDirectoryName;
-                int counter = 2;
-                while (Directory.Exists(newDirectoryName))
-                {
-                    newDirectoryName = $"{baseNewDirectoryName} ({counter++})";
-                }
-
-                // Rename directory if new name is different
-                if (newDirectoryName != directoryPath)
+                // Refined conflict check
+                if (newDirectoryName != directoryPath && !Directory.Exists(newDirectoryName))
                 {
                     Directory.Move(directoryPath, newDirectoryName);
                     LogDebugInfo($"Directory renamed from '{directoryPath}' to '{newDirectoryName}'.");
@@ -2720,28 +2915,13 @@ namespace NautilusXP2024
             }
             else if (!directoryName.StartsWith("object_", StringComparison.OrdinalIgnoreCase) && !directoryName.Contains("object", StringComparison.OrdinalIgnoreCase))
             {
-                // Handling when SceneFolderAkaID is set and CurrentUUID is not or directory does not have "object" in the name
-                LogDebugInfo($"Checking if SceneFolderAkaID is set and CurrentUUID is not or directory does not contain 'object'.");
-
                 if (!string.IsNullOrEmpty(SceneFolderAkaID))
                 {
-                    LogDebugInfo($"SceneFolderAkaID is set: {SceneFolderAkaID}. Proceeding with renaming.");
-
                     newDirectoryName = Path.Combine(parentDirectoryPath, SceneFolderAkaID + "$" + directoryName);
-                    LogDebugInfo($"Initial new directory name: {newDirectoryName}");
                     SceneFolderAkaID = string.Empty;
-                    // Check if new directory name already exists and create a new name if necessary
-                    string baseNewDirectoryName = newDirectoryName;
-                    int counter = 2;
-                    while (Directory.Exists(newDirectoryName))
-                    {
-                        LogDebugInfo($"Directory {newDirectoryName} already exists. Generating new name.");
-                        newDirectoryName = $"{baseNewDirectoryName} ({counter++})";
-                        LogDebugInfo($"New directory name generated: {newDirectoryName}");
-                    }
 
-                    // Rename directory if new name is different
-                    if (newDirectoryName != directoryPath)
+                    // Enhanced conflict check
+                    if (newDirectoryName != directoryPath && !Directory.Exists(newDirectoryName))
                     {
                         try
                         {
@@ -2756,7 +2936,7 @@ namespace NautilusXP2024
                     }
                     else
                     {
-                        LogDebugInfo($"New directory name is the same as the original. No renaming necessary.");
+                        LogDebugInfo($"New directory name '{newDirectoryName}' already exists or is the same as the original. No renaming necessary.");
                     }
                 }
                 else
@@ -2765,7 +2945,7 @@ namespace NautilusXP2024
                 }
             }
 
-
+            // File handling and deletion logic remains unchanged
             string file1 = Path.Combine(directoryPath, "1BA97CA6");
             string file2 = Path.Combine(directoryPath, "7AB93954");
             string targetFile1 = Path.Combine(directoryPath, "__$manifest$__");
@@ -2773,7 +2953,6 @@ namespace NautilusXP2024
 
             if (CheckBoxArchiveMapperDeleteFilestxt.IsChecked == true)
             {
-                // Delete the files if the checkbox is checked
                 if (File.Exists(file1)) File.Delete(file1);
                 if (File.Exists(file2)) File.Delete(file2);
                 if (File.Exists(targetFile1)) File.Delete(targetFile1);
@@ -2781,7 +2960,6 @@ namespace NautilusXP2024
             }
             else
             {
-                // Rename the files if the checkbox is not checked and they exist
                 if (File.Exists(file1))
                 {
                     if (File.Exists(targetFile1)) File.Delete(targetFile1); // Overwrite if it exists
@@ -2794,22 +2972,20 @@ namespace NautilusXP2024
                 }
             }
 
-            // New feature: Patch .MDL files if CheckBoxArchiveMapperPatchMDLs is enabled
+            // Check and patch files if enabled
             if (CheckBoxArchiveMapperPatchMDLs.IsChecked == true)
             {
-                // Patch .MDL files
                 var mdlFiles = Directory.GetFiles(directoryPath, "*.MDL", SearchOption.AllDirectories);
                 foreach (var mdlFile in mdlFiles)
                 {
                     byte[] fileBytes = File.ReadAllBytes(mdlFile);
-                    if (fileBytes.Length > 4 && fileBytes[3] == 0x04) // 4th byte index is 3 (0-based)
+                    if (fileBytes.Length > 4 && fileBytes[3] == 0x04)
                     {
                         fileBytes[3] = 0x03;
                         File.WriteAllBytes(mdlFile, fileBytes);
                     }
                 }
 
-                // Patch .scene files
                 var sceneFiles = Directory.GetFiles(directoryPath, "*.scene", SearchOption.AllDirectories);
                 foreach (var sceneFile in sceneFiles)
                 {
@@ -2822,7 +2998,7 @@ namespace NautilusXP2024
                 }
             }
 
-            // Remaining logic for scanning and moving directory to "checked" folder
+            // Scanning logic remains unchanged
             if (CheckBoxArchiveMapperVerify.IsChecked ?? false)
             {
                 Stopwatch scanStopwatch = Stopwatch.StartNew();
@@ -2832,7 +3008,7 @@ namespace NautilusXP2024
                 LogDebugInfo($"FileScanner: Scanned directory {directoryPath} (Time Taken: {scanStopwatch.ElapsedMilliseconds}ms)");
             }
 
-            // Handle directory naming conflicts in 'checked' folder
+            // Moving directory to "Complete" folder with enhanced conflict resolution
             bool hasUnmappedFiles = CheckForUnmappedFiles(directoryPath);
             string checkedFolder = Path.Combine(parentDirectoryPath, "Complete");
             Directory.CreateDirectory(checkedFolder);
@@ -2842,12 +3018,35 @@ namespace NautilusXP2024
                 finalDirectoryPath += "_CHECK";
             }
 
-            int suffixCounter = 2;
-            while (Directory.Exists(finalDirectoryPath))
+            // Enhanced conflict resolution when moving to "Complete"
+            if (Directory.Exists(finalDirectoryPath))
             {
-                finalDirectoryPath = $"{finalDirectoryPath} ({suffixCounter++})";
+                LogDebugInfo($"Conflict detected: '{finalDirectoryPath}' already exists. Checking contents...");
+
+                // Check if the existing directory is empty or contains expected contents
+                var existingFiles = Directory.GetFiles(finalDirectoryPath);
+                var existingDirs = Directory.GetDirectories(finalDirectoryPath);
+
+                // If empty, consider removing it before moving
+                if (!existingFiles.Any() && !existingDirs.Any())
+                {
+                    LogDebugInfo($"Existing directory '{finalDirectoryPath}' is empty. Deleting it to avoid conflict.");
+                    Directory.Delete(finalDirectoryPath);
+                }
+                else
+                {
+                    // Add a suffix only if a real conflict is found
+                    int suffixCounter = 2;
+                    string baseNewDirectoryName = finalDirectoryPath;
+                    while (Directory.Exists(finalDirectoryPath))
+                    {
+                        LogDebugInfo($"Attempting to resolve conflict by renaming to '{finalDirectoryPath} ({suffixCounter})'.");
+                        finalDirectoryPath = $"{baseNewDirectoryName} ({suffixCounter++})";
+                    }
+                }
             }
 
+            // Final move operation with updated path
             Directory.Move(directoryPath, finalDirectoryPath);
             LogDebugInfo($"Archive Unpacker: Directory moved to 'checked' at '{finalDirectoryPath}'.");
 
@@ -2860,6 +3059,28 @@ namespace NautilusXP2024
                 LogDebugInfo($"JobReport.txt was copied to '{destinationFile}'.");
             }
 
+            // Check if repacking is enabled
+            if (CheckBoxArchiveMapperRepackAll.IsChecked == true)
+            {
+                LogDebugInfo($"Repacker: Starting repacking for folder {finalDirectoryPath}");
+
+                // Call the repacker and wait for it to finish
+                bool repackSuccess = await StartRepackingAsync(finalDirectoryPath);
+
+                if (repackSuccess)
+                {
+                    LogDebugInfo($"Repacker: Repacking completed successfully for folder {finalDirectoryPath}");
+                }
+                else
+                {
+                    LogDebugInfo($"Repacker: Repacking failed for folder {finalDirectoryPath}");
+                }
+            }
+            else
+            {
+                LogDebugInfo("Repacker: Repacking is disabled, skipping.");
+            }
+
             // Call CreateHDKFolderStructure if CheckBoxArchiveMapperOfflineMode is checked
             if (CheckBoxArchiveMapperOfflineMode.IsChecked ?? false)
             {
@@ -2868,7 +3089,97 @@ namespace NautilusXP2024
         }
 
 
+        private async Task<bool> StartRepackingAsync(string folderPath)
+        {
+            try
+            {
+                // Simulate the drag-and-drop process by adding the folder path to the items list
+                List<string> itemsToAdd = new List<string>();
+                string itemWithTrailingSlash = folderPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? folderPath : folderPath + Path.DirectorySeparatorChar;
+                itemsToAdd.Add(itemWithTrailingSlash);
 
+                if (itemsToAdd.Count > 0)
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        // Retrieve existing items from ArchiveCreatorTextBox and add new items
+                        var existingItemsSet = new HashSet<string>(ArchiveCreatorTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                        int initialCount = existingItemsSet.Count;
+
+                        existingItemsSet.UnionWith(itemsToAdd);
+                        int newItemsCount = existingItemsSet.Count - initialCount;
+                        int duplicatesCount = itemsToAdd.Count - newItemsCount;
+
+                        ArchiveCreatorTextBox.Text = string.Join(Environment.NewLine, existingItemsSet);
+
+                        // Display a message about the items added
+                        string message = $"{newItemsCount} item(s) added";
+                        if (duplicatesCount > 0)
+                        {
+                            message += $", {duplicatesCount} duplicate(s) filtered";
+                        }
+                        TemporaryMessageHelper.ShowTemporaryMessage(ArchiveCreatorDragAreaText, message, 2000);
+
+                        LogDebugInfo($"Archive Creation: {newItemsCount} items added, {duplicatesCount} duplicates filtered from simulated Drag and Drop.");
+                    });
+                }
+                else
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        LogDebugInfo("Simulated Drag and Drop - No valid ZIP files or folders found.");
+                        TemporaryMessageHelper.ShowTemporaryMessage(ArchiveCreatorDragAreaText, "No valid ZIP files or folders found.", 2000);
+                    });
+
+                    return false; // Indicate failure due to no valid items
+                }
+
+                // Simulate clicking the create button after the drag-and-drop operation
+                await Task.Delay(100); // Give time for UI to update
+                ArchiveCreatorExecuteButtonClick(this, new RoutedEventArgs());
+
+                return true; // Indicate success
+            }
+            catch (Exception ex)
+            {
+                LogDebugInfo($"Repacker: An error occurred during repacking: {ex.Message}");
+                return false; // Indicate failure
+            }
+        }
+
+        private void CheckBoxArchiveMapperRepackAll_Checked(object sender, RoutedEventArgs e)
+        {
+            // Check and enable the CheckBoxArchiveMapperVerify checkbox
+            CheckBoxArchiveMapperVerify.IsChecked = true;
+
+
+            // Disable the other specified checkboxes
+            CheckBoxArchiveMapperOfflineMode.IsChecked = false;
+            CheckBoxArchiveMapperCoredata.IsChecked = false;
+        }
+
+        private void CheckBoxArchiveMapperOfflineMode_Checked(object sender, RoutedEventArgs e)
+        {
+            // Check and enable the CheckBoxArchiveMapperVerify checkbox
+            CheckBoxArchiveMapperVerify.IsChecked = true;
+
+
+            // Disable the other specified checkboxes
+            CheckBoxArchiveMapperRepackAll.IsChecked = false;
+            CheckBoxArchiveMapperCoredata.IsChecked = false;
+        }
+
+        private void CheckBoxArchiveMapperCoredata_Checked(object sender, RoutedEventArgs e)
+        {
+            // Check and enable the CheckBoxArchiveMapperVerify checkbox
+
+
+            // Disable the other specified checkboxes
+            CheckBoxArchiveMapperRepackAll.IsChecked = false;
+            CheckBoxArchiveMapperOfflineMode.IsChecked = false;
+        }
+
+        
         private async Task<string> FindAndRenameForSceneFile(string directoryPath, string directoryName, string parentDirectoryPath)
         {
             string newDirectoryName = directoryPath;  // Default to the original directory path if no .SCENE file is found
@@ -3036,7 +3347,33 @@ namespace NautilusXP2024
         }
 
 
+        private void ViewLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Determine the path to the log file next to the executable
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string logFilePath = Path.Combine(exeDirectory, "logs", "debug.log");
 
+                // Check if the log file exists
+                if (File.Exists(logFilePath))
+                {
+                    // Use Process.Start to open the log file with the default associated application
+                    Process.Start(new ProcessStartInfo(logFilePath) { UseShellExecute = true });
+                }
+                else
+                {
+                    // Show a message if the log file does not exist
+                    MessageBox.Show("Log file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and display an error message
+                LogDebugInfo($"Error opening log file: {ex.Message}");
+                MessageBox.Show($"Failed to open the log file. Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
 
         private void ProcessAndAddMatches(string match, ConcurrentBag<string> allProcessedMatches, string[] specialPrefixes1, string[] specialPrefixes2)
@@ -3163,8 +3500,8 @@ namespace NautilusXP2024
 
         public void CheckForUUID()
         {
-            // Define a regex pattern for the UUID format 8-8-8-8
-            string uuidPattern = @"\b[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}\b";
+            // Define a regex pattern for the UUID format 8-8-8-8, possibly followed by underscores and other characters
+            string uuidPattern = @"\b([a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8})(?:_[\w]*)?\b";
 
             // Initialize a variable to hold any found UUID temporarily
             string tempUUID = string.Empty;
@@ -3179,8 +3516,9 @@ namespace NautilusXP2024
 
             if (match.Success)
             {
-                tempUUID = match.Value.ToLower(); // Save the found UUID
-                                                  // If a UUID is found, save it as UserSuppliedUUID in lowercase, prepended and appended as specified
+                // Save the found UUID, ignoring any suffix
+                tempUUID = match.Groups[1].Value.ToLower();
+                // If a UUID is found, save it as UserSuppliedUUID in lowercase, prepended and appended as specified
                 UserSuppliedPathPrefix = "objects/" + tempUUID + "/";
             }
 
@@ -3188,8 +3526,9 @@ namespace NautilusXP2024
             match = Regex.Match(currentFilePath.ToLower(), uuidPattern);
             if (match.Success)
             {
-                tempUUID = match.Value.ToLower(); // Save the found UUID
-                                                  // If a UUID is found in currentFilePath, save it as UUIDFoundInPath in lowercase, prepended and appended as specified
+                // Save the found UUID, ignoring any suffix
+                tempUUID = match.Groups[1].Value.ToLower();
+                // If a UUID is found in currentFilePath, save it as UUIDFoundInPath in lowercase, prepended and appended as specified
                 UUIDFoundInPath = "objects/" + tempUUID + "/";
             }
 
@@ -3197,11 +3536,11 @@ namespace NautilusXP2024
             if (!string.IsNullOrEmpty(tempUUID))
             {
                 CurrentUUID = tempUUID.ToUpper();
-
             }
-            LogDebugInfo($"UUID Check: UUIDFoundInPath set to {UUIDFoundInPath}, CurrentUUID set to {CurrentUUID}, UserSuppliedPathPrefix set to {UserSuppliedPathPrefix}");
 
+            LogDebugInfo($"UUID Check: UUIDFoundInPath set to {UUIDFoundInPath}, CurrentUUID set to {CurrentUUID}, UserSuppliedPathPrefix set to {UserSuppliedPathPrefix}");
         }
+
 
         private int ComputeAFSHash(string text)
         {
@@ -6349,14 +6688,16 @@ namespace NautilusXP2024
         {
             Random random = new Random();
             Func<int, string> randomHex = length => new string(Enumerable.Repeat("0123456789ABCDEF", length)
-                                                                   .Select(s => s[random.Next(s.Length)]).ToArray());
+                                                                    .Select(s => s[random.Next(s.Length)]).ToArray());
 
             return $"{randomHex(8)}-{randomHex(8)}-{randomHex(8)}-{randomHex(8)}";
         }
 
         private void ODCGenerateUUIDButton_Click(object sender, RoutedEventArgs e)
         {
-            odcUUIDTextBox.Text = GenerateUUID();
+            string uuid = GenerateUUID();
+            odcUUIDTextBox.Text = uuid;
+            txtObjectId.Text = uuid;  // Assuming 'anotherUUIDTextBox' is the name of the second textbox
         }
 
 
@@ -14075,7 +14416,30 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
+        private void AddNewScenelistItem_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var newScene = new SceneListEditor
+            {
+                ID = txtSdcName.Text,
+                SceneID = txtChannelID.Text,
+                Type = (txtSceneType.SelectedItem as ComboBoxItem)?.Content.ToString(),
+                Host = (txtdHost.SelectedItem as ComboBoxItem)?.Content.ToString(),
+                Config = txtsceneconfig.Text,
+                Description = txtSdcPath.Text,
+                SHA1 = txtSdcsha1Digest.Text,
+                Version = txtSDCversion.Text,
+                Flags = txtflags.Text,
+                HomeUID = txthomeuuid.Text
+            };
 
+            Scenes.Insert(0, newScene); // Add the new scene at the beginning of the ObservableCollection
+
+            var unsavedChangesTextBlock = this.FindName("UnsavedSceneListChanges") as TextBlock;
+            if (unsavedChangesTextBlock != null)
+            {
+                unsavedChangesTextBlock.Visibility = Visibility.Visible;
+            }
+        }
 
         private async void SaveSceneListXmlButton_Click(object sender, RoutedEventArgs e)
         {
@@ -14083,35 +14447,102 @@ VALUES (@objectIndex, @keyName, @value)";
             ResetTextBoxColors();
 
             DeploySceneListFlag = false;
-            var doc = new XDocument(
-                new XElement("SCENELIST",
-                    from scene in Scenes
-                    select new XElement("SCENE",
-                        string.IsNullOrEmpty(scene.ID) ? null : new XAttribute("ID", scene.ID),
-                        string.IsNullOrEmpty(scene.Type) ? null : new XAttribute("Type", scene.Type),
-                        string.IsNullOrEmpty(scene.Description) ? null : new XAttribute("desc", scene.Description),
-                        string.IsNullOrEmpty(scene.Config) ? null : new XAttribute("config", scene.Config),
-                        string.IsNullOrEmpty(scene.SceneID) ? null : new XAttribute("SceneID", scene.SceneID),
-                        string.IsNullOrEmpty(scene.Version) ? null : new XAttribute("version", scene.Version),
-                        string.IsNullOrEmpty(scene.SHA1) ? null : new XAttribute("sha1", scene.SHA1),
-                        string.IsNullOrEmpty(scene.Flags) ? null : new XAttribute("flags", scene.Flags),
-                        string.IsNullOrEmpty(scene.Softcap) ? null : new XAttribute("softcap", scene.Softcap),
-                        string.IsNullOrEmpty(scene.Capacity) ? null : new XAttribute("capacity", scene.Capacity),
-                        string.IsNullOrEmpty(scene.Host) ? null : new XAttribute("host", scene.Host),
-                        string.IsNullOrEmpty(scene.HomeUID) ? null : new XAttribute("HOMEUID", scene.HomeUID)
-                    )
-                )
-            );
 
-            // Save the document next to the executable
+            // Define the order for sorting and group names for comments
+            var typeOrder = new List<string>
+    {
+        "PublicLobby", "GlobalSpace", "ArcadeSpace", "Game16Space", "Game32Space", "Game60Space",
+        "ClubHouse", "PublicNoVideo", "Home", "PrivateNoVideo"
+    };
+
+            // Sort the Scenes collection according to the specified order
+            var sortedScenes = Scenes
+                .OrderBy(scene =>
+                {
+                    // Find the index of the scene type in the typeOrder list
+                    // If not found, give it a high index to sort it later
+                    int index = typeOrder.FindIndex(t => string.Equals(t, scene.Type, StringComparison.OrdinalIgnoreCase));
+                    if (index == -1)
+                    {
+                        // Special handling for types containing "Home" but not exactly "Home"
+                        if (scene.Type.Contains("Home", StringComparison.OrdinalIgnoreCase) && !string.Equals(scene.Type, "Home", StringComparison.OrdinalIgnoreCase))
+                            return typeOrder.IndexOf("Home");
+                        return int.MaxValue; // Put unknown types at the end
+                    }
+                    return index;
+                })
+                .ThenBy(scene => scene.ID) // Additional sorting by ID if needed
+                .ToList();
+
+            // Create a new XElement for the SCENELIST
+            var sceneListElement = new XElement("SCENELIST");
+
+            // Track the current group for inserting comments
+            string currentGroup = null;
+
+            foreach (var scene in sortedScenes)
+            {
+                // Determine the group name (type) in a case-insensitive manner
+                string sceneType = typeOrder.FirstOrDefault(t => string.Equals(t, scene.Type, StringComparison.OrdinalIgnoreCase)) ?? "Other";
+
+                // If the group changes, add a comment
+                if (sceneType != currentGroup)
+                {
+                    currentGroup = sceneType;
+                    sceneListElement.Add(new XComment($" {currentGroup} "));
+                }
+
+                // Add the scene element
+                sceneListElement.Add(new XElement("SCENE",
+                    string.IsNullOrEmpty(scene.ID) ? null : new XAttribute("ID", scene.ID),
+                    string.IsNullOrEmpty(scene.Type) ? null : new XAttribute("Type", scene.Type),
+                    string.IsNullOrEmpty(scene.Description) ? null : new XAttribute("desc", scene.Description),
+                    string.IsNullOrEmpty(scene.Config) ? null : new XAttribute("config", scene.Config),
+                    string.IsNullOrEmpty(scene.SceneID) ? null : new XAttribute("SceneID", scene.SceneID),
+                    string.IsNullOrEmpty(scene.Version) ? null : new XAttribute("version", scene.Version),
+                    string.IsNullOrEmpty(scene.SHA1) ? null : new XAttribute("sha1", scene.SHA1),
+                    string.IsNullOrEmpty(scene.Flags) ? null : new XAttribute("flags", scene.Flags),
+                    string.IsNullOrEmpty(scene.Softcap) ? null : new XAttribute("softcap", scene.Softcap),
+                    string.IsNullOrEmpty(scene.Capacity) ? null : new XAttribute("capacity", scene.Capacity),
+                    string.IsNullOrEmpty(scene.Host) ? null : new XAttribute("host", scene.Host),
+                    string.IsNullOrEmpty(scene.HomeUID) ? null : new XAttribute("HOMEUID", scene.HomeUID)
+                ));
+            }
+
+            // Create the new XML document with the SCENELIST element
+            var doc = new XDocument(sceneListElement);
+
             try
             {
-                string exeLocation = System.AppDomain.CurrentDomain.BaseDirectory;
-                string filePath = System.IO.Path.Combine(exeLocation, "SceneList_Plane.xml");
-                doc.Save(filePath);
+                // Get the full path from SceneListPathURLtextbox2
+                string fullPath = SceneListPathURLtextbox2.Text;
+
+                // Extract the filename from the full path
+                string filename = Path.GetFileName(fullPath);
+                if (string.IsNullOrEmpty(filename))
+                {
+                    MessageBox.Show("Failed to extract the filename from the path specified in SceneListPathURLtextbox2.");
+                    return;
+                }
+
+                // Get the save directory path from SceneListSavePathtextbox
+                string saveDirectory = SceneListSavePathtextbox.Text.Trim();
+
+                // Ensure the save directory is valid
+                if (string.IsNullOrWhiteSpace(saveDirectory))
+                {
+                    MessageBox.Show("Please specify a valid directory path to save the SceneList XML.");
+                    return;
+                }
+
+                // Combine the directory path and the filename correctly
+                string savePath = Path.Combine(saveDirectory.TrimEnd('\\', '/'), filename);
+
+                // Save the plain XML document to the constructed path
+                doc.Save(savePath);
 
                 // Compute the SHA1 hash of the XML content
-                string sha1Hash = ComputeSHA1(filePath);
+                string sha1Hash = ComputeSHA1(savePath);
 
                 // Display the SHA1 hash in the textbox
                 LatestSceneListSHA1textbox.Text = sha1Hash;
@@ -14119,13 +14550,15 @@ VALUES (@objectIndex, @keyName, @value)";
                 // Change the visibility of the panel to visible
                 LatestSceneListSHA1panel.Visibility = Visibility.Visible;
 
-                string outputFilePath = System.IO.Path.Combine(exeLocation, "Output", "ToDeploy", "SceneList.xml");
+                // Define the output file path for encryption
+                string exeLocation = System.AppDomain.CurrentDomain.BaseDirectory;
+                string outputFilePath = System.IO.Path.Combine(exeLocation, "Output", "ToDeploy", filename);
 
                 // Check if encryption is enabled
                 if (CheckBoxEncryptSceneList.IsChecked == true)
                 {
                     // Encrypt the saved XML file
-                    bool encryptionSuccess = await EncryptAndSaveFileAsync(filePath, outputFilePath);
+                    bool encryptionSuccess = await EncryptAndSaveFileAsync(savePath, outputFilePath);
 
                     if (encryptionSuccess)
                     {
@@ -14151,7 +14584,7 @@ VALUES (@objectIndex, @keyName, @value)";
                     {
                         unsavedChangesTextBlock.Visibility = Visibility.Collapsed;
                     }
-                    File.Copy(filePath, outputFilePath, overwrite: true);
+                    File.Copy(savePath, outputFilePath, overwrite: true);
                     MessageBox.Show("XML saved successfully without encryption.");
                     // Call the method to save TSS XML
                     LoadTSSXMLButton_Click(sender, e);
@@ -14336,6 +14769,12 @@ VALUES (@objectIndex, @keyName, @value)";
         {
             try
             {
+
+                if (loadedXmlData == null)
+                {
+                    MessageBox.Show("No TSS loaded, cannot save.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 // Get the directory path from the textbox and append "tss" subfolder
                 string originalDirectoryPath = TSSeditorSavePathtextbox.Text;
                 string directoryPath = Path.Combine(originalDirectoryPath, "tss");
@@ -17164,6 +17603,34 @@ VALUES (@objectIndex, @keyName, @value)";
             }
         }
 
+        private void Border_SDCMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Create an OpenFileDialog to allow the user to select an .sdc or .xml file
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "SDC files (*.sdc)|*.sdc|XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Select an SDC or XML file"
+            };
+
+            // Show the dialog and check if the user selected a file
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+                string fileExtension = Path.GetExtension(selectedFilePath).ToLower();
+
+                // Ensure the selected file is either .sdc or .xml
+                if (fileExtension == ".sdc" || fileExtension == ".xml")
+                {
+                    ProcessDroppedSDCFile(selectedFilePath);
+                }
+                else
+                {
+                    MessageBox.Show("Only SDC or XML files are supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+
         private async void ProcessDroppedSDCFile(string filePath)
         {
             LogDebugInfo($"Processing dropped SDC file: {filePath}");
@@ -17230,7 +17697,8 @@ VALUES (@objectIndex, @keyName, @value)";
                     var match = Regex.Match(fileName, @"_T(\d{3})", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        txtSDCversion.Text = match.Groups[1].Value;
+                        string version = match.Groups[1].Value.TrimStart('0'); // Trim leading zeros
+                        txtSDCversion.Text = version;
                     }
 
                     EncryptAndSetChannelID();
@@ -17255,6 +17723,7 @@ VALUES (@objectIndex, @keyName, @value)";
 
             return false;
         }
+
 
         private string CalculateSHA1Checksum(string filePath)
         {
@@ -17343,7 +17812,7 @@ VALUES (@objectIndex, @keyName, @value)";
             try
             {
                 Random random = new Random();
-                int randomNumber = random.Next(30303, 40304);
+                int randomNumber = random.Next(30303, 50505);
 
                 ushort sceneID = (ushort)randomNumber;
 
