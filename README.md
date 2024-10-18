@@ -9,12 +9,12 @@ Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3
 </h2>
 
 <h1 align="center">
-   Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
+   Nautilus Fork by Home Laboratory
    </h1>
 
-This repository is just a place holder with information on Nautilus, Multiserver3. For the source code of Nautilus and Multser the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
+This repository is now just a place holder with information on Nautilus. For the source code of Nautilus and Multiserer the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
 
-This application is the product of the research done by Home Laboratory / Home Headquarters members over the last few years. 
+This application is the product of the PlayStation Home research done by Home Laboratory members over the last few years. 
 
 Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
