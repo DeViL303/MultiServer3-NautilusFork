@@ -1,27 +1,26 @@
 using Figgle;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
-using Spectre.Console;
-using Spectre.Console.Json;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CustomLogger
 {
     public class LoggerAccessor
     {
-        private static bool initiated = false;
+        public static ILogger Logger { get; set; }
 
-        public static void SetupLogger(string project)
+        public static FileLoggerProvider _fileLogger = null;
+
+        public static void SetupLogger(string project, string CurrentDir)
         {
+            string logfilePath = CurrentDir + $"/logs/{project}.log";
+
             try
             {
                 Console.Title = project;
                 Console.CursorVisible = false;
-
-                Thread.Sleep(100);
 
                 Console.Clear();
             }
@@ -30,37 +29,53 @@ namespace CustomLogger
 
             }
 
-            Directory.CreateDirectory(Directory.GetCurrentDirectory() + $"/logs");
-
             Console.WriteLine(FiggleFonts.Ogre.Render(project));
 
-            Logger = LoggerFactory.Create(builder =>
+            ILoggerFactory factory = LoggerFactory.Create(builder =>
             {
                 builder.AddSimpleConsole(options => { options.SingleLine = true; options.TimestampFormat = "[MM-dd-yyyy HH:mm:ss] "; });
-                builder.AddProvider(_fileLogger = new FileLoggerProvider(Directory.GetCurrentDirectory() + $"/logs/{project}.log", new FileLoggerOptions()
+            });
+
+            // Check if the log file is in use by another process, if not create/use one.
+            try
+            {
+                if (File.Exists(logfilePath))
                 {
+                    using (FileStream stream = File.Open(logfilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        
+                    }
+                }
+
+                Directory.CreateDirectory(CurrentDir + $"/logs");
+
+                factory.AddProvider(_fileLogger = new FileLoggerProvider(CurrentDir + $"/logs/{project}.log", new FileLoggerOptions()
+                {
+                    UseUtcTimestamp = true,
                     Append = false,
                     FileSizeLimitBytes = 4294967295, // 4GB (FAT32 max size) - 1 byte
                     MaxRollingFiles = 100
                 }));
+            }
+            catch
+            {
+                // Not Important.
+            }
 
-                _fileLogger.MinLevel = LogLevel.Information;
-            }).CreateLogger(string.Empty);
+            Logger = factory.CreateLogger(string.Empty);
+
 #if DEBUG
             if (Environment.OSVersion.Platform == PlatformID.Win32NT
                 || Environment.OSVersion.Platform == PlatformID.Win32S
                 || Environment.OSVersion.Platform == PlatformID.Win32Windows)
                 _ = Task.Run(ResourceMonitor.StartPerfWatcher);
 #endif
-            initiated = true;
         }
 
         public static void DrawTextProgressBar(string text, int progress, int total, bool warn = false)
         {
-            if (initiated)
-            {
-                if (string.IsNullOrEmpty(text))
-                    text = string.Empty;
+            if (string.IsNullOrEmpty(text))
+                text = string.Empty;
 
                 try
                 {
@@ -115,46 +130,26 @@ namespace CustomLogger
                 {
                     // Not Important.
                 }
-            }
         }
 
 #pragma warning disable
-        public static ILogger Logger { get; set; }
-
-        public static FileLoggerProvider _fileLogger = null;
-        public static void LogInfo(string message) { Logger.LogInformation(message, null); }
-        public static void LogInfo(string message, params object[] args) { Logger.LogInformation(message, args); }
-        public static void LogInfo(int? message, params object[] args) { Logger.LogInformation(message.ToString(), args); }
-        public static void LogInfo(float? message, params object[] args) { Logger.LogInformation(message.ToString(), args); }
-        public static void LogWarn(string message) { Logger.LogWarning(message, null); }
+        public static void LogInfo(string message) { Logger.LogInformation(message); }
+        public static void LogInfo(string message, params object[] args) {  Logger.LogInformation(message, args); }
+        public static void LogInfo(int? message, params object[] args) {  Logger.LogInformation(message.ToString(), args); }
+        public static void LogInfo(float? message, params object[] args) {  Logger.LogInformation(message.ToString(), args); }
+        public static void LogWarn(string message) { Logger.LogWarning(message); }
         public static void LogWarn(string message, params object[] args) { Logger.LogWarning(message, args); }
-        public static void LogWarn(int? message, params object[] args) { Logger.LogWarning(message.ToString(), args); }
-        public static void LogWarn(float? message, params object[] args) { Logger.LogWarning(message.ToString(), args); }
-        public static void LogError(string message) { Logger.LogError(message); }
-        public static void LogError(string message, params object[] args) { Logger.LogError(message, args); }
-        public static void LogError(int? message, params object[] args) { Logger.LogError(message.ToString(), args); }
-        public static void LogError(float? message, params object[] args) { Logger.LogError(message.ToString(), args); }
-        public static void LogError(Exception exception) { Logger.LogCritical(exception.Message.ToString()); }
-        public static void LogDebug(string message) { Logger.LogDebug(message, null); }
-        public static void LogDebug(string message, params object[] args) { Logger.LogDebug(message, args); }
-        public static void LogDebug(int? message, params object[] args) { Logger.LogDebug(message.ToString(), args); }
-        public static void LogDebug(float? message, params object[] args) { Logger.LogDebug(message.ToString(), args); }
-        public static void LogJson(string message, string header = "JSON Data") {
-            AnsiConsole.Write(
-                new Panel(new JsonText(message)
-                    .BracesColor(Color.Red)
-                    .BracketColor(Color.Green)
-                    .ColonColor(Color.Blue)
-                    .CommaColor(Color.Red)
-                    .StringColor(Color.Green)
-                    .NumberColor(Color.Blue)
-                    .BooleanColor(Color.Red)
-                    .NullColor(Color.Green))
-                    .Header($"[[{DateTime.Now.ToString("MM-dd-yyyy HH:mm:ss")}]] " + header)
-                    .Collapse()
-                    .RoundedBorder()
-                    .BorderColor(ConsoleColor.Gray));
-        }
+        public static void LogWarn(int? message, params object[] args) {  Logger.LogWarning(message.ToString(), args); }
+        public static void LogWarn(float? message, params object[] args) {  Logger.LogWarning(message.ToString(), args); }
+        public static void LogError(string message) {  Logger.LogError(message); }
+        public static void LogError(string message, params object[] args) {  Logger.LogError(message, args); }
+        public static void LogError(int? message, params object[] args) {  Logger.LogError(message.ToString(), args); }
+        public static void LogError(float? message, params object[] args) {  Logger.LogError(message.ToString(), args); }
+        public static void LogError(Exception exception) {  Logger.LogCritical(exception.ToString()); }
+        public static void LogDebug(string message, object arg = null) {  Logger.LogDebug(message, arg); }
+        public static void LogDebug(string message, params object[] args) {  Logger.LogDebug(message, args); }
+        public static void LogDebug(int? message, params object[] args) {  Logger.LogDebug(message.ToString(), args); }
+        public static void LogDebug(float? message, params object[] args) {  Logger.LogDebug(message.ToString(), args); }
 #pragma warning restore
     }
 }

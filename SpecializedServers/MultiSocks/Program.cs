@@ -1,12 +1,17 @@
+using BlazeCommon;
 using CustomLogger;
-using MultiSocks.DirtySocks;
+using NetworkLibrary.TCP_IP;
+using MultiSocks.Aries;
+using MultiSocks.Blaze;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 using System.Runtime;
-using System.Security.Cryptography;
 
 public static class MultiSocksServerConfiguration
 {
     public static bool UsePublicIPAddress { get; set; } = false;
+    public static bool RPCS3Workarounds { get; set; } = true;
+    public static string ProtoSSLCertificateCachePath { get; set; } = $"{Directory.GetCurrentDirectory()}/SSL/ProtoSSL/Cache";
     public static string DirtySocksDatabasePath { get; set; } = $"{Directory.GetCurrentDirectory()}/static/dirtysocks.db.json";
 
     /// <summary>
@@ -27,8 +32,10 @@ public static class MultiSocksServerConfiguration
             // Write the JObject to a file
             File.WriteAllText(configPath, new JObject(
                 new JProperty("use_public_ipaddress", UsePublicIPAddress),
+                new JProperty("rpcs3_workarounds", RPCS3Workarounds),
+                new JProperty("protossl_certificate_cache_path", ProtoSSLCertificateCachePath),
                 new JProperty("dirtysocks_database_path", DirtySocksDatabasePath)
-            ).ToString().Replace("/", "\\\\"));
+            ).ToString());
 
             return;
         }
@@ -39,6 +46,8 @@ public static class MultiSocksServerConfiguration
             dynamic config = JObject.Parse(File.ReadAllText(configPath));
 
             UsePublicIPAddress = GetValueOrDefault(config, "use_public_ipaddress", UsePublicIPAddress);
+            RPCS3Workarounds = GetValueOrDefault(config, "rpcs3_workarounds", RPCS3Workarounds);
+            ProtoSSLCertificateCachePath = GetValueOrDefault(config, "protossl_certificate_cache_path", ProtoSSLCertificateCachePath);
             DirtySocksDatabasePath = GetValueOrDefault(config, "dirtysocks_database_path", DirtySocksDatabasePath);
         }
         catch (Exception ex)
@@ -50,59 +59,77 @@ public static class MultiSocksServerConfiguration
     // Helper method to get a value or default value if not present
     public static T GetValueOrDefault<T>(dynamic obj, string propertyName, T defaultValue)
     {
-        if (obj != null)
+        try
         {
-            if (obj is JObject jObject)
+            if (obj != null)
             {
-                if (jObject.TryGetValue(propertyName, out JToken? value))
+                if (obj is JObject jObject)
                 {
-                    T? returnvalue = value.ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
-                }
-            }
-            else if (obj is JArray jArray)
-            {
-                if (int.TryParse(propertyName, out int index) && index >= 0 && index < jArray.Count)
-                {
-                    T? returnvalue = jArray[index].ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
+                    if (jObject.TryGetValue(propertyName, out JToken? value))
+                    {
+                        T? returnvalue = value.ToObject<T>();
+                        if (returnvalue != null)
+                            return returnvalue;
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            LoggerAccessor.LogError($"[Program] - GetValueOrDefault thrown an exception: {ex}");
+        }
+
         return defaultValue;
     }
 }
 
 class Program
 {
-    static string configDir = Directory.GetCurrentDirectory() + "/static/";
-    static string configPath = configDir + "MultiSocks.json";
-    static bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT || Environment.OSVersion.Platform == PlatformID.Win32S || Environment.OSVersion.Platform == PlatformID.Win32Windows;
-    static DirtySocksServer? DSServer;
+    private static string configDir = Directory.GetCurrentDirectory() + "/static/";
+    private static string configPath = configDir + "MultiSocks.json";
+    private static AriesServer? DirtySocksServer;
+    private static BlazeClass? BlazeDirtySocksServer;
 
-    static void StartOrUpdateServer()
+    private static void StartOrUpdateServer()
     {
-        DSServer?.Dispose();
-        DSServer = new DirtySocksServer(new CancellationTokenSource().Token);
-    }
+        Directory.CreateDirectory(MultiSocksServerConfiguration.ProtoSSLCertificateCachePath);
 
-    static string ComputeMD5FromFile(string filePath)
-    {
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            // Convert the byte array to a hexadecimal string
-            return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", string.Empty);
-        }
+        DirtySocksServer?.Dispose();
+        BlazeDirtySocksServer?.Dispose();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        DirtySocksServer = new AriesServer(new CancellationTokenSource().Token);
+        BlazeDirtySocksServer = new BlazeClass(new CancellationTokenSource().Token);
     }
 
     static void Main()
     {
-        if (!IsWindows)
+        if (!NetworkLibrary.Extension.OtherExtensions.IsWindows)
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        else
+            TechnitiumLibrary.Net.Firewall.FirewallHelper.CheckFirewallEntries(Assembly.GetEntryAssembly()?.Location);
 
-        LoggerAccessor.SetupLogger("MultiSocks");
+        LoggerAccessor.SetupLogger("MultiSocks", Directory.GetCurrentDirectory());
+
+#if DEBUG
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A FATAL ERROR OCCURED!");
+            LoggerAccessor.LogError(args.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A task has thrown a Unobserved Exception!");
+            LoggerAccessor.LogError(args.Exception);
+            args.SetObserved();
+        };
+
+        IPUtils.GetIPInfos(IPUtils.GetLocalIPAddress().ToString(), IPUtils.GetLocalSubnet());
+#endif
 
         MultiSocksServerConfiguration.RefreshVariables(configPath);
 
@@ -110,44 +137,38 @@ class Program
 
         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
         {
-            LoggerAccessor.LogInfo("Console Inputs are now available while server is running. . .");
-
             while (true)
             {
-                string? stdin = Console.ReadLine();
+                LoggerAccessor.LogInfo("Press any keys to access server actions...");
 
-                if (!string.IsNullOrEmpty(stdin))
+                Console.ReadLine();
+
+                LoggerAccessor.LogInfo("Press one of the following keys to trigger an action: [R (Reboot),S (Shutdown)]");
+
+                switch (char.ToLower(Console.ReadKey().KeyChar))
                 {
-                    switch (stdin.ToLower())
-                    {
-                        case "shutdown":
-                            LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
+                    case 's':
+                        LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Shutting down. Goodbye!");
-                                Environment.Exit(0);
-                            }
-                            break;
-                        case "reboot":
-                            LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Shutting down. Goodbye!");
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case 'r':
+                        LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Rebooting!");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Rebooting!");
 
-                                MultiSocksServerConfiguration.RefreshVariables(configPath);
+                            MultiSocksServerConfiguration.RefreshVariables(configPath);
 
-                                StartOrUpdateServer();
-                            }
-                            break;
-                        default:
-                            LoggerAccessor.LogWarn($"Unknown command entered: {stdin}");
-                            break;
-                    }
+                            StartOrUpdateServer();
+                        }
+                        break;
                 }
-                else
-                    LoggerAccessor.LogWarn("No command entered!");
             }
         }
         else

@@ -1,15 +1,15 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using System.Net;
 using System.Text;
 using WatsonWebserver.Core;
-using WatsonWebserver.Lite;
+using WatsonWebserver;
 
 namespace Horizon.MUM
 {
     public class MumServerHandler
     {
-        private WebserverLite? _Server;
+        private Webserver? _Server;
         private string ip;
         private int port;
 
@@ -31,7 +31,7 @@ namespace Horizon.MUM
                 settings.Ssl.Enable = true;
             }
 
-            _Server = new WebserverLite(settings, DefaultRoute);
+            _Server = new Webserver(settings, DefaultRoute);
 
             StartServer();
         }
@@ -49,12 +49,15 @@ namespace Horizon.MUM
             if (_Server != null && !_Server.IsListening)
             {
                 _Server.Events.Logger = LoggerAccessor.LogInfo;
+                _Server.Events.ExceptionEncountered += ExceptionEncountered;
                 _Server.Settings.Debug.Responses = true;
                 _Server.Settings.Debug.Routing = true;
 
                 _Server.Routes.PostAuthentication.Parameter.Add(WatsonWebserver.Core.HttpMethod.GET, "/GetChannelsJson/", async (HttpContextBase ctx) =>
                 {
-                    if (!string.IsNullOrEmpty(ctx.Request.Useragent) && ctx.Request.Useragent.ToLower().Contains("bytespider")) // Get Away TikTok.
+                    string userAgent = ctx.Request.Useragent;
+
+                    if (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("bytespider", StringComparison.InvariantCultureIgnoreCase)) // Get Away TikTok.
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         ctx.Response.ContentType = "text/plain";
@@ -68,15 +71,50 @@ namespace Horizon.MUM
                         string? query = ctx.Request.Query.Querystring;
                         ctx.Response.ContentType = "text/xml; charset=UTF-8";
 
-                        if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip"))
+                        if (!string.IsNullOrEmpty(encoding))
                         {
-                            ctx.Response.Headers.Add("Content-Encoding", "gzip");
-                            string? base64json = MumChannelHandler.JsonSerializeChannelsList();
+                            if (encoding.Contains("zstd"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "zstd");
+                                string? base64json = MumChannelHandler.JsonSerializeChannelsList();
 
-                            if (!string.IsNullOrEmpty(base64json))
-                                await ctx.Response.Send(HTTPProcessor.Compress(Encoding.UTF8.GetBytes(base64json)));
+                                if (!string.IsNullOrEmpty(base64json))
+                                    await ctx.Response.Send(HTTPProcessor.CompressZstd(Encoding.UTF8.GetBytes(base64json)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("br"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "br");
+                                string? base64json = MumChannelHandler.JsonSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64json))
+                                    await ctx.Response.Send(HTTPProcessor.CompressBrotli(Encoding.UTF8.GetBytes(base64json)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("gzip"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "gzip");
+                                string? base64json = MumChannelHandler.JsonSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64json))
+                                    await ctx.Response.Send(HTTPProcessor.CompressGzip(Encoding.UTF8.GetBytes(base64json)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("deflate"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "deflate");
+                                string? base64json = MumChannelHandler.JsonSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64json))
+                                    await ctx.Response.Send(HTTPProcessor.Inflate(Encoding.UTF8.GetBytes(base64json)));
+                                else
+                                    await ctx.Response.Send();
+                            }
                             else
-                                await ctx.Response.Send();
+                                await ctx.Response.Send(MumChannelHandler.JsonSerializeChannelsList());
                         }
                         else
                             await ctx.Response.Send(MumChannelHandler.JsonSerializeChannelsList());
@@ -85,7 +123,9 @@ namespace Horizon.MUM
 
                 _Server.Routes.PostAuthentication.Parameter.Add(WatsonWebserver.Core.HttpMethod.GET, "/GetChannelsXML/", async (HttpContextBase ctx) =>
                 {
-                    if (!string.IsNullOrEmpty(ctx.Request.Useragent) && ctx.Request.Useragent.ToLower().Contains("bytespider")) // Get Away TikTok.
+                    string userAgent = ctx.Request.Useragent;
+
+                    if (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("bytespider", StringComparison.InvariantCultureIgnoreCase)) // Get Away TikTok.
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         ctx.Response.ContentType = "text/plain";
@@ -99,15 +139,50 @@ namespace Horizon.MUM
                         string? encoding = ctx.Request.RetrieveHeaderValue("Accept-Encoding");
                         string? query = ctx.Request.Query.Querystring;
 
-                        if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip"))
+                        if (!string.IsNullOrEmpty(encoding))
                         {
-                            ctx.Response.Headers.Add("Content-Encoding", "gzip");
-                            string? base64xml = MumChannelHandler.XMLSerializeChannelsList();
+                            if (encoding.Contains("zstd"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "zstd");
+                                string? base64xml = MumChannelHandler.XMLSerializeChannelsList();
 
-                            if (!string.IsNullOrEmpty(base64xml))
-                                await ctx.Response.Send(HTTPProcessor.Compress(Encoding.UTF8.GetBytes(base64xml)));
+                                if (!string.IsNullOrEmpty(base64xml))
+                                    await ctx.Response.Send(HTTPProcessor.CompressZstd(Encoding.UTF8.GetBytes(base64xml)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("br"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "br");
+                                string? base64xml = MumChannelHandler.XMLSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64xml))
+                                    await ctx.Response.Send(HTTPProcessor.CompressBrotli(Encoding.UTF8.GetBytes(base64xml)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("gzip"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "gzip");
+                                string? base64xml = MumChannelHandler.XMLSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64xml))
+                                    await ctx.Response.Send(HTTPProcessor.CompressGzip(Encoding.UTF8.GetBytes(base64xml)));
+                                else
+                                    await ctx.Response.Send();
+                            }
+                            else if (encoding.Contains("deflate"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "deflate");
+                                string? base64xml = MumChannelHandler.XMLSerializeChannelsList();
+
+                                if (!string.IsNullOrEmpty(base64xml))
+                                    await ctx.Response.Send(HTTPProcessor.Inflate(Encoding.UTF8.GetBytes(base64xml)));
+                                else
+                                    await ctx.Response.Send();
+                            }
                             else
-                                await ctx.Response.Send();
+                                await ctx.Response.Send(MumChannelHandler.XMLSerializeChannelsList());
                         }
                         else
                             await ctx.Response.Send(MumChannelHandler.XMLSerializeChannelsList());
@@ -116,7 +191,9 @@ namespace Horizon.MUM
 
                 _Server.Routes.PostAuthentication.Parameter.Add(WatsonWebserver.Core.HttpMethod.GET, "/GetChannelsCRC/", async (HttpContextBase ctx) =>
                 {
-                    if (!string.IsNullOrEmpty(ctx.Request.Useragent) && ctx.Request.Useragent.ToLower().Contains("bytespider")) // Get Away TikTok.
+                    string userAgent = ctx.Request.Useragent;
+
+                    if (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("bytespider", StringComparison.InvariantCultureIgnoreCase)) // Get Away TikTok.
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         ctx.Response.ContentType = "text/plain";
@@ -128,10 +205,30 @@ namespace Horizon.MUM
                         ctx.Response.ContentType = "text/xml; charset=UTF-8";
                         ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                         string? encoding = ctx.Request.RetrieveHeaderValue("Accept-Encoding");
-                        if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip"))
+                        if (!string.IsNullOrEmpty(encoding))
                         {
-                            ctx.Response.Headers.Add("Content-Encoding", "gzip");
-                            await ctx.Response.Send(HTTPProcessor.Compress(Encoding.UTF8.GetBytes(MumChannelHandler.GetCRC32ChannelsList())));
+                            if (encoding.Contains("zstd"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "zstd");
+                                await ctx.Response.Send(HTTPProcessor.CompressZstd(Encoding.UTF8.GetBytes(MumChannelHandler.GetCRC32ChannelsList())));
+                            }
+                            else if (encoding.Contains("br"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "br");
+                                await ctx.Response.Send(HTTPProcessor.CompressBrotli(Encoding.UTF8.GetBytes(MumChannelHandler.GetCRC32ChannelsList())));
+                            }
+                            else if (encoding.Contains("gzip"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "gzip");
+                                await ctx.Response.Send(HTTPProcessor.CompressGzip(Encoding.UTF8.GetBytes(MumChannelHandler.GetCRC32ChannelsList())));
+                            }
+                            else if (encoding.Contains("deflate"))
+                            {
+                                ctx.Response.Headers.Add("Content-Encoding", "deflate");
+                                await ctx.Response.Send(HTTPProcessor.Inflate(Encoding.UTF8.GetBytes(MumChannelHandler.GetCRC32ChannelsList())));
+                            }
+                            else
+                                await ctx.Response.Send(MumChannelHandler.GetCRC32ChannelsList());
                         }
                         else
                             await ctx.Response.Send(MumChannelHandler.GetCRC32ChannelsList());
@@ -140,7 +237,9 @@ namespace Horizon.MUM
 
                 _Server.Routes.PostAuthentication.Parameter.Add(WatsonWebserver.Core.HttpMethod.GET, "/favicon.ico", async (HttpContextBase ctx) =>
                 {
-                    if (!string.IsNullOrEmpty(ctx.Request.Useragent) && ctx.Request.Useragent.ToLower().Contains("bytespider")) // Get Away TikTok.
+                    string userAgent = ctx.Request.Useragent;
+
+                    if (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("bytespider", StringComparison.InvariantCultureIgnoreCase)) // Get Away TikTok.
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         ctx.Response.ContentType = "text/plain";
@@ -154,10 +253,30 @@ namespace Horizon.MUM
                             ctx.Response.ContentType = "image/x-icon";
                             ctx.Response.StatusCode = (int)HttpStatusCode.OK;
                             string? encoding = ctx.Request.RetrieveHeaderValue("Accept-Encoding");
-                            if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip"))
+                            if (!string.IsNullOrEmpty(encoding))
                             {
-                                ctx.Response.Headers.Add("Content-Encoding", "gzip");
-                                await ctx.Response.Send(HTTPProcessor.Compress(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico")));
+                                if (encoding.Contains("zstd"))
+                                {
+                                    ctx.Response.Headers.Add("Content-Encoding", "zstd");
+                                    await ctx.Response.Send(HTTPProcessor.CompressZstd(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico")));
+                                }
+                                else if (encoding.Contains("br"))
+                                {
+                                    ctx.Response.Headers.Add("Content-Encoding", "br");
+                                    await ctx.Response.Send(HTTPProcessor.CompressBrotli(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico")));
+                                }
+                                else if (encoding.Contains("gzip"))
+                                {
+                                    ctx.Response.Headers.Add("Content-Encoding", "gzip");
+                                    await ctx.Response.Send(HTTPProcessor.CompressGzip(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico")));
+                                }
+                                else if (encoding.Contains("deflate"))
+                                {
+                                    ctx.Response.Headers.Add("Content-Encoding", "deflate");
+                                    await ctx.Response.Send(HTTPProcessor.Inflate(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico")));
+                                }
+                                else
+                                    await ctx.Response.Send(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico"));
                             }
                             else
                                 await ctx.Response.Send(File.ReadAllBytes(Directory.GetCurrentDirectory() + "/static/wwwroot/favicon.ico"));
@@ -175,6 +294,11 @@ namespace Horizon.MUM
 
                 LoggerAccessor.LogInfo($"MumHandler Server initiated on port:{port}...");
             }
+        }
+
+        private void ExceptionEncountered(object? sender, ExceptionEventArgs args)
+        {
+            LoggerAccessor.LogError(args.Exception);
         }
 
         private static async Task DefaultRoute(HttpContextBase ctx)

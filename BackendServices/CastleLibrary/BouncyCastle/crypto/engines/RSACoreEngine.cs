@@ -82,7 +82,10 @@ namespace Org.BouncyCastle.Crypto.Engines
 
             BigInteger input = new BigInteger(1, inBuf, inOff, inLen);
 
-            if (input.CompareTo(m_key.Modulus) >= 0)
+            if (input.CompareTo(BigInteger.One) <= 0)
+                throw new DataLengthException("input too small for RSA cipher.");
+
+            if (input.CompareTo(m_key.Modulus.Subtract(BigInteger.One)) >= 0)
                 throw new DataLengthException("input too large for RSA cipher.");
 
             return input;
@@ -116,10 +119,10 @@ namespace Org.BouncyCastle.Crypto.Engines
             BigInteger qInv = crt.QInv;
 
             // mP = ((input Mod p) ^ dP)) Mod p
-            BigInteger mP = (input.Remainder(p)).ModPow(dP, p);
+            BigInteger mP = input.Remainder(p).ModPow(dP, p);
 
             // mQ = ((input Mod q) ^ dQ)) Mod q
-            BigInteger mQ = (input.Remainder(q)).ModPow(dQ, q);
+            BigInteger mQ = input.Remainder(q).ModPow(dQ, q);
 
             // h = qInv * (mP - mQ) Mod p
             BigInteger h = mP.Subtract(mQ).Multiply(qInv).Mod(p);

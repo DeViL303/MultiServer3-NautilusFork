@@ -5,21 +5,22 @@ using HttpMultipartParser;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using static WebAPIService.OHS.User;
+using System.Linq;
 
 namespace WebAPIService.OHS
 {
     public class UserInventory
     {
-        public static string? AddGlobalItems(byte[] PostData, string ContentType, string directoryPath, string batchparams, int game)
+        public static string AddGlobalItems(byte[] PostData, string ContentType, string directoryPath, string batchparams, int game)
         {
-            int itemCount = 0;
+            //int itemCount = 0;
 
-            string? dataforohs = null;
-            string? output = null;
+            string dataforohs = null;
+            string output = null;
 
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (string.IsNullOrEmpty(batchparams))
             {
@@ -52,11 +53,11 @@ namespace WebAPIService.OHS
                 {
                     JToken Token = JToken.Parse(dataforohs);
 
-                    object? value = Utils.JtokenUtils.GetValueFromJToken(Token, "value");
+                    object value = Utils.JtokenUtils.GetValueFromJToken(Token, "value");
 
-                    object? data = Utils.JtokenUtils.GetValueFromJToken(Token, "data");
+                    object data = Utils.JtokenUtils.GetValueFromJToken(Token, "data");
 
-                    //object? user = DataTypesUtils.GetValueFromJToken(Token, "user");
+                    //object user = DataTypesUtils.GetValueFromJToken(Token, "user");
 
                     string globaldatastring = directoryPath + "/Globals.json";
 
@@ -66,19 +67,19 @@ namespace WebAPIService.OHS
 
                         if (!string.IsNullOrEmpty(globaldata))
                         {
-                            JObject? jObject = JObject.Parse(globaldata);
+                            JObject jObject = JObject.Parse(globaldata);
 
                             if (jObject != null && value != null)
                             {
                                 // Check if the key name already exists in the JSON
-                                JToken? existingKey = jObject.SelectToken($"$..{data}");
+                                JToken existingKey = jObject.SelectToken($"$..{data}");
 
                                 if (existingKey != null)
                                     // Update the value of the existing key
                                     existingKey.Replace(JToken.FromObject(value));
                                 else if (data != null)
                                 {
-                                    JToken? KeyEntry = jObject["key"];
+                                    JToken KeyEntry = jObject["key"];
 
                                     if (KeyEntry != null)
                                         // Step 2: Add a new entry to the "Key" object
@@ -91,7 +92,7 @@ namespace WebAPIService.OHS
                     }
                     else if (data != null)
                     {
-                        string? keystring = data.ToString();
+                        string keystring = data.ToString();
 
                         if (keystring != null && value != null)
                         {
@@ -106,7 +107,7 @@ namespace WebAPIService.OHS
                     }
 
                     if (value != null)
-                        output = JaminProcessor.JsonValueToLuaValue(JToken.FromObject(value));
+                        output = LuaUtils.ConvertJTokenToLuaTable(JToken.FromObject(value), true);
 
                     /*
                     // Process the data and add it to the JSON file
@@ -143,14 +144,14 @@ namespace WebAPIService.OHS
             return dataforohs;
         }
 
-        public static string? GetGlobalItems(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
+        public static string GetGlobalItems(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
         {
-            string? dataforohs = null;
-            string? output = null;
+            string dataforohs = null;
+            string output = null;
 
             if (string.IsNullOrEmpty(batchparams))
             {
-                string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+                string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 if (!string.IsNullOrEmpty(boundary))
                 {
@@ -174,7 +175,7 @@ namespace WebAPIService.OHS
 
                     //if (string.IsNullOrEmpty(filedata))
 
-                    output = "{ " + JaminProcessor.ConvertJTokenToLuaTable(JToken.Parse(filedata), true) + " }";
+                    output = "{ " + LuaUtils.ConvertJTokenToLuaTable(JToken.Parse(filedata), true) + " }";
                     LoggerAccessor.LogWarn($"[UserInventory] GetGlobalItems - {output}");
                 }
                 else
@@ -206,14 +207,14 @@ namespace WebAPIService.OHS
             return dataforohs;
         }
 
-        public static string? UpdateUserInventory(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
+        public static string UpdateUserInventory(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
         {
-            string? dataforohs = null;
-            string? output = null;
+            string dataforohs = null;
+            string output = null;
 
             if (string.IsNullOrEmpty(batchparams))
             {
-                string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+                string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 if (!string.IsNullOrEmpty(boundary))
                 {
@@ -234,24 +235,24 @@ namespace WebAPIService.OHS
                 if (!string.IsNullOrEmpty(dataforohs))
                 {
                     // Deserialize the JSON data into a JObject
-                    JObject? jObject = JsonConvert.DeserializeObject<JObject>(dataforohs);
+                    JObject jObject = JsonConvert.DeserializeObject<JObject>(dataforohs);
 
-                    string? user = jObject?.Value<string>("user");
-                    string? region = jObject?.Value<string>("region");
+                    string user = jObject?.Value<string>("user");
+                    string region = jObject?.Value<string>("region");
 
-                    StringBuilder? resultBuilder = new StringBuilder();
+                    StringBuilder resultBuilder = new StringBuilder();
 
                     string inventorypath = directorypath + $"/User_Inventory/{user}_{region}/";
 
                     if (Directory.Exists(inventorypath))
                     {
-                        JToken? invName = jObject?.Value<string>("inventory_name");
+                        JToken invName = jObject?.Value<string>("inventory_name");
                         string fileName = inventorypath + invName + ".json";
-                        JArray? invItemsToChange = jObject?.Value<JArray>("changes");
+                        JArray invItemsToChange = jObject?.Value<JArray>("changes");
 
                         //JArray invItemsToChange = JArray.Parse(inventoryChanges);
 
-                        foreach (string? key in invName)
+                        foreach (string key in invName.Select(v => (string)v))
                         {
                             if (File.Exists(fileName))
                             {
@@ -259,17 +260,17 @@ namespace WebAPIService.OHS
 
                                 if (!string.IsNullOrEmpty(invFileData))
                                 {
-                                    JObject? existingFileJson = JObject.Parse(invFileData);
+                                    JObject existingFileJson = JObject.Parse(invFileData);
 
                                     // Check if the invName already exists in the JSON
-                                    JToken? existingKey = existingFileJson.SelectToken($"$..{invName}");
+                                    JToken existingKey = existingFileJson.SelectToken($"$..{invName}");
 
                                     if (existingKey != null && invItemsToChange != null)
                                         // Update the value of the existing key
                                         existingKey.Replace(JToken.FromObject(invItemsToChange));
                                     else if (existingKey == null && invItemsToChange != null)
                                     {
-                                        JToken? KeyEntry = existingKey["key"];
+                                        JToken KeyEntry = existingKey["key"];
 
                                         if (KeyEntry != null)
                                             // Step 2: Add a new entry to the "Key" object
@@ -280,8 +281,6 @@ namespace WebAPIService.OHS
 
                                     File.WriteAllText(inventorypath, existingFileJson.ToString(Formatting.Indented));
                                 }
-
-
 
                                 if (invItemsToChange != null)
                                 {
@@ -296,41 +295,35 @@ namespace WebAPIService.OHS
                                         output = JToken.FromObject(invItemsToChange).ToString();
                                     else if (JToken.FromObject(invItemsToChange).Type == JTokenType.Array)
                                         // Handle array type
-                                        output = JaminProcessor.ConvertJTokenToLuaTable(JToken.FromObject(invItemsToChange), false);
+                                        output = LuaUtils.ConvertJTokenToLuaTable(JToken.FromObject(invItemsToChange), false);
                                     else if (JToken.FromObject(invItemsToChange).Type == JTokenType.Boolean)
                                         // Handle boolean type
                                         output = JToken.FromObject(invItemsToChange).ToObject<bool>() ? "true" : "false";
                                 }
 
-
-                                string datafrominventory = JaminProcessor.ConvertJTokenToLuaTable(JToken.Parse(invFileData), false);
-
-                                output = datafrominventory;
-
+                                output = LuaUtils.ConvertJTokenToLuaTable(JToken.Parse(invFileData), false);
                             }
                             else
                             {
-                                var fs = File.Create(fileName);
-
-                                byte[] buffer = null;
-
-                                // buffer = invItemsToChange.ToArray();
-
-                                fs.Write((byte[])invItemsToChange);
-
                                 string invCh = (string)invItemsToChange;
 
-                                string datafrominventory = JaminProcessor.ConvertJTokenToLuaTable(JArray.Parse(invCh), false);
+                                if (!string.IsNullOrEmpty(invCh))
+                                {
+                                    FileStream fs = File.Create(fileName);
+#if NET5_0_OR_GREATER
+                                    fs.Write((byte[])invItemsToChange);
+#else
+                                    byte[] invItemsToChangeBytes = (byte[])invItemsToChange;
+                                    fs.Write(invItemsToChangeBytes, 0, invItemsToChangeBytes.Length);
+#endif
+                                    fs.Close();
+                                    fs.Dispose();
 
-                                output = datafrominventory;
-                                fs.Close();
+                                    output = LuaUtils.ConvertJTokenToLuaTable(JArray.Parse(invCh), false);
+                                }
                             }
                         }
-
-
                     }
-
-
                 }
             }
             catch (Exception ex)
@@ -356,13 +349,13 @@ namespace WebAPIService.OHS
             return dataforohs;
         }
 
-        public static string? GetUserInventory(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
+        public static string GetUserInventory(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
 
             if (string.IsNullOrEmpty(batchparams))
             {
-                string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+                string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 if (!string.IsNullOrEmpty(boundary))
                 {
@@ -383,26 +376,26 @@ namespace WebAPIService.OHS
                 if (!string.IsNullOrEmpty(dataforohs))
                 {
                     // Deserialize the JSON data into a JObject
-                    JObject? jObject = JsonConvert.DeserializeObject<JObject>(dataforohs);
+                    JObject jObject = JsonConvert.DeserializeObject<JObject>(dataforohs);
 
                     if (jObject != null)
                     {
-                        string? user = jObject.Value<string>("user");
-                        string? region = jObject.Value<string>("region");
+                        string user = jObject.Value<string>("user");
+                        string region = jObject.Value<string>("region");
 
                         if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(region))
                         {
                             string inventorypath = directorypath + $"/User_Inventory/{user}_{region}/";
 
-                            StringBuilder? resultBuilder = new StringBuilder();
+                            StringBuilder resultBuilder = new StringBuilder();
 
                             if (Directory.Exists(inventorypath))
                             {
-                                JToken? keyToken = jObject.GetValue("inventory_names");
+                                JToken keyToken = jObject.GetValue("inventory_names");
 
                                 if (keyToken != null)
                                 {
-                                    foreach (string? key in keyToken)
+                                    foreach (string key in keyToken.Select(v => (string)v))
                                     {
                                         if (File.Exists(inventorypath + key + ".json"))
                                         {
@@ -410,7 +403,7 @@ namespace WebAPIService.OHS
 
                                             if (inventorydata != null)
                                             {
-                                                string datafrominventory = JaminProcessor.ConvertJTokenToLuaTable(JObject.Parse(inventorydata), false);
+                                                string datafrominventory = LuaUtils.ConvertJTokenToLuaTable(JObject.Parse(inventorydata), false);
 
                                                 if (resultBuilder.Length == 0)
                                                     resultBuilder.Append($"{{ [\"{key}\"] = {datafrominventory}");
@@ -432,11 +425,11 @@ namespace WebAPIService.OHS
                             {
                                 Directory.CreateDirectory(inventorypath);
 
-                                JToken? keyToken = jObject.GetValue("inventory_names");
+                                JToken keyToken = jObject.GetValue("inventory_names");
 
                                 if (keyToken != null)
                                 {
-                                    foreach (string? key in keyToken)
+                                    foreach (string key in keyToken)
                                     {
                                         if (resultBuilder.Length == 0)
                                             resultBuilder.Append($"{{ [\"{key}\"] = {{ }}");

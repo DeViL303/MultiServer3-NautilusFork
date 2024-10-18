@@ -14,7 +14,7 @@ namespace HomeTools.UnBAR
         // Declare a global list to store file paths
         private readonly List<string> filePathList = new List<string>();
 
-        public Task MapperStart(string foldertomap, string? helperfolder, string prefix, string bruteforce)
+        public Task MapperStart(string foldertomap, string helperfolder, string prefix, string bruteforce)
         {
             MapperPrepareFiles(foldertomap);
 
@@ -25,10 +25,10 @@ namespace HomeTools.UnBAR
 
                 if (string.IsNullOrEmpty(prefix))
                 {
-#if NETSTANDARD2_1_OR_GREATER
-                    Match match = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}").Match(foldertomap);
-#elif NET7_0_OR_GREATER
+#if NET7_0_OR_GREATER
                     Match match = UUIDRegex().Match(foldertomap);
+#else
+                    Match match = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}").Match(foldertomap);
 #endif
                     if (match.Success)
                         prefix = $"objects/{match.Groups[0].Value}/";
@@ -38,9 +38,9 @@ namespace HomeTools.UnBAR
                     filePathList.Add(foldertomap + "/ObjectXMLBruteforce.xml");
                 }
 
-                IEnumerable<string> strings = Directory.EnumerateFiles(foldertomap, "*.*", SearchOption.AllDirectories).Where(s => s.ToLower().EndsWith(".mdl") || s.ToLower().EndsWith(".atmos")
-                || s.ToLower().EndsWith(".efx") || s.ToLower().EndsWith(".xml") || s.ToLower().EndsWith(".scene") || s.ToLower().EndsWith(".map")
-                || s.ToLower().EndsWith(".lua") || s.ToLower().EndsWith(".luac") || s.ToLower().EndsWith(".unknown") || s.ToLower().EndsWith(".txt"));
+                IEnumerable<string> strings = Directory.EnumerateFiles(foldertomap, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".mdl", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".atmos", StringComparison.InvariantCultureIgnoreCase)
+                || s.EndsWith(".efx", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".xml", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".scene", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".map", StringComparison.InvariantCultureIgnoreCase)
+                || s.EndsWith(".lua", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".luac", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".unknown", StringComparison.InvariantCultureIgnoreCase) || s.EndsWith(".txt", StringComparison.InvariantCultureIgnoreCase));
                 List<MappedList> mappedListList = new List<MappedList>();
                 int i = 0;
                 foreach (string sourceFile in strings)
@@ -85,7 +85,7 @@ namespace HomeTools.UnBAR
                         {
                             if (File.Exists(Path.Combine(foldertomap, file.Name)))
                             {
-                                new FileInfo(Path.Combine(foldertomap, text).ToUpper()).Directory.Create();
+                                new FileInfo(Path.Combine(foldertomap, text).ToUpper()).Directory?.Create();
                                 if (!File.Exists(Path.Combine(foldertomap, text.ToUpper())))
                                 {
                                     File.Move(Path.Combine(foldertomap, file.Name), Path.Combine(foldertomap, text.ToUpper()));
@@ -104,7 +104,7 @@ namespace HomeTools.UnBAR
                             {
                                 if (File.Exists(Path.Combine(foldertomap, file.Name)))
                                 {
-                                    new FileInfo(Path.Combine(foldertomap, cdatafromatmos).ToUpper()).Directory.Create();
+                                    new FileInfo(Path.Combine(foldertomap, cdatafromatmos).ToUpper()).Directory?.Create();
                                     if (!File.Exists(Path.Combine(foldertomap, cdatafromatmos.ToUpper())))
                                     {
                                         File.Move(Path.Combine(foldertomap, file.Name), Path.Combine(foldertomap, cdatafromatmos.ToUpper()));
@@ -270,23 +270,29 @@ namespace HomeTools.UnBAR
             Directory.CreateDirectory(targetDir);
 
             // Get all files in the source directory and its subdirectories
-            string[] files = Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories);
-
-            foreach (string file in files)
+            foreach (string file in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
             {
                 filePathList.Add(file);
 
                 try
                 {
+#if NET5_0_OR_GREATER
                     string targetPath = Path.Combine(targetDir, Path.GetRelativePath(sourceDir, file));
+#else
+                    string targetPath = Path.Combine(targetDir, GetRelativePath(sourceDir, file));
+#endif
+                    string directorytargetPath = Path.GetDirectoryName(targetPath);
 
-                    // Create the directory structure in the target directory if it doesn't exist
-                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                    if (!string.IsNullOrEmpty(directorytargetPath))
+                    {
+                        // Create the directory structure in the target directory if it doesn't exist
+                        Directory.CreateDirectory(directorytargetPath);
 
-                    // Copy the file to the target directory
-                    File.Copy(file, targetPath, true); // Use true to overwrite existing files
+                        // Copy the file to the target directory
+                        File.Copy(file, targetPath, true); // Use true to overwrite existing files
+                    }
                 }
-                catch (Exception)
+                catch
                 {
                     // Not Important.
                 }
@@ -858,12 +864,12 @@ namespace HomeTools.UnBAR
                 input = streamReader.ReadToEnd();
                 streamReader.Close();
             }
-            // Process 2 patherns at a time, removing the limit is not tolerable as CPU usage goes way too high.
-            Parallel.ForEach(regexPatternsList, new ParallelOptions { MaxDegreeOfParallelism = 2 }, regexPatterns =>
+            // Process Environment.ProcessorCount patherns at a time, removing the limit is not tolerable as CPU usage goes way too high.
+            Parallel.ForEach(regexPatternsList, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, regexPatterns =>
             {
                 if (!string.IsNullOrEmpty(regexPatterns.pattern))
                 {
-                    Parallel.ForEach(Regex.Matches(input, regexPatterns.pattern), match => {
+                    Parallel.ForEach(Regex.Matches(input, regexPatterns.pattern).OfType<Match>(), match => {
                         lock (mappedListList)
                         {
                             if (!mappedListList.Contains(new MappedList()
@@ -882,6 +888,13 @@ namespace HomeTools.UnBAR
             });
             return mappedListList;
         }
+#if !NET5_0_OR_GREATER
+        private static string GetRelativePath(string sourceDir, string file)
+        {
+            return Uri.UnescapeDataString(new Uri(sourceDir.TrimEnd(Path.DirectorySeparatorChar)
+                + Path.DirectorySeparatorChar).MakeRelativeUri(new Uri(file)).ToString()).Replace('/', Path.DirectorySeparatorChar);
+        }
+#endif
 #if NET7_0_OR_GREATER
         [GeneratedRegex("[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}-[0-9a-fA-F]{8}")]
         private static partial Regex UUIDRegex();

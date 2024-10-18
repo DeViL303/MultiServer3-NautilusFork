@@ -1,10 +1,12 @@
+using HashLib;
 using CustomLogger;
+using NetworkLibrary.TCP_IP;
 using MitmDNS;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +14,8 @@ public static class MitmDNSServerConfiguration
 {
     public static string DNSConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/routes.txt";
     public static string DNSOnlineConfig { get; set; } = string.Empty;
+    public static uint MaximumNumberOfRequests { get; set; } = 200;
+    public static uint MinimumDeltaTimeMs { get; set; } = 1000;
     public static bool DNSAllowUnsafeRequests { get; set; } = true;
 
     /// <summary>
@@ -32,9 +36,11 @@ public static class MitmDNSServerConfiguration
             // Write the JObject to a file
             File.WriteAllText(configPath, new JObject(
                 new JProperty("online_routes_config", DNSOnlineConfig),
+                new JProperty("maximum_number_of_requests", MaximumNumberOfRequests),
+                new JProperty("minimum_delta_time_ms", MinimumDeltaTimeMs),
                 new JProperty("routes_config", DNSConfig),
                 new JProperty("allow_unsafe_requests", DNSAllowUnsafeRequests)
-            ).ToString().Replace("/", "\\\\"));
+            ).ToString());
 
             return;
         }
@@ -45,6 +51,8 @@ public static class MitmDNSServerConfiguration
             dynamic config = JObject.Parse(File.ReadAllText(configPath));
 
             DNSOnlineConfig = GetValueOrDefault(config, "online_routes_config", DNSOnlineConfig);
+            MaximumNumberOfRequests = GetValueOrDefault(config, "maximum_number_of_requests", MaximumNumberOfRequests);
+            MinimumDeltaTimeMs = GetValueOrDefault(config, "minimum_delta_time_ms", MinimumDeltaTimeMs);
             DNSConfig = GetValueOrDefault(config, "routes_config", DNSConfig);
             DNSAllowUnsafeRequests = GetValueOrDefault(config, "allow_unsafe_requests", DNSAllowUnsafeRequests);
         }
@@ -57,44 +65,42 @@ public static class MitmDNSServerConfiguration
     // Helper method to get a value or default value if not present
     public static T GetValueOrDefault<T>(dynamic obj, string propertyName, T defaultValue)
     {
-        if (obj != null)
+        try
         {
-            if (obj is JObject jObject)
+            if (obj != null)
             {
-                if (jObject.TryGetValue(propertyName, out JToken? value))
+                if (obj is JObject jObject)
                 {
-                    T? returnvalue = value.ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
-                }
-            }
-            else if (obj is JArray jArray)
-            {
-                if (int.TryParse(propertyName, out int index) && index >= 0 && index < jArray.Count)
-                {
-                    T? returnvalue = jArray[index].ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
+                    if (jObject.TryGetValue(propertyName, out JToken value))
+                    {
+                        T returnvalue = value.ToObject<T>();
+                        if (returnvalue != null)
+                            return returnvalue;
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            LoggerAccessor.LogError($"[Program] - GetValueOrDefault thrown an exception: {ex}");
+        }
+
         return defaultValue;
     }
 }
 
 class Program
 {
-    static string configDir = Directory.GetCurrentDirectory() + "/static/";
-    static string configPath = configDir + "dns.json";
-    static string DNSconfigMD5 = string.Empty;
-    static bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT || Environment.OSVersion.Platform == PlatformID.Win32S || Environment.OSVersion.Platform == PlatformID.Win32Windows;
-    static Task? DNSThread = null;
-    static Task? DNSRefreshThread = null;
-    static MitmDNSClass Server = new();
-    static readonly FileSystemWatcher dnswatcher = new();
+    private static string configDir = Directory.GetCurrentDirectory() + "/static/";
+    private static string configPath = configDir + "dns.json";
+    private static string DNSconfigMD5 = string.Empty;
+    private static Task DNSThread = null;
+    private static Task DNSRefreshThread = null;
+    private static MitmDNSClass Server = new MitmDNSClass();
+    private static readonly FileSystemWatcher dnswatcher = new FileSystemWatcher();
 
     // Event handler for DNS change event
-    static void OnDNSChanged(object source, FileSystemEventArgs e)
+    private static void OnDNSChanged(object source, FileSystemEventArgs e)
     {
         try
         {
@@ -124,9 +130,13 @@ class Program
         }
     }
 
-    static void StartOrUpdateServer()
+    private static void StartOrUpdateServer()
     {
-        Server.StopUDPServer();
+        Server.StopServer();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
 
         dnswatcher.Path = Path.GetDirectoryName(MitmDNSServerConfiguration.DNSConfig) ?? configDir;
         dnswatcher.Filter = Path.GetFileName(MitmDNSServerConfiguration.DNSConfig);
@@ -151,10 +161,10 @@ class Program
             }
         }
 
-        Server.StartUDPServer();
+        Server.StartServerAsync(new CancellationTokenSource().Token);
     }
 
-    static Task RefreshDNS()
+    private static Task RefreshDNS()
     {
         if (DNSThread != null && !MitmDNSClass.Initiated)
         {
@@ -170,13 +180,11 @@ class Program
         return Task.CompletedTask;
     }
 
-    static string ComputeMD5FromFile(string filePath)
+    private static string ComputeMD5FromFile(string filePath)
     {
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            // Convert the byte array to a hexadecimal string
-            return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", string.Empty);
-        }
+        using FileStream stream = File.OpenRead(filePath);
+        // Convert the byte array to a hexadecimal string
+        return NetHasher.ComputeMD5String(stream);
     }
 
     static void Main()
@@ -184,10 +192,29 @@ class Program
         dnswatcher.NotifyFilter = NotifyFilters.LastWrite;
         dnswatcher.Changed += OnDNSChanged;
 
-        if (!IsWindows)
+        if (!NetworkLibrary.Extension.OtherExtensions.IsWindows)
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        else
+            TechnitiumLibrary.Net.Firewall.FirewallHelper.CheckFirewallEntries(Assembly.GetEntryAssembly()?.Location);
 
-        LoggerAccessor.SetupLogger("MitmDNS");
+        LoggerAccessor.SetupLogger("MitmDNS", Directory.GetCurrentDirectory());
+
+#if DEBUG
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A FATAL ERROR OCCURED!");
+            LoggerAccessor.LogError(args.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A task has thrown a Unobserved Exception!");
+            LoggerAccessor.LogError(args.Exception);
+            args.SetObserved();
+        };
+
+        IPUtils.GetIPInfos(IPUtils.GetLocalIPAddress().ToString(), IPUtils.GetLocalSubnet());
+#endif
 
         MitmDNSServerConfiguration.RefreshVariables(configPath);
 
@@ -197,44 +224,38 @@ class Program
 
         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
         {
-            LoggerAccessor.LogInfo("Console Inputs are now available while server is running. . .");
-
             while (true)
             {
-                string? stdin = Console.ReadLine();
+                LoggerAccessor.LogInfo("Press any keys to access server actions...");
 
-                if (!string.IsNullOrEmpty(stdin))
+                Console.ReadLine();
+
+                LoggerAccessor.LogInfo("Press one of the following keys to trigger an action: [R (Reboot),S (Shutdown)]");
+
+                switch (char.ToLower(Console.ReadKey().KeyChar))
                 {
-                    switch (stdin.ToLower())
-                    {
-                        case "shutdown":
-                            LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
+                    case 's':
+                        LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Shutting down. Goodbye!");
-                                Environment.Exit(0);
-                            }
-                            break;
-                        case "reboot":
-                            LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Shutting down. Goodbye!");
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case 'r':
+                        LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Rebooting!");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Rebooting!");
 
-                                MitmDNSServerConfiguration.RefreshVariables(configPath);
+                            MitmDNSServerConfiguration.RefreshVariables(configPath);
 
-                                StartOrUpdateServer();
-                            }
-                            break;
-                        default:
-                            LoggerAccessor.LogWarn($"Unknown command entered: {stdin}");
-                            break;
-                    }
+                            StartOrUpdateServer();
+                        }
+                        break;
                 }
-                else
-                    LoggerAccessor.LogWarn("No command entered!");
             }
         }
         else

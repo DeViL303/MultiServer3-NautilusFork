@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using HttpMultipartParser;
 using Newtonsoft.Json;
+using System.Text;
+using System.Linq;
 
 namespace WebAPIService.NDREAMS.Aurora
 {
     public static class Almanac
     {
-        public static string? ProcessAlmanac(DateTime CurrentDate, byte[]? PostData, string? ContentType, string fullurl, string apipath)
+        public static string ProcessAlmanac(DateTime CurrentDate, byte[] PostData, string ContentType, string fullurl, string apipath)
         {
             bool Weight = !string.IsNullOrEmpty(fullurl) && fullurl.Contains("Weights");
             string func = string.Empty;
@@ -17,7 +19,7 @@ namespace WebAPIService.NDREAMS.Aurora
             string key = string.Empty;
             string element = string.Empty;
             string resdata = string.Empty;
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary) && PostData != null)
             {
@@ -55,13 +57,43 @@ namespace WebAPIService.NDREAMS.Aurora
                 switch (func)
                 {
                     case "get":
-                        // TODO, game seems to not work yet, but our response is correct.
                         int valuescount = 0;
-                        return $"<xml><sig>{NDREAMSServerUtils.Server_GetSignature(fullurl, name, "SkyFishingGet", CurrentDate)}</sig><confirm>{NDREAMSServerUtils.Server_KeyToHash(key, CurrentDate, valuescount.ToString())}</confirm></xml>";
+
+                        if (File.Exists(SkyFishingProfilePath))
+                        {
+                            StringBuilder st = new StringBuilder();
+
+                            foreach (FishingProps prop in JsonConvert.DeserializeObject<List<FishingProps>>(File.ReadAllText(SkyFishingProfilePath)).OrderBy(x => int.Parse(x.a_id)))
+                            {
+                                if (int.TryParse(prop.a_id, out int a_idInt))
+                                {
+                                    if (Weight)
+                                    {
+                                        st.Append($"<element id=\"{a_idInt}\" value=\"{prop.weight}\" />");
+                                        if ("0".Equals(prop.weight))
+                                        {
+
+                                        }
+                                        else
+                                            valuescount += a_idInt;
+                                    }
+                                    else
+                                    {
+                                        st.Append($"<element id=\"{a_idInt}\" value=\"{prop.caught}\" />");
+                                        if ("1".Equals(prop.caught))
+                                            valuescount += a_idInt;
+                                    }
+                                }
+                            }
+
+                            return $"<xml>{st}<sig>{NDREAMSServerUtils.Server_GetSignature(fullurl, name, "SkyFishingGet", CurrentDate)}</sig><confirm>{NDREAMSServerUtils.Server_KeyToHash(key, CurrentDate, valuescount.ToString())}</confirm></xml>";
+                        }
+                        else
+                            return $"<xml><sig>{NDREAMSServerUtils.Server_GetSignature(fullurl, name, "SkyFishingGet", CurrentDate)}</sig><confirm>{NDREAMSServerUtils.Server_KeyToHash(key, CurrentDate, valuescount.ToString())}</confirm></xml>";
                     case "set":
                         if (File.Exists(SkyFishingProfilePath))
                         {
-                            List<FishingProps>? props = JsonConvert.DeserializeObject<List<FishingProps>>(File.ReadAllText(SkyFishingProfilePath));
+                            List<FishingProps> props = JsonConvert.DeserializeObject<List<FishingProps>>(File.ReadAllText(SkyFishingProfilePath));
 
                             if (props == null)
                             {
@@ -76,18 +108,35 @@ namespace WebAPIService.NDREAMS.Aurora
                                     if (Weight)
                                         prop.weight = resdata;
                                     else
-                                        prop.str = resdata;
+                                        prop.caught = resdata;
                                 }
                             }
 
-                            File.WriteAllText(SkyFishingProfilePath, JsonConvert.SerializeObject(props));
+                            File.WriteAllText(SkyFishingProfilePath, JsonConvert.SerializeObject(props, Formatting.Indented));
                         }
                         else
                         {
-                            if (Weight)
-                                File.WriteAllText(SkyFishingProfilePath, JsonConvert.SerializeObject(new List<FishingProps>() { new FishingProps() { a_id = element, weight = resdata } }));
-                            else
-                                File.WriteAllText(SkyFishingProfilePath, JsonConvert.SerializeObject(new List<FishingProps>() { new FishingProps() { a_id = element, str = resdata } }));
+                            List<FishingProps> newProfile = new List<FishingProps>();
+
+                            for (byte i = 1; i <= 40; i++)
+                            {
+                                if (Weight)
+                                {
+                                    if (i.ToString() == element)
+                                        newProfile.Add(new FishingProps() { a_id = element, weight = resdata });
+                                    else
+                                        newProfile.Add(new FishingProps() { a_id = i.ToString() });
+                                }
+                                else
+                                {
+                                    if (i.ToString() == element)
+                                        newProfile.Add(new FishingProps() { a_id = element, caught = resdata });
+                                    else
+                                        newProfile.Add(new FishingProps() { a_id = i.ToString() });
+                                }
+                            }
+
+                            File.WriteAllText(SkyFishingProfilePath, JsonConvert.SerializeObject(newProfile, Formatting.Indented));
                         }
                         return $"<xml></xml>";
                 }
@@ -98,9 +147,9 @@ namespace WebAPIService.NDREAMS.Aurora
 
         public class FishingProps
         {
-            public string? a_id { get; set; }
-            public string? str { get; set; }
-            public string? weight { get; set; }
+            public string a_id { get; set; }
+            public string caught { get; set; } = "0";
+            public string weight { get; set; } = "0";
         }
     }
 }

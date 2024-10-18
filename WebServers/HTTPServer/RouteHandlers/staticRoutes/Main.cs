@@ -2,11 +2,12 @@
 using WebAPIService.THQ;
 using HTTPServer.Extensions;
 using HTTPServer.Models;
-using CyberBackendLibrary.HTTP;
-using HttpStatusCode = HTTPServer.Models.HttpStatusCode;
+using NetworkLibrary.HTTP;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System;
+using System.Net;
 
 namespace HTTPServer.RouteHandlers.staticRoutes
 {
@@ -27,32 +28,40 @@ namespace HTTPServer.RouteHandlers.staticRoutes
 
                                 if (indexFile.Contains(".php") && Directory.Exists(HTTPServerConfiguration.PHPStaticFolder))
                                 {
-                                    (byte[]?, string[][]) CollectPHP = PHP.ProcessPHPPage(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}", HTTPServerConfiguration.PHPStaticFolder, HTTPServerConfiguration.PHPVersion, request.IP, request.Port, request);
-                                    if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip") && CollectPHP.Item1 != null)
-                                        return HttpResponse.Send(HTTPProcessor.Compress(CollectPHP.Item1), "text/html", HttpMisc.AddElementsToLastPosition(CollectPHP.Item2, new string[] { "Content-Encoding", "gzip" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") }));
+                                    (byte[]?, string[][]) CollectPHP = PHP.ProcessPHPPage(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}", HTTPServerConfiguration.PHPStaticFolder, HTTPServerConfiguration.PHPVersion, request);
+                                    if (HTTPServerConfiguration.EnableHTTPCompression && !string.IsNullOrEmpty(encoding) && CollectPHP.Item1 != null)
+                                    {
+                                        if (encoding.Contains("zstd"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressZstd(CollectPHP.Item1), "text/html", HttpMisc.AddElementsToLastPosition(CollectPHP.Item2, new string[] { "Content-Encoding", "zstd" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") }));
+                                        else if (encoding.Contains("br"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressBrotli(CollectPHP.Item1), "text/html", HttpMisc.AddElementsToLastPosition(CollectPHP.Item2, new string[] { "Content-Encoding", "br" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") }));
+                                        else if (encoding.Contains("gzip"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressGzip(CollectPHP.Item1), "text/html", HttpMisc.AddElementsToLastPosition(CollectPHP.Item2, new string[] { "Content-Encoding", "gzip" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") }));
+                                        else if (encoding.Contains("deflate"))
+                                            return HttpResponse.Send(HTTPProcessor.Inflate(CollectPHP.Item1), "text/html", HttpMisc.AddElementsToLastPosition(CollectPHP.Item2, new string[] { "Content-Encoding", "deflate" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") }));
+                                        else
+                                            return HttpResponse.Send(CollectPHP.Item1, "text/html", CollectPHP.Item2);
+                                    }
                                     else
                                         return HttpResponse.Send(CollectPHP.Item1, "text/html", CollectPHP.Item2);
                                 }
                                 else
                                 {
-                                    if (!string.IsNullOrEmpty(encoding) && encoding.Contains("gzip"))
+                                    if (HTTPServerConfiguration.EnableHTTPCompression && !string.IsNullOrEmpty(encoding))
                                     {
-                                        using FileStream stream = new(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                        byte[]? buffer = null;
-
-                                        using (MemoryStream ms = new())
-                                        {
-                                            stream.CopyTo(ms);
-                                            buffer = ms.ToArray();
-                                            ms.Flush();
-                                        }
-
-                                        stream.Flush();
-
-                                        return HttpResponse.Send(HTTPProcessor.Compress(buffer), "text/html", new string[][] { new string[] { "Content-Encoding", "gzip" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        if (encoding.Contains("zstd"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressZstd(File.ReadAllBytes(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}")), "text/html", new string[][] { new string[] { "Content-Encoding", "zstd" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        else if (encoding.Contains("br"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressBrotli(File.ReadAllBytes(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}")), "text/html", new string[][] { new string[] { "Content-Encoding", "br" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        else if (encoding.Contains("gzip"))
+                                            return HttpResponse.Send(HTTPProcessor.CompressGzip(File.ReadAllBytes(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}")), "text/html", new string[][] { new string[] { "Content-Encoding", "gzip" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        else if (encoding.Contains("deflate"))
+                                            return HttpResponse.Send(HTTPProcessor.Inflate(File.ReadAllBytes(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}")), "text/html", new string[][] { new string[] { "Content-Encoding", "deflate" }, new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        else
+                                            return HttpResponse.Send(File.OpenRead(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}"), "text/html", new string[][] { new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
                                     }
                                     else
-                                        return HttpResponse.Send(File.Open(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite), "text/html", new string[][] { new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
+                                        return HttpResponse.Send(File.OpenRead(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}"), "text/html", new string[][] { new string[] { "Last-Modified", File.GetLastWriteTime(HTTPServerConfiguration.HTTPStaticFolder + $"/{indexFile}").ToString("r") } });
                                 }
                             }
                         }
@@ -66,9 +75,9 @@ namespace HTTPServer.RouteHandlers.staticRoutes
                     Method = "POST",
                     Host = "master10.doublefusion.com",
                     Callable = (HttpRequest request) => {
-                        return new HttpResponse(request.RetrieveHeaderValue("Connection") == "keep-alive")
+                        return new HttpResponse()
                                 {
-                                    HttpStatusCode = HttpStatusCode.Not_Found,
+                                    HttpStatusCode = HttpStatusCode.NotFound,
                                     ContentAsUTF8 = string.Empty
                                 };
                      }
@@ -119,9 +128,9 @@ namespace HTTPServer.RouteHandlers.staticRoutes
                             }
                         }
 
-                        return new HttpResponse(request.RetrieveHeaderValue("Connection") == "keep-alive")
+                        return new HttpResponse()
                                 {
-                                    HttpStatusCode = HttpStatusCode.Not_Found,
+                                    HttpStatusCode = HttpStatusCode.NotFound,
                                     ContentAsUTF8 = string.Empty
                                 };
                      }
@@ -139,7 +148,7 @@ namespace HTTPServer.RouteHandlers.staticRoutes
                                 return HttpResponse.Send(UFCResult, "text/xml");
                         }
 
-                        return new HttpResponse(request.RetrieveHeaderValue("Connection") == "keep-alive")
+                        return new HttpResponse()
                             {
                                 HttpStatusCode = HttpStatusCode.InternalServerError,
                                 ContentAsUTF8 = string.Empty

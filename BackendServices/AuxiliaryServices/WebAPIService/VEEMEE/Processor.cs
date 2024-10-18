@@ -1,30 +1,23 @@
 using System;
 using CustomLogger;
-using System.Text;
-using System.Security.Cryptography;
 using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Collections.Generic;
+using HashLib;
 
 namespace WebAPIService.VEEMEE
 {
     public class Processor
     {
-        private static string Sha1Hash(string data)
-        {
-            byte[]? SHA1Data = null;
-            using (var sha1 = SHA1.Create())
-            {
-                SHA1Data = sha1.ComputeHash(Encoding.UTF8.GetBytes($"veemeeHTTPRequ9R3UMWDAT8F3*#@&$^{data}"));
-            }
-            return BitConverter.ToString(SHA1Data).Replace("-", string.Empty).ToLower();
-        }
+        private const string HashSalt = "veemeeHTTPRequ9R3UMWDAT8F3*#@&$^";
 
-        public static string? Sign(string jsonData)
+        public static string Sign(string jsonData)
         {
             try
             {
                 string formattedJson = JToken.Parse(jsonData.Replace("\n", string.Empty)).ToString(Newtonsoft.Json.Formatting.None);
 
-                string hash = Sha1Hash(formattedJson).ToUpper();
+                string hash = NetHasher.ComputeSHA1String(Encoding.UTF8.GetBytes($"{HashSalt}{formattedJson}"));
 
                 JToken token = JToken.Parse(formattedJson);
 
@@ -53,6 +46,21 @@ namespace WebAPIService.VEEMEE
             }
 
             return null;
+        }
+
+        public static string GetVerificationSalt(string hex, Dictionary<string, string> PostDataKeyValuesDic = null)
+        {
+            string localSalt = HashSalt;
+
+            if (PostDataKeyValuesDic != null)
+            {
+                foreach (KeyValuePair<string, string> KeyPair in PostDataKeyValuesDic)
+                {
+                    localSalt = localSalt + KeyPair.Key + KeyPair.Value;
+                }
+            }
+
+            return NetHasher.ComputeSHA1String(Encoding.UTF8.GetBytes($"{localSalt}hex{hex}"));
         }
     }
 }

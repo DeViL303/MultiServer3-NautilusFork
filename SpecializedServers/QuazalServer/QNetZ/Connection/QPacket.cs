@@ -1,10 +1,10 @@
-using CyberBackendLibrary.DataTypes;
+using NetworkLibrary.Extension;
 using EndianTools;
 using System.Text;
 
 namespace QuazalServer.QNetZ
 {
-	public class QPacket
+    public class QPacket
 	{
 		public enum STREAMTYPE
 		{
@@ -191,7 +191,7 @@ namespace QuazalServer.QNetZ
 
 			if (tmpPayload != null && tmpPayload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort?.type != STREAMTYPE.NAT)
 			{
-				if (usesCompression && AccessKey != "hg7j1" && AccessKey != "yh64s" && AccessKey != "uG9Kv3p") // Old LZO based clients not need compressed response.
+				if (usesCompression && AccessKey != "hg7j1" && AccessKey != "yh64s" && AccessKey != "uG9Kv3p" && AccessKey != "1WguH+y") // Old LZO based clients not need compressed response.
 				{
 					uint sizeBefore = (uint)tmpPayload.Length;
 					byte[] buff = Helper.Compress(tmpPayload);
@@ -318,7 +318,7 @@ namespace QuazalServer.QNetZ
 
 			uint tmp = 0;
 			for (int i = 0; i < data.Length / 4; i++)
-				tmp += BitConverter.ToUInt32(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(data) : data, i * 4);
+				tmp += BitConverter.ToUInt32(!BitConverter.IsLittleEndian ? EndianUtils.ReverseArray(data) : data, i * 4);
 
 			uint leftOver = (uint)data.Length & 3;
 			uint processed = 0;
@@ -390,7 +390,7 @@ namespace QuazalServer.QNetZ
 
 			uint Checksum = dataSum + Key4(AccessKey) + BitConverter.ToUInt32(trailerBytes, 0);
 
-            return BitConverter.GetBytes(!LittleEndian ? EndianUtils.EndianSwap(Checksum) : Checksum);
+            return BitConverter.GetBytes(!LittleEndian ? EndianUtils.ReverseUint(Checksum) : Checksum);
         }
 
         private void ExtractFlags()
@@ -437,7 +437,7 @@ namespace QuazalServer.QNetZ
 					sb.Append(b.ToString("X2") + " ");
 			}
 			sb.AppendLine();
-			sb.AppendLine(" Checksum:0x" + DataTypesUtils.ByteArrayToHexString(checkSum ?? Array.Empty<byte>()));
+			sb.AppendLine(" Checksum:0x" + OtherExtensions.ByteArrayToHexString(checkSum ?? Array.Empty<byte>()));
 			sb.AppendLine("}");
 			return sb.ToString();
 		}

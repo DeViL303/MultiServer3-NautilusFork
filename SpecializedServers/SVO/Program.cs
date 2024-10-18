@@ -7,6 +7,8 @@ using System.Runtime;
 using System.Net;
 using System.Security.Principal;
 using System.Security.Cryptography;
+using System.Reflection;
+using NetworkLibrary.TCP_IP;
 
 public static class SVOServerConfiguration
 {
@@ -37,7 +39,8 @@ public static class SVOServerConfiguration
             "warhawk-prod3.svo.online.scea.com",
             "singstar.svo.online.com",
             "hdc.cprod.homeps3.online.scee.com",
-            "secure.cprodts.homeps3.online.scee.com"
+            "secure.cprodts.homeps3.online.scee.com",
+			"wipeout2048.online.scee.com"
         };
 
     public static DbController? Database = new(DatabaseConfig);
@@ -69,9 +72,9 @@ public static class SVOServerConfiguration
                 new JProperty("certificate_hashing_algorithm", HTTPSCertificateHashingAlgorithm.Name),
                 new JProperty("database", DatabaseConfig),
                 new JProperty("pshome_rpcs3workaround", PSHomeRPCS3Workaround),
-                new JProperty("MOTD", MOTD),
+                new JProperty("MOTD", string.Empty),
                 new JProperty("BannedIPs", new JArray(BannedIPs ?? new List<string> { }))
-            ).ToString().Replace("/", "\\\\"));
+            ).ToString());
 
             return;
         }
@@ -92,7 +95,7 @@ public static class SVOServerConfiguration
             PSHomeRPCS3Workaround = GetValueOrDefault(config, "pshome_rpcs3workaround", PSHomeRPCS3Workaround);
             // Look for the MOTD xml file.
             string motd_file = GetValueOrDefault(config, "MOTD", string.Empty);
-            if (!File.Exists(motd_file))
+            if (string.IsNullOrEmpty(motd_file) || !File.Exists(motd_file))
                 LoggerAccessor.LogWarn("Could not find the MOTD file, using default xml.");
             else
                 MOTD = File.ReadAllText(motd_file);
@@ -118,83 +121,85 @@ public static class SVOServerConfiguration
     // Helper method to get a value or default value if not present
     public static T GetValueOrDefault<T>(dynamic obj, string propertyName, T defaultValue)
     {
-        if (obj != null)
+        try
         {
-            if (obj is JObject jObject)
+            if (obj != null)
             {
-                if (jObject.TryGetValue(propertyName, out JToken? value))
+                if (obj is JObject jObject)
                 {
-                    T? returnvalue = value.ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
-                }
-            }
-            else if (obj is JArray jArray)
-            {
-                if (int.TryParse(propertyName, out int index) && index >= 0 && index < jArray.Count)
-                {
-                    T? returnvalue = jArray[index].ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
+                    if (jObject.TryGetValue(propertyName, out JToken? value))
+                    {
+                        T? returnvalue = value.ToObject<T>();
+                        if (returnvalue != null)
+                            return returnvalue;
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            LoggerAccessor.LogError($"[Program] - GetValueOrDefault thrown an exception: {ex}");
+        }
+
         return defaultValue;
     }
 }
 
 class Program
 {
-    static string configDir = Directory.GetCurrentDirectory() + "/static/";
-    static string configPath = configDir + "svo.json";
-    static bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT || Environment.OSVersion.Platform == PlatformID.Win32S || Environment.OSVersion.Platform == PlatformID.Win32Windows;
-    static Task? MediusDatabaseLoop;
-    static OTGSecureServerLite? OTGServer;
-    static SVOServer? _SVOServer;
+    private static string configDir = Directory.GetCurrentDirectory() + "/static/";
+    private static string configPath = configDir + "svo.json";
+    private static Task? MediusDatabaseLoop;
+    private static OTGSecureServerLite? OTGServer;
+    private static SVOServer? _SVOServer;
 
-    static void StartOrUpdateServer()
+    private static void StartOrUpdateServer()
     {
         OTGServer?.StopServer();
-        OTGServer = null;
-
         _SVOServer?.Stop();
-        _SVOServer = null;
 
-        CyberBackendLibrary.SSL.SSLUtils.InitCerts(SVOServerConfiguration.HTTPSCertificateFile, SVOServerConfiguration.HTTPSCertificatePassword,
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        NetworkLibrary.SSL.SSLUtils.InitializeSSLCertificates(SVOServerConfiguration.HTTPSCertificateFile, SVOServerConfiguration.HTTPSCertificatePassword,
             SVOServerConfiguration.HTTPSDNSList, SVOServerConfiguration.HTTPSCertificateHashingAlgorithm);
 
         MediusDatabaseLoop ??= Task.Run(SVOManager.StartTickPooling);
 
         if (HttpListener.IsSupported)
-            _SVOServer = new SVOServer("*");
+            _SVOServer = new SVOServer("*", new System.Security.Cryptography.X509Certificates.X509Certificate2(SVOServerConfiguration.HTTPSCertificateFile, SVOServerConfiguration.HTTPSCertificatePassword));
         else
-            LoggerAccessor.LogWarn("Windows XP SP2 or Server 2003 is required to use the HttpListener class, so SVO HTTP Server not started.");
+            LoggerAccessor.LogError("Windows XP SP2 or Server 2003 is required to use the HttpListener class, so SVO Server not started!");
 
-        OTGServer = new OTGSecureServerLite(SVOServerConfiguration.HTTPSCertificateFile, SVOServerConfiguration.HTTPSCertificatePassword, "0.0.0.0", 10062);
-    }
-
-    static string ComputeMD5FromFile(string filePath)
-    {
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            // Convert the byte array to a hexadecimal string
-            return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", string.Empty);
-        }
+        OTGServer = new OTGSecureServerLite(SVOServerConfiguration.HTTPSCertificateFile, SVOServerConfiguration.HTTPSCertificatePassword, "*", 10062);
     }
 
     static void Main()
     {
-        if (IsWindows)
-            if (!IsAdministrator())
-            {
-                Console.WriteLine("Trying to restart as admin...");
-                if (StartAsAdmin(Process.GetCurrentProcess().MainModule?.FileName))
-                    Environment.Exit(0);
-            }
-        else
+        if (!NetworkLibrary.Extension.OtherExtensions.IsWindows)
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        else
+            TechnitiumLibrary.Net.Firewall.FirewallHelper.CheckFirewallEntries(Assembly.GetEntryAssembly()?.Location);
 
-        LoggerAccessor.SetupLogger("SVO");
+        LoggerAccessor.SetupLogger("SVO", Directory.GetCurrentDirectory());
+
+#if DEBUG
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A FATAL ERROR OCCURED!");
+            LoggerAccessor.LogError(args.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A task has thrown a Unobserved Exception!");
+            LoggerAccessor.LogError(args.Exception);
+            args.SetObserved();
+        };
+
+        IPUtils.GetIPInfos(IPUtils.GetLocalIPAddress().ToString(), IPUtils.GetLocalSubnet());
+#endif
 
         SVOServerConfiguration.RefreshVariables(configPath);
 
@@ -202,44 +207,38 @@ class Program
 
         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
         {
-            LoggerAccessor.LogInfo("Console Inputs are now available while server is running. . .");
-
             while (true)
             {
-                string? stdin = Console.ReadLine();
+                LoggerAccessor.LogInfo("Press any keys to access server actions...");
 
-                if (!string.IsNullOrEmpty(stdin))
+                Console.ReadLine();
+
+                LoggerAccessor.LogInfo("Press one of the following keys to trigger an action: [R (Reboot),S (Shutdown)]");
+
+                switch (char.ToLower(Console.ReadKey().KeyChar))
                 {
-                    switch (stdin.ToLower())
-                    {
-                        case "shutdown":
-                            LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
+                    case 's':
+                        LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Shutting down. Goodbye!");
-                                Environment.Exit(0);
-                            }
-                            break;
-                        case "reboot":
-                            LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Shutting down. Goodbye!");
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case 'r':
+                        LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Rebooting!");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Rebooting!");
 
-                                SVOServerConfiguration.RefreshVariables(configPath);
+                            SVOServerConfiguration.RefreshVariables(configPath);
 
-                                StartOrUpdateServer();
-                            }
-                            break;
-                        default:
-                            LoggerAccessor.LogWarn($"Unknown command entered: {stdin}");
-                            break;
-                    }
+                            StartOrUpdateServer();
+                        }
+                        break;
                 }
-                else
-                    LoggerAccessor.LogWarn("No command entered!");
             }
         }
         else
@@ -283,7 +282,9 @@ class Program
         }
         catch
         {
-            return false;
+            
         }
+
+        return false;
     }
 }

@@ -5,16 +5,16 @@ using Newtonsoft.Json.Linq;
 using HttpMultipartParser;
 using Newtonsoft.Json;
 using System.Text;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 
 namespace WebAPIService.OHS
 {
     public class Batch
     {
-        public static string? Batch_Process(byte[] PostData, string ContentType, string directorypath, int game)
+        public static string Batch_Process(byte[] PostData, string ContentType, string directorypath, int game)
         {
-            string? dataforohs = null;
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string dataforohs = null;
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary))
             {
@@ -38,7 +38,7 @@ namespace WebAPIService.OHS
                     {
                         int i = 0;
 
-                        StringBuilder? resultBuilder = new StringBuilder();
+                        StringBuilder resultBuilder = new StringBuilder();
 
                         foreach (var command in commands)
                         {
@@ -46,10 +46,10 @@ namespace WebAPIService.OHS
 
                             if (command != null && command.Data != null)
                             {
-                                string? resultfromcommand = null;
-                                string? method = command.Method;
-                                string? project = command.Project;
-                                string? data = command.Data.ToString(Formatting.None);
+                                string resultfromcommand = null;
+                                string method = command.Method;
+                                string project = command.Project;
+                                string data = command.Data.ToString(Formatting.None);
 
                                 if (project == "<dummy>")
                                     project = "dummy";
@@ -94,7 +94,11 @@ namespace WebAPIService.OHS
                                         resultfromcommand = User.GetMany(PostData, ContentType, directorypath + $"/{project}/", data, false, game);
                                         break;
                                     case "user/set/":
+                                    case "user/setifempty/":
                                         resultfromcommand = User.Set(PostData, ContentType, directorypath + $"/{project}/", data, false, game);
+                                        break;
+                                    case "user/clearentry/":
+                                        resultfromcommand = User.ClearEntry(PostData, ContentType, directorypath + $"/{project}/", data, game);
                                         break;
                                     case "user/getwritekey/":
                                         resultfromcommand = User.User_GetWritekey(PostData, ContentType, data, game);
@@ -106,10 +110,16 @@ namespace WebAPIService.OHS
                                         resultfromcommand = Leaderboard.Leaderboard_RequestByRank(PostData, ContentType, directorypath + $"/{project}/", data, game);
                                         break;
                                     case "leaderboard/update/":
-                                        resultfromcommand = Leaderboard.Leaderboard_Update(PostData, ContentType, directorypath + $"/{project}/", data, game);
+                                        resultfromcommand = Leaderboard.Leaderboard_Update(PostData, ContentType, directorypath + $"/{project}/", data, game, false);
                                         break;
                                     case "leaderboard/updatessameentry/":
                                         resultfromcommand = Leaderboard.Leaderboard_UpdatesSameEntry(PostData, ContentType, directorypath + $"/{project}/", data, game);
+                                        break;
+                                    case "levelboard/getall/":
+                                        resultfromcommand = Leaderboard.Levelboard_GetAll(directorypath + $"/{project}/", game, true);
+                                        break;
+                                    case "levelboard/update/":
+                                        resultfromcommand = Leaderboard.Leaderboard_Update(PostData, ContentType, directorypath + $"/{project}/", data, game, true);
                                         break;
                                     case "usercounter/set/":
                                         resultfromcommand = UserCounter.Set(PostData, ContentType, directorypath + $"/{project}/", data, game);
@@ -129,6 +139,9 @@ namespace WebAPIService.OHS
                                     case "usercounter/incrementmany/":
                                         resultfromcommand = UserCounter.Increment_Many(PostData, ContentType, directorypath, data, game);
                                         break;
+                                    case "usercounter/increment_setentry/":
+                                        resultfromcommand = UserCounter.IncrementSetEntry(PostData, ContentType, directorypath, data, game);
+                                        break;
                                     case "userinventory/addglobalitems/":
                                         resultfromcommand = UserInventory.AddGlobalItems(PostData, ContentType, directorypath + $"/{project}/", data, game);
                                         break;
@@ -140,6 +153,9 @@ namespace WebAPIService.OHS
                                         break;
                                     case "userinventory/getuserinventory/":
                                         resultfromcommand = UserInventory.GetUserInventory(PostData, ContentType, directorypath + $"/{project}/", data, game);
+                                        break;
+                                    case "register/":
+                                        resultfromcommand = "{ }"; // Just bounce for now.
                                         break;
                                     default:
                                         LoggerAccessor.LogWarn($"[OHS] - Batch requested a method I don't know about, please report it to GITHUB {method} in {project} with data {data}");
@@ -179,9 +195,9 @@ namespace WebAPIService.OHS
 
         public class BatchCommand
         {
-            public string? Method { get; set; }
-            public JToken? Data { get; set; }
-            public string? Project { get; set; }
+            public string Method { get; set; }
+            public JToken Data { get; set; }
+            public string Project { get; set; }
         }
     }
 }

@@ -2,12 +2,15 @@ using CustomLogger;
 using Horizon.LIBRARY.Database;
 using Horizon.PluginManager;
 using Newtonsoft.Json.Linq;
-using CyberBackendLibrary.GeoLocalization;
+using NetworkLibrary.GeoLocalization;
 using System.Runtime;
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 using Horizon.HTTPSERVICE;
 using Horizon.MUM;
+using System.Reflection;
+using NetworkLibrary.TCP_IP;
+using NetworkLibrary.Extension;
 
 public static class HorizonServerConfiguration
 {
@@ -22,14 +25,13 @@ public static class HorizonServerConfiguration
     public static bool EnableBWPS { get; set; } = true;
     public static bool EnableNAT { get; set; } = true;
     public static string? PlayerAPIStaticPath { get; set; } = $"{Directory.GetCurrentDirectory()}/static/wwwroot";
+    public static string? EBOOTDEFSConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/ebootdefs.json";
     public static string? DMEConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/dme.json";
     public static string? MEDIUSConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/medius.json";
     public static string? MUISConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/muis.json";
     public static string? BWPSConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/bwps.json";
     public static string? NATConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/nat.json";
-    public static string MediusAPIKey { get; set; } = "nwnbiRsiohjuUHQfPaNrStG3moQZH+deR8zIykB8Lbc="; // Base64 only.
-    public static string HomeVersionBetaHDK { get; set; } = "01.86";
-    public static string HomeVersionRetail { get; set; } = "01.86";
+    public static string MediusAPIKey { get; set; } = "nwnbiRsiohjuUHQfPaNrStG3moQZH+deR8zIykB8Lbc=";
     public static string[]? HTTPSDNSList { get; set; }
 
     public static DbController Database = new(DatabaseConfig);
@@ -73,6 +75,7 @@ public static class HorizonServerConfiguration
                     new JProperty("enabled", EnableBWPS),
                     new JProperty("config", BWPSConfig)
                 )),
+                new JProperty("eboot_defs_config", EBOOTDEFSConfig),
                 new JProperty("https_dns_list", HTTPSDNSList ?? Array.Empty<string>()),
                 new JProperty("certificate_file", HTTPSCertificateFile),
                 new JProperty("certificate_password", HTTPSCertificatePassword),
@@ -80,10 +83,8 @@ public static class HorizonServerConfiguration
                 new JProperty("player_api_static_path", PlayerAPIStaticPath),
                 new JProperty("medius_api_key", MediusAPIKey),
                 new JProperty("plugins_folder", PluginsFolder),
-                new JProperty("database", DatabaseConfig),
-                new JProperty("home_version_beta_hdk", HomeVersionBetaHDK),
-                new JProperty("home_version_retail", HomeVersionRetail)
-            ).ToString().Replace("/", "\\\\"));
+                new JProperty("database", DatabaseConfig)
+            ).ToString());
 
             return;
         }
@@ -108,11 +109,12 @@ public static class HorizonServerConfiguration
             MUISConfig = GetValueOrDefault(config.muis, "config", MUISConfig);
             NATConfig = GetValueOrDefault(config.nat, "config", NATConfig);
             BWPSConfig = GetValueOrDefault(config.bwps, "config", BWPSConfig);
-            MediusAPIKey = GetValueOrDefault(config, "medius_api_key", MediusAPIKey);
+            EBOOTDEFSConfig = GetValueOrDefault(config.bwps, "eboot_defs_config", EBOOTDEFSConfig);
+            string APIKey = GetValueOrDefault(config, "medius_api_key", MediusAPIKey);
+            if (OtherExtensions.IsBase64String(APIKey))
+                MediusAPIKey = APIKey;
             PluginsFolder = GetValueOrDefault(config, "plugins_folder", PluginsFolder);
             DatabaseConfig = GetValueOrDefault(config, "database", DatabaseConfig);
-            HomeVersionBetaHDK = GetValueOrDefault(config, "home_version_beta_hdk", HomeVersionBetaHDK);
-            HomeVersionRetail = GetValueOrDefault(config, "home_version_retail", HomeVersionRetail);
         }
         catch (Exception ex)
         {
@@ -123,54 +125,59 @@ public static class HorizonServerConfiguration
     // Helper method to get a value or default value if not present
     public static T GetValueOrDefault<T>(dynamic obj, string propertyName, T defaultValue)
     {
-        if (obj != null)
+        try
         {
-            if (obj is JObject jObject)
+            if (obj != null)
             {
-                if (jObject.TryGetValue(propertyName, out JToken? value))
+                if (obj is JObject jObject)
                 {
-                    T? returnvalue = value.ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
-                }
-            }
-            else if (obj is JArray jArray)
-            {
-                if (int.TryParse(propertyName, out int index) && index >= 0 && index < jArray.Count)
-                {
-                    T? returnvalue = jArray[index].ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
+                    if (jObject.TryGetValue(propertyName, out JToken? value))
+                    {
+                        T? returnvalue = value.ToObject<T>();
+                        if (returnvalue != null)
+                            return returnvalue;
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            LoggerAccessor.LogError($"[Program] - GetValueOrDefault thrown an exception: {ex}");
+        }
+
         return defaultValue;
     }
 }
 
 class Program
 {
-    static string configDir = Directory.GetCurrentDirectory() + "/static/";
-    static string configPath = configDir + "horizon.json";
-    static bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT || Environment.OSVersion.Platform == PlatformID.Win32S || Environment.OSVersion.Platform == PlatformID.Win32Windows;
-    static ConcurrentBag<CrudServerHandler>? HTTPBag;
-    static MumServerHandler? MUMServer;
+    private static string configDir = Directory.GetCurrentDirectory() + "/static/";
+    private static string configPath = configDir + "horizon.json";
+    private static ConcurrentBag<CrudServerHandler>? HTTPBag;
+    private static MumServerHandler? MUMServer;
 
-    static Task HorizonStarter()
+    private static Task HorizonStarter()
     {
         if (HorizonServerConfiguration.EnableMedius)
         {
-            MUMServer = new MumServerHandler("*", 10076);
-
-            HTTPBag = new ConcurrentBag<CrudServerHandler>
+            try
             {
-                new("*", 61920),
-                new("0.0.0.0", 8443, HorizonServerConfiguration.HTTPSCertificateFile, HorizonServerConfiguration.HTTPSCertificatePassword)
-            };
+                MUMServer = new MumServerHandler("*", 10076);
+
+                HTTPBag = new ConcurrentBag<CrudServerHandler>
+                {
+                    new("*", 61920),
+                    new("*", 8443, HorizonServerConfiguration.HTTPSCertificateFile, HorizonServerConfiguration.HTTPSCertificatePassword)
+                };
+            }
+            catch (Exception ex)
+            {
+                LoggerAccessor.LogError("[HTTPSERVICE] - An exception was thrown while starting the Medius HTTP Services: " + ex);
+            }
         }
 
-        if (HorizonServerConfiguration.EnableMedius && !Horizon.MEDIUS.MediusClass.started)
-            Horizon.MEDIUS.MediusClass.StartServer();
+        if (HorizonServerConfiguration.EnableMedius && !Horizon.SERVER.MediusClass.started)
+            Horizon.SERVER.MediusClass.StartServer();
 
         if (HorizonServerConfiguration.EnableNAT && !Horizon.NAT.NATClass.started)
             Horizon.NAT.NATClass.StartServer();
@@ -187,7 +194,7 @@ class Program
         return Task.CompletedTask;
     }
 
-    static void StartOrUpdateServer()
+    private static void StartOrUpdateServer()
     {
         if (Horizon.DME.DmeClass.started && !HorizonServerConfiguration.EnableDME)
             Horizon.DME.DmeClass.StopServer();
@@ -201,11 +208,10 @@ class Program
         if (Horizon.NAT.NATClass.started && !HorizonServerConfiguration.EnableNAT)
             Horizon.NAT.NATClass.StopServer();
 
-        if (Horizon.MEDIUS.MediusClass.started && !HorizonServerConfiguration.EnableMedius)
-            Horizon.MEDIUS.MediusClass.StopServer();
+        if (Horizon.SERVER.MediusClass.started && !HorizonServerConfiguration.EnableMedius)
+            Horizon.SERVER.MediusClass.StopServer();
 
         MUMServer?.StopServer();
-        MUMServer = null;
 
         if (HTTPBag != null)
         {
@@ -213,32 +219,44 @@ class Program
             {
                 httpBag.StopServer();
             }
-
-            HTTPBag = null;
         }
 
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
         if (HorizonServerConfiguration.EnableMedius)
-            CyberBackendLibrary.SSL.SSLUtils.InitCerts(HorizonServerConfiguration.HTTPSCertificateFile, HorizonServerConfiguration.HTTPSCertificatePassword,
+            NetworkLibrary.SSL.SSLUtils.InitializeSSLCertificates(HorizonServerConfiguration.HTTPSCertificateFile, HorizonServerConfiguration.HTTPSCertificatePassword,
                     HorizonServerConfiguration.HTTPSDNSList, HorizonServerConfiguration.HTTPSCertificateHashingAlgorithm);
 
         HorizonStarter().Wait();
     }
 
-    static string ComputeMD5FromFile(string filePath)
-    {
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            // Convert the byte array to a hexadecimal string
-            return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", string.Empty);
-        }
-    }
-
     static void Main()
     {
-        if (!IsWindows)
+        if (!OtherExtensions.IsWindows)
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        else
+            TechnitiumLibrary.Net.Firewall.FirewallHelper.CheckFirewallEntries(Assembly.GetEntryAssembly()?.Location);
 
-        LoggerAccessor.SetupLogger("Horizon");
+        LoggerAccessor.SetupLogger("Horizon", Directory.GetCurrentDirectory());
+
+#if DEBUG
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A FATAL ERROR OCCURED!");
+            LoggerAccessor.LogError(args.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A task has thrown a Unobserved Exception!");
+            LoggerAccessor.LogError(args.Exception);
+            args.SetObserved();
+        };
+
+        IPUtils.GetIPInfos(IPUtils.GetLocalIPAddress().ToString(), IPUtils.GetLocalSubnet());
+#endif
 
         GeoIP.Initialize();
 
@@ -248,44 +266,38 @@ class Program
 
         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
         {
-            LoggerAccessor.LogInfo("Console Inputs are now available while server is running. . .");
-
             while (true)
             {
-                string? stdin = Console.ReadLine();
+                LoggerAccessor.LogInfo("Press any keys to access server actions...");
 
-                if (!string.IsNullOrEmpty(stdin))
+                Console.ReadLine();
+
+                LoggerAccessor.LogInfo("Press one of the following keys to trigger an action: [R (Reboot),S (Shutdown)]");
+
+                switch (char.ToLower(Console.ReadKey().KeyChar))
                 {
-                    switch (stdin.ToLower())
-                    {
-                        case "shutdown":
-                            LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
+                    case 's':
+                        LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Shutting down. Goodbye!");
-                                Environment.Exit(0);
-                            }
-                            break;
-                        case "reboot":
-                            LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Shutting down. Goodbye!");
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case 'r':
+                        LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Rebooting!");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Rebooting!");
 
-                                HorizonServerConfiguration.RefreshVariables(configPath);
+                            HorizonServerConfiguration.RefreshVariables(configPath);
 
-                                StartOrUpdateServer();
-                            }
-                            break;
-                        default:
-                            LoggerAccessor.LogWarn($"Unknown command entered: {stdin}");
-                            break;
-                    }
+                            StartOrUpdateServer();
+                        }
+                        break;
                 }
-                else
-                    LoggerAccessor.LogWarn("No command entered!");
             }
         }
         else

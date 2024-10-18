@@ -1,11 +1,12 @@
 using HomeTools.ChannelID;
+using System.Collections.Concurrent;
 using System.Xml;
 
 namespace SSFWServer
 {
     public class ScenelistParser
     {
-        public static Dictionary<string, string> sceneDictionary = new();
+        public static ConcurrentDictionary<string, string> sceneDictionary = new();
 
         public static void UpdateSceneDictionary(object? state)
         {
@@ -41,18 +42,15 @@ namespace SSFWServer
                                     SceneKey? sceneKey = new(channelID);
                                     try
                                     {
-                                        SIDKeyGenerator.Instance.VerifyNewerKey(sceneKey);
-                                        lock (sceneDictionary)
+                                        SIDKeyGenerator.VerifyNewerKey(sceneKey);
+                                        string SceneID = SIDKeyGenerator.Instance.ExtractSceneIDNewerType(sceneKey).ToString("X").PadLeft(4, '0'); // SSFW was introduced in modern Home only, safe to assume only newer type.
+                                        if (!sceneDictionary.ContainsKey(ID))
                                         {
-                                            string SceneID = SIDKeyGenerator.Instance.ExtractSceneIDNewerType(sceneKey).ToString("X").PadLeft(4, '0'); // SSFW was introduced in modern Home only, safe to assume only newer type.
-                                            if (!sceneDictionary.ContainsKey(SceneID))
-                                            {
 #if DEBUG
-                                                CustomLogger.LoggerAccessor.LogInfo($"[SSFW] - ScenelistParser: Added entry: ID:{ID}|SceneID:{SceneID}");
+                                            CustomLogger.LoggerAccessor.LogInfo($"[SSFW] - ScenelistParser: Added entry: ID:{ID}|SceneID:{SceneID}");
 #endif
 
-                                                sceneDictionary.Add(ID, SceneID);
-                                            }
+                                            sceneDictionary.TryAdd(ID, SceneID);
                                         }
                                     }
                                     catch (SceneKeyException)

@@ -23,6 +23,16 @@ namespace Org.BouncyCastle.Asn1
             }
         }
 
+        /// <summary>Implementation limit on the length of the contents octets for an Object Identifier.</summary>
+        /// <remarks>
+        /// We adopt the same value used by OpenJDK. In theory there is no limit on the length of the contents, or the
+        /// number of subidentifiers, or the length of individual subidentifiers. In practice, supporting arbitrary
+        /// lengths can lead to issues, e.g. denial-of-service attacks when attempting to convert a parsed value to its
+        /// (decimal) string form.
+        /// </remarks>
+        private const int MaxContentsLength = 4096;
+        private const int MaxIdentifierLength = MaxContentsLength * 4 + 1;
+
         public static DerObjectIdentifier FromContents(byte[] contents)
         {
             if (contents == null)
@@ -46,8 +56,7 @@ namespace Org.BouncyCastle.Asn1
 
             if (obj is IAsn1Convertible asn1Convertible)
             {
-                Asn1Object asn1Object = asn1Convertible.ToAsn1Object();
-                if (asn1Object is DerObjectIdentifier converted)
+                if (!(obj is Asn1Object) && asn1Convertible.ToAsn1Object() is DerObjectIdentifier converted)
                     return converted;
             }
             else if (obj is byte[] bytes)
@@ -82,18 +91,38 @@ namespace Org.BouncyCastle.Asn1
             return (DerObjectIdentifier)Meta.Instance.GetContextInstance(taggedObject, declaredExplicit);
         }
 
+        public static DerObjectIdentifier GetOptional(Asn1Encodable element)
+        {
+            if (element == null)
+                throw new ArgumentNullException(nameof(element));
+
+            if (element is DerObjectIdentifier existing)
+                return existing;
+
+            return null;
+        }
+
+        public static DerObjectIdentifier GetTagged(Asn1TaggedObject taggedObject, bool declaredExplicit)
+        {
+            return (DerObjectIdentifier)Meta.Instance.GetTagged(taggedObject, declaredExplicit);
+        }
+
         public static bool TryFromID(string identifier, out DerObjectIdentifier oid)
         {
             if (identifier == null)
                 throw new ArgumentNullException(nameof(identifier));
-            if (!IsValidIdentifier(identifier))
+            if (identifier.Length <= MaxIdentifierLength && IsValidIdentifier(identifier))
             {
-                oid = default;
-                return false;
+                byte[] contents = ParseIdentifier(identifier);
+                if (contents.Length <= MaxContentsLength)
+                {
+                    oid = new DerObjectIdentifier(contents, identifier);
+                    return true;
+                }
             }
 
-            oid = new DerObjectIdentifier(ParseIdentifier(identifier), identifier);
-            return true;
+            oid = default;
+            return false;
         }
 
         private const long LongLimit = (long.MaxValue >> 7) - 0x7F;
@@ -105,22 +134,13 @@ namespace Org.BouncyCastle.Asn1
 
         public DerObjectIdentifier(string identifier)
         {
-            if (identifier == null)
-                throw new ArgumentNullException("identifier");
-            if (!IsValidIdentifier(identifier))
-                throw new FormatException("string " + identifier + " not an OID");
+            CheckIdentifier(identifier);
 
-            m_contents = ParseIdentifier(identifier);
+            byte[] contents = ParseIdentifier(identifier);
+            CheckContentsLength(contents.Length);
+
+            m_contents = contents;
             m_identifier = identifier;
-        }
-
-        private DerObjectIdentifier(byte[] contents, bool clone)
-        {
-            if (!Asn1RelativeOid.IsValidContents(contents))
-                throw new ArgumentException("invalid OID contents", nameof(contents));
-
-            m_contents = clone ? Arrays.Clone(contents) : contents;
-            m_identifier = null;
         }
 
         private DerObjectIdentifier(byte[] contents, string identifier)
@@ -131,12 +151,33 @@ namespace Org.BouncyCastle.Asn1
 
         public virtual DerObjectIdentifier Branch(string branchID)
         {
-            if (!Asn1RelativeOid.IsValidIdentifier(branchID, 0))
-                throw new FormatException("string " + branchID + " not a valid OID branch");
+            Asn1RelativeOid.CheckIdentifier(branchID);
 
-            return new DerObjectIdentifier(
-                contents: Arrays.Concatenate(m_contents, Asn1RelativeOid.ParseIdentifier(branchID)),
-                identifier: GetID() + "." + branchID);
+            byte[] contents;
+            if (branchID.Length <= 2)
+            {
+                CheckContentsLength(m_contents.Length + 1);
+                int subID = branchID[0] - '0';
+                if (branchID.Length == 2)
+                {
+                    subID *= 10;
+                    subID += branchID[1] - '0';
+                }
+
+                contents = Arrays.Append(m_contents, (byte)subID);
+            }
+            else
+            {
+                byte[] branchContents = Asn1RelativeOid.ParseIdentifier(branchID);
+                CheckContentsLength(m_contents.Length + branchContents.Length);
+
+                contents = Arrays.Concatenate(m_contents, branchContents);
+            }
+
+            string rootID = GetID();
+            string identifier = string.Concat(rootID, ".", branchID);
+
+            return new DerObjectIdentifier(contents, identifier);
         }
 
         public string GetID()
@@ -195,9 +236,27 @@ namespace Org.BouncyCastle.Asn1
             return new PrimitiveDerEncoding(tagClass, tagNo, m_contents);
         }
 
+        internal static void CheckContentsLength(int contentsLength)
+        {
+            if (contentsLength > MaxContentsLength)
+                throw new ArgumentException("exceeded OID contents length limit");
+        }
+
+        internal static void CheckIdentifier(string identifier)
+        {
+            if (identifier == null)
+                throw new ArgumentNullException(nameof(identifier));
+            if (identifier.Length > MaxIdentifierLength)
+                throw new ArgumentException("exceeded OID contents length limit");
+            if (!IsValidIdentifier(identifier))
+                throw new FormatException("string " + identifier + " not a valid OID");
+        }
+
         internal static DerObjectIdentifier CreatePrimitive(byte[] contents, bool clone)
         {
-            int index = Arrays.GetHashCode(contents);
+            CheckContentsLength(contents.Length);
+
+            uint index = (uint)Arrays.GetHashCode(contents);
 
             index ^= index >> 20;
             index ^= index >> 10;
@@ -207,7 +266,10 @@ namespace Org.BouncyCastle.Asn1
             if (originalEntry != null && Arrays.AreEqual(contents, originalEntry.m_contents))
                 return originalEntry;
 
-            var newEntry = new DerObjectIdentifier(contents, clone);
+            if (!Asn1RelativeOid.IsValidContents(contents))
+                throw new ArgumentException("invalid OID contents", nameof(contents));
+
+            var newEntry = new DerObjectIdentifier(clone ? Arrays.Clone(contents) : contents, identifier: null);
 
             var exchangedEntry = Interlocked.CompareExchange(ref Cache[index], newEntry, originalEntry);
             if (exchangedEntry != originalEntry)
@@ -228,7 +290,7 @@ namespace Org.BouncyCastle.Asn1
             if (first < '0' || first > '2')
                 return false;
 
-            if (!Asn1RelativeOid.IsValidIdentifier(identifier, 2))
+            if (!Asn1RelativeOid.IsValidIdentifier(identifier, from: 2))
                 return false;
 
             if (first == '2')

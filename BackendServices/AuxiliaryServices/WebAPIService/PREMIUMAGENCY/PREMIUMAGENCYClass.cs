@@ -1,4 +1,4 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using System;
@@ -26,7 +26,7 @@ namespace WebAPIService.PREMIUMAGENCY
             this.method = method;
         }
 
-        public string? ProcessRequest(byte[] PostData, string ContentType)
+        public string ProcessRequest(byte[] PostData, string ContentType)
         {
             if (string.IsNullOrEmpty(absolutepath))
                 return null;
@@ -92,7 +92,7 @@ namespace WebAPIService.PREMIUMAGENCY
                         case "/eventController/getResource.do":
                             return Resource.getResourcePOST(PostData, ContentType, workpath, fulluripath, method);
                         case "/eventController/confirmEvent.do":
-                            //return Event.confirmEventRequestPOST(PostData, ContentType, evid, workpath, fulluripath); //Unimplemented 
+                            return Event.confirmEventRequestPOST(PostData, ContentType, evid, workpath, fulluripath, method);
                         case "/eventController/checkEvent.do":
                             return Event.checkEventRequestPOST(PostData, ContentType, evid, workpath, fulluripath, method);
                         case "/eventController/entryEvent.do":
@@ -119,6 +119,12 @@ namespace WebAPIService.PREMIUMAGENCY
                             return Ranking.getItemRankingTargetListHandler(PostData, ContentType, workpath, evid, fulluripath, method);
                         case "/eventController/getInformationBoardSchedule.do":
                             return InfoBoard.getInformationBoardSchedulePOST(PostData, ContentType, workpath, evid);
+                        case "/eventController/checkAccount.do":
+                            return Account.checkAccount(PostData, ContentType, workpath);
+                        case "/eventController/entryAccount.do":
+                            return Account.entryAccount(PostData, ContentType, workpath);
+                        case "/eventController/confirmAccount.do":
+                            //return Account.confirmAccount(PostData, ContentType, workpath, evid);
                         default:
                             {
                                 LoggerAccessor.LogError($"[PREMIUMAGENCY] - Unhandled {method} server request discovered: {absolutepath.Replace("/eventController/", "")} | DETAILS: \n{Encoding.UTF8.GetString(PostData)}");
@@ -194,7 +200,7 @@ namespace WebAPIService.PREMIUMAGENCY
             }
         }
 
-        public static List<(string, string)>? ReadFormDataFromFile(string filePath)
+        public static List<(string, string)> ReadFormDataFromFile(string filePath)
         {
             try
             {
@@ -203,7 +209,7 @@ namespace WebAPIService.PREMIUMAGENCY
 
                 using (StreamReader reader = new StreamReader(filePath))
                 {
-                    string? line;
+                    string line = null;
                     string currentKey = string.Empty;
                     string currentValue = string.Empty;
 
@@ -223,16 +229,12 @@ namespace WebAPIService.PREMIUMAGENCY
                             }
                         }
                         else
-                        {
                             currentValue += "\n" + line.Trim();
-                        }
                     }
 
                     // Add the last key-value pair
                     if (currentKey != null)
-                    {
                         formData.Add((currentKey.Trim(), currentValue.Trim()));
-                    }
                 }
 
                 return formData;

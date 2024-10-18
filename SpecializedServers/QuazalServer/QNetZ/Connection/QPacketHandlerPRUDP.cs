@@ -2,17 +2,21 @@ using CustomLogger;
 using System.Net;
 using System.Text;
 using System.Net.Sockets;
-using CyberBackendLibrary.DataTypes;
+using QuazalServer.RDVServices.RMC;
+using QuazalServer.RDVServices;
+using QuazalServer.QNetZ.Factory;
+using NetworkLibrary.Extension;
 
 namespace QuazalServer.QNetZ
 {
     public partial class QPacketHandlerPRUDP
 	{
-		public QPacketHandlerPRUDP(UdpClient udp, uint pid, int port, int BackendPort, string AccessKey, string sourceName = "PRUDP Handler")
+		public QPacketHandlerPRUDP(UdpClient udp, uint pid, int port, int BackendPort, string AccessKey, string FactoryIdent, string sourceName = "PRUDP Handler")
 		{
             UDP = udp;
             SourceName = sourceName;
 			this.AccessKey = AccessKey;
+			Factory = (FactoryIdent, ServiceFactoryRDV.TryGetServiceFactory(FactoryIdent) ?? new RMCServiceFactory());
             PID = pid;
 			Port = port;
 			this.BackendPort = BackendPort;
@@ -22,7 +26,8 @@ namespace QuazalServer.QNetZ
 
         public string SourceName;
 		public string AccessKey;
-		public readonly uint PID;
+        public (string, RMCServiceFactory) Factory;
+        public readonly uint PID;
 		public readonly int Port;
         public readonly int BackendPort;
         private readonly List<QPacket> AccumulatedPackets = new();
@@ -96,11 +101,11 @@ namespace QuazalServer.QNetZ
                 }
 
                 // drop player in case when of new account but same address
-                if (client.Info != null)
-                    NetworkPlayers.DropPlayerInfo(client.Info);
+                if (client.PlayerInfo != null)
+                    NetworkPlayers.DropPlayerInfo(client.PlayerInfo);
 
                 playerInfo.Client = client;
-                client.Info = playerInfo;
+                client.PlayerInfo = playerInfo;
 
                 uint responseCode = Helper.ReadU32(m);
 
@@ -151,7 +156,7 @@ namespace QuazalServer.QNetZ
                     _ = UDP.SendAsync(data, data.Length, ep);
             }
 
-            LoggerAccessor.LogInfo($"[PRUDP Handler] - Packet Data: {DataTypesUtils.ByteArrayToHexString(data)}");
+            LoggerAccessor.LogInfo($"[PRUDP Handler] - Packet Data: {OtherExtensions.ByteArrayToHexString(data)}");
 		}
 
         public QPacket MakeACK(QPacket p, QClient client)
@@ -240,7 +245,7 @@ namespace QuazalServer.QNetZ
                     foreach (byte b in data)
                         sb.Append(b.ToString("X2") + " ");
 
-                    LoggerAccessor.LogInfo($"[PRUDP Handler] - Packet Data:{DataTypesUtils.ByteArrayToHexString(buff)}");
+                    LoggerAccessor.LogInfo($"[PRUDP Handler] - Packet Data:{OtherExtensions.ByteArrayToHexString(buff)}");
 
                     LoggerAccessor.LogInfo($"[PRUDP Handler] - [{SourceName}] received:{packetIn.ToStringShort()}");
                     LoggerAccessor.LogInfo($"[PRUDP Handler] - [{SourceName}] received:{sb}");
@@ -304,7 +309,7 @@ namespace QuazalServer.QNetZ
 								{
 									case "ex5LYTJ0":
 										if (packetIn.payload != null)
-											LoggerAccessor.LogInfo($"[QPakcetHandler] - Client requested a HERMES packet: {DataTypesUtils.ByteArrayToHexString(packetIn.payload)} - UTF8:{Encoding.UTF8.GetString(packetIn.payload)}");
+											LoggerAccessor.LogInfo($"[QPakcetHandler] - Client requested a HERMES packet: {OtherExtensions.ByteArrayToHexString(packetIn.payload)} - UTF8:{Encoding.UTF8.GetString(packetIn.payload)}");
 										else
                                             LoggerAccessor.LogWarn($"[QPakcetHandler] - Client requested a HERMES packet with no data!");
                                         break;
@@ -330,7 +335,7 @@ namespace QuazalServer.QNetZ
 
 						if (packetIn.payload != null)
 						{
-                            ulong time = BitConverter.ToUInt64(!BitConverter.IsLittleEndian ? EndianTools.EndianUtils.EndianSwap(packetIn.payload) : packetIn.payload, 5);
+                            ulong time = BitConverter.ToUInt64(!BitConverter.IsLittleEndian ? EndianTools.EndianUtils.ReverseArray(packetIn.payload) : packetIn.payload, 5);
 
                             if (NATPingTimeToIgnore.Contains(time))
                                 NATPingTimeToIgnore.Remove(time);
@@ -400,7 +405,7 @@ namespace QuazalServer.QNetZ
                 {
                     QClient? client = Clients[i];
                     if (client.State == QClient.StateType.Dropped ||
-                        (DateTime.UtcNow - client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+                        client.TimeSinceLastPacket > Constants.ClientTimeoutSeconds)
                     {
                         LoggerAccessor.LogWarn($"[PRUDP Handler] - [{SourceName}] dropping client: 0x{client.IDsend:X8}");
                         client.State = QClient.StateType.Dropped;
@@ -460,14 +465,14 @@ namespace QuazalServer.QNetZ
 		{
 			foreach (QClient c in Clients)
 			{
-				if (c.Info == null)
+				if (c.PlayerInfo == null)
 					continue;
 
 				// also check if timed out
-				if ((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				if (c.TimeSinceLastPacket > Constants.ClientTimeoutSeconds)
 					continue;
 
-				if (c.Info.PID == userPID)
+				if (c.PlayerInfo.PID == userPID)
 					return c;
 			}
 

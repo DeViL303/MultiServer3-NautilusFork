@@ -1,68 +1,36 @@
 // Copyright (C) 2016 by Barend Erasmus and donated to the public domain
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.Extension;
 using HTTPServer.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 
 namespace HTTPServer.Models
 {
-    public enum HttpStatusCode
-    {
-        // for a full list of status codes, see..
-        // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-
-        Continue = 100,
-        OK = 200,
-        Created = 201,
-        Accepted = 202,
-        No_Content = 204,
-        Partial_Content = 206,
-        MultiStatus = 207,
-        MovedPermanently = 301,
-        Found = 302,
-        Not_Modified = 304,
-        Permanent_Redirect = 308,
-        Temporary_Redirect = 307,
-        BadRequest = 400,
-        Forbidden = 403,
-        Not_Found = 404,
-        MethodNotAllowed = 405,
-        RangeNotSatisfiable = 416,
-        Missing_parameters = 422,
-        InternalServerError = 500,
-        NotImplemented = 501,
-        BadGateway = 502,
-        ServiceUnavailable = 503
-    }
-
     public class HttpResponse : IDisposable
     {
         private bool disposedValue;
         #region Properties
 
         public HttpStatusCode HttpStatusCode { get; set; }
+        [JsonIgnore]
         public Stream? ContentStream { get; set; }
         public Dictionary<string, string> Headers { get; set; }
-
+        private string HttpVersion { get; set; }
         #endregion
 
         #region Constructors
 
-        public HttpResponse(bool keepalive, string? HttpVersionOverride = null)
+        public HttpResponse(string? HttpVersionOverride = null, bool disableChunkedEncoding = false)
         {
-            string HttpVersion = (!string.IsNullOrEmpty(HttpVersionOverride)) ? HttpVersionOverride : HTTPServerConfiguration.HttpVersion;
+            HttpVersion = (!string.IsNullOrEmpty(HttpVersionOverride)) ? HttpVersionOverride : HTTPServerConfiguration.HttpVersion;
 
-            if (keepalive)
-                Headers = new Dictionary<string, string>
-                {
-                    { "Connection", "Keep-Alive" }
-                };
-            else
-                Headers = new Dictionary<string, string>();
+            Headers = new Dictionary<string, string>();
 
-            if (HttpVersion == "1.1")
+            if (HTTPServerConfiguration.ChunkedTransfers && !disableChunkedEncoding && HttpVersion.Equals("1.1"))
                 Headers.Add("Transfer-Encoding", "chunked");
         }
 
@@ -75,13 +43,16 @@ namespace HTTPServer.Models
             return string.Format("{0} {1}", (int)HttpStatusCode, HttpStatusCode.ToString());
         }
 
-        public static HttpResponse Send(string? stringtosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK)
+        public static HttpResponse Send(string? stringtosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK, bool lowerCaseContentType = false)
         {
-            HttpResponse response = new(false)
+            HttpResponse response = new()
             {
                 HttpStatusCode = statuscode
             };
-            response.Headers["Content-Type"] = mimetype;
+            if (lowerCaseContentType)
+                response.Headers["content-type"] = mimetype;
+            else
+                response.Headers["Content-Type"] = mimetype;
             if (HeaderInput != null)
             {
                 foreach (string[] innerArray in HeaderInput)
@@ -96,21 +67,24 @@ namespace HTTPServer.Models
                     }
                 }
             }
-            if (stringtosend != null)
+            if (!string.IsNullOrEmpty(stringtosend))
                 response.ContentAsUTF8 = stringtosend;
             else
-                response.ContentStream = null;
+                response.ContentAsUTF8 = string.Empty;
 
             return response;
         }
 
-        public static HttpResponse Send(byte[]? bytearraytosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK)
+        public static HttpResponse Send(byte[]? bytearraytosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK, bool lowerCaseContentType = false)
         {
-            HttpResponse response = new(false)
+            HttpResponse response = new()
             {
                 HttpStatusCode = statuscode
             };
-            response.Headers["Content-Type"] = mimetype;
+            if (lowerCaseContentType)
+                response.Headers["content-type"] = mimetype;
+            else
+                response.Headers["Content-Type"] = mimetype;
             if (HeaderInput != null)
             {
                 foreach (var innerArray in HeaderInput)
@@ -120,26 +94,29 @@ namespace HTTPServer.Models
                     {
                         // Extract two values from the inner array
                         string value1 = innerArray[0];
-                        string value2 = innerArray[1];
-                        response.Headers.Add(value1, value2);
+                        if (!response.Headers.ContainsKey(value1))
+                            response.Headers.Add(value1, innerArray[1]);
                     }
                 }
             }
             if (bytearraytosend != null)
                 response.ContentStream = new MemoryStream(bytearraytosend);
             else
-                response.ContentStream = null;
+                response.ContentAsUTF8 = string.Empty;
 
             return response;
         }
 
-        public static HttpResponse Send(Stream? streamtosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK, string? HttpVersionOverride = null)
+        public static HttpResponse Send(Stream? streamtosend, string mimetype = "text/plain", string[][]? HeaderInput = null, HttpStatusCode statuscode = HttpStatusCode.OK, bool lowerCaseContentType = false)
         {
-            HttpResponse response = new(false, HttpVersionOverride)
+            HttpResponse response = new()
             {
                 HttpStatusCode = statuscode
             };
-            response.Headers["Content-Type"] = mimetype;
+            if (lowerCaseContentType)
+                response.Headers["content-type"] = mimetype;
+            else
+                response.Headers["Content-Type"] = mimetype;
             if (HeaderInput != null)
             {
                 foreach (string[]? innerArray in HeaderInput)
@@ -155,10 +132,17 @@ namespace HTTPServer.Models
                 if (streamtosend.CanSeek)
                     response.ContentStream = streamtosend;
                 else
-                    response.ContentStream = new HugeMemoryStream(streamtosend, HTTPServerConfiguration.BufferSize);
+                {
+                    response.ContentStream = new HugeMemoryStream(streamtosend, HTTPServerConfiguration.BufferSize)
+                    {
+                        Position = 0
+                    };
+                    streamtosend.Close();
+                    streamtosend.Dispose();
+                }
             }
             else
-                response.ContentStream = null;
+                response.ContentAsUTF8 = string.Empty;
 
             return response;
         }
@@ -175,7 +159,7 @@ namespace HTTPServer.Models
         {
             StringBuilder strBuilder = new();
 
-            strBuilder.Append(string.Format("HTTP/{0} {1} {2}\r\n", HTTPServerConfiguration.HttpVersion, (int)HttpStatusCode, HttpStatusCode.ToString().Replace("_", " ")));
+            strBuilder.Append(string.Format("HTTP/{0} {1} {2}\r\n", HttpVersion, (int)HttpStatusCode, HttpStatusCode.ToString()));
             strBuilder.Append(Headers.ToHttpHeaders());
             strBuilder.Append("\r\n\r\n");
 

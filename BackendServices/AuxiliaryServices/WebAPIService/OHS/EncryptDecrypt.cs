@@ -13,23 +13,21 @@ namespace WebAPIService.OHS
                 return index;
         }
 
-        public static string Encrypt(string? str, int offset, int game)
+        public static string Encrypt(string str, int offset, int game)
         {
             if (string.IsNullOrEmpty(str))
-                return string.Empty;
+                return null;
 
-            if (offset > 95 * 95)
+            if (offset > 9025)
             {
                 LoggerAccessor.LogError("[OHS - Encrypt] - Offset is too large.");
-                return string.Empty;
+                return null;
             }
 
-            var chars = new StringBuilder();
+            StringBuilder chars = new StringBuilder();
 
-            int offsethi = (offset - 1) / 95;
-            int offsetlo = (offset - 1) % 95;
-            chars.Append((char)(offsethi + 32));
-            chars.Append((char)(offsetlo + 32));
+            chars.Append((char)(((int)System.Math.Floor((double)((offset - 1) / 95))) + 32));
+            chars.Append((char)(((offset - 1) % 95) + 32));
 
             for (int i = 0; i < str.Length; i++)
             {
@@ -37,21 +35,19 @@ namespace WebAPIService.OHS
                 if (srcbyte < 0 || srcbyte > 95)
                 {
                     LoggerAccessor.LogError("[OHS - Encrypt] - Invalid character in input string");
-                    return string.Empty;
+                    return null;
                 }
 
-                int cipherbyte = 0;
+                int cipherbyte;
 
                 if (game == 1)
-                    cipherbyte = StaticKeys.version1cipher[Wrapped(i + offset, StaticKeys.version1cipher.Length)];
+                    cipherbyte = StaticKeys.version1cipher[Wrapped(i + offset, StaticKeys.version1cipher.Length - 1)];
                 else if (game == 2)
-                    cipherbyte = StaticKeys.version2cipher[Wrapped(i + offset, StaticKeys.version2cipher.Length)];
+                    cipherbyte = StaticKeys.version2cipher[Wrapped(i + offset, StaticKeys.version2cipher.Length - 1)];
                 else
-                    return string.Empty;
+                    return null;
 
-                int encbyte = (srcbyte + cipherbyte) % 95 + 32;
-
-                chars.Append((char)encbyte);
+                chars.Append((char)((srcbyte + cipherbyte) % 95 + 32));
             }
 
             return chars.ToString();
@@ -60,13 +56,11 @@ namespace WebAPIService.OHS
         public static string Decrypt(string str, int game)
         {
             if (string.IsNullOrEmpty(str))
-                return string.Empty;
+                return null;
 
-            var chars = new StringBuilder();
+            StringBuilder chars = new StringBuilder();
 
-            int offsethi = str[0] - 32;
-            int offsetlo = str[1] - 32;
-            int offset = offsethi * 95 + offsetlo + 1;
+            int offset = (str[0] - 32) * 95 + (str[1] - 32) + 1;
 
             for (int i = 2; i < str.Length; i++) // Corrected loop start index to 2
             {
@@ -74,21 +68,19 @@ namespace WebAPIService.OHS
                 if (srcbyte < 0 || srcbyte > 95)
                 {
                     LoggerAccessor.LogError("[OHS - Decrypt] - Invalid character in input string");
-                    return string.Empty;
+                    return null;
                 }
 
-                int cipherbyte = 0;
+                int cipherbyte;
 
                 if (game == 1)
-                    cipherbyte = StaticKeys.version1cipher[Wrapped(i - 2 + offset, StaticKeys.version1cipher.Length)];
+                    cipherbyte = StaticKeys.version1cipher[Wrapped(i - 2 + offset, StaticKeys.version1cipher.Length - 1)];
                 else if (game == 2)
-                    cipherbyte = StaticKeys.version2cipher[Wrapped(i - 2 + offset, StaticKeys.version2cipher.Length)];
+                    cipherbyte = StaticKeys.version2cipher[Wrapped(i - 2 + offset, StaticKeys.version2cipher.Length - 1)];
                 else
-                    return string.Empty;
+                    return null;
 
-                int decbyte = (srcbyte - cipherbyte + 95) % 95 + 32;
-
-                chars.Append((char)decbyte);
+                chars.Append((char)((srcbyte - cipherbyte + 95) % 95 + 32));
             }
 
             return chars.ToString();
@@ -121,9 +113,7 @@ namespace WebAPIService.OHS
 
         private static (ushort, ushort) Hash32(string str)
         {
-            ushort hi = Hash16(str, 170, 204);
-            ushort lo = Hash16(str, 11, 252);
-            return (hi, lo);
+            return (Hash16(str, 170, 204), Hash16(str, 11, 252));
         }
 
         public static string Hash32Str(string str)

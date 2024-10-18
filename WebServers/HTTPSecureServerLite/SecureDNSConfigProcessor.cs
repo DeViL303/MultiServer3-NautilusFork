@@ -1,6 +1,5 @@
 using CustomLogger;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,8 +14,8 @@ namespace HTTPSecureServerLite
 {
     public static partial class SecureDNSConfigProcessor
     {
-        public static ConcurrentDictionary<string, DnsSettings> DicRules = new();
-        public static List<KeyValuePair<string, DnsSettings>> StarRules = new();
+        public static Dictionary<string, DnsSettings> DicRules = new();
+        public static Dictionary<string, DnsSettings> StarRules = new();
         public static bool Initiated = false;
 
         public static void InitDNSSubsystem()
@@ -50,6 +49,9 @@ namespace HTTPSecureServerLite
 
         public static void ParseRules(string Filename, bool IsFilename = true)
         {
+            DicRules.Clear();
+            StarRules.Clear();
+
             Initiated = false;
 
             LoggerAccessor.LogInfo("[HTTPS_DNS] - Parsing Configuration File...");
@@ -103,15 +105,15 @@ namespace HTTPSecureServerLite
                             domain = domain.Replace("*", ".*");
 
                             lock (StarRules)
-                            {
-                                if (!StarRules.Any(pair => pair.Key == domain))
-                                    StarRules.Add(new KeyValuePair<string, DnsSettings>(domain, dns));
-                            }
+                                StarRules.TryAdd(domain, dns);
                         }
                         else
                         {
-                            DicRules.TryAdd(domain, dns);
-                            DicRules.TryAdd("www." + domain, dns);
+                            lock (DicRules)
+                            {
+                                DicRules.TryAdd(domain, dns);
+                                DicRules.TryAdd("www." + domain, dns);
+                            }
                         }
                     }
                 });
@@ -165,8 +167,11 @@ namespace HTTPSecureServerLite
                                 dns.Mode = HandleMode.Redirect;
                                 dns.Address = GetIp(match.Groups[1].Value);
 
-                                DicRules.TryAdd(hostname, dns);
-                                DicRules.TryAdd("www." + hostname, dns);
+                                lock (DicRules)
+                                {
+                                    DicRules.TryAdd(hostname, dns);
+                                    DicRules.TryAdd("www." + hostname, dns);
+                                }
 
                                 break;
                             }
@@ -199,15 +204,15 @@ namespace HTTPSecureServerLite
                         {
                             IP = Dns.GetHostAddresses(ip).FirstOrDefault()?.MapToIPv4() ?? IPAddress.Loopback;
                         }
-                        catch // Host is invalid or non-existant, fallback to public/local server IP
+                        catch // Host is invalid or non-existant, fallback to local server IP
                         {
-                            IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress(true));
+                            IP = NetworkLibrary.TCP_IP.IPUtils.GetLocalIPAddress(true);
                         }
                         break;
                     }
                 default:
                     {
-                        IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress(true));
+                        IP = NetworkLibrary.TCP_IP.IPUtils.GetLocalIPAddress(true);
                         LoggerAccessor.LogError($"Unhandled UriHostNameType {Uri.CheckHostName(ip)} from {ip} in MitmDNSClass.GetIp()");
                         break;
                     }

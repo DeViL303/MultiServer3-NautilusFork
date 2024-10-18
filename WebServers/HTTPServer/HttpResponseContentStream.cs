@@ -12,15 +12,18 @@ namespace HTTPServer
 	{
 		//RTFM: https://datatracker.ietf.org/doc/html/rfc9112#section-7
 
-		private readonly Stream inner;
+        private const string newLine = "\r\n";
+
+        private readonly byte[] newLineBytes = Encoding.ASCII.GetBytes(newLine);
+        private readonly Stream inner;
 		private readonly bool UseChunkedTransfer;
 
-		/// <summary>
-		/// Initialize this HttpResponseContentStream instance.
-		/// </summary>
-		/// <param name="inner">The stream used to communicate with client.</param>
-		/// <param name="chunked">Use HTTP Chunked Transfer</param>
-		public HttpResponseContentStream(Stream inner, bool UseChunkedTransfer)
+        /// <summary>
+        /// Initialize this HttpResponseContentStream instance.
+        /// </summary>
+        /// <param name="inner">The stream used to communicate with client.</param>
+        /// <param name="chunked">Use HTTP Chunked Transfer</param>
+        public HttpResponseContentStream(Stream inner, bool UseChunkedTransfer)
 		{
             this.inner = inner;
             this.UseChunkedTransfer = UseChunkedTransfer;
@@ -49,9 +52,9 @@ namespace HTTPServer
 			if (UseChunkedTransfer)
 			{
 				// Send chunk
-				inner.Write(Encoding.ASCII.GetBytes((count - offset).ToString("X") + "\r\n").AsSpan());
+				inner.Write(Encoding.ASCII.GetBytes((count - offset).ToString("X") + newLine).AsSpan());
 				inner.Write(buffer, offset, count);
-				inner.Write(Encoding.ASCII.GetBytes("\r\n").AsSpan());
+				inner.Write(newLineBytes, 0, newLineBytes.Length);
 			}
 			else
                 // Just write the body
@@ -70,8 +73,8 @@ namespace HTTPServer
 				// Write terminating chunk if need
 				try
 				{
-					inner.Write(Encoding.ASCII.GetBytes("0\r\n").AsSpan());
-					inner.Write(Encoding.ASCII.GetBytes(trailer + "\r\n").AsSpan());
+					inner.Write(Encoding.ASCII.GetBytes($"0{newLine}").AsSpan());
+					inner.Write(Encoding.ASCII.GetBytes(trailer + newLine).AsSpan());
 				}
 				catch { /* Sometimes an connection lost may occur here. It's not a reason to worry. */ };
 			}

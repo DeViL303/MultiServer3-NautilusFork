@@ -1,5 +1,5 @@
 using System.IO;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using System.Text;
@@ -9,23 +9,19 @@ namespace WebAPIService.PREMIUMAGENCY
 {
     public class Ranking
     {
-        public static string? getItemRankingTableHandler(byte[]? PostData, string? ContentType, string workPath, string eventId, string fulluripath, string method)
+        public static string getItemRankingTableHandler(byte[] PostData, string ContentType, string workPath, string eventId, string fulluripath, string method)
         {
             string nid = string.Empty;
 
             if (method == "GET")
-            {
                 nid = HttpUtility.ParseQueryString(fulluripath).Get("nid");
-            }
             else
             {
                 string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 using (MemoryStream ms = new MemoryStream(PostData))
                 {
-                    var data = MultipartFormDataParser.Parse(ms, boundary);
-
-                    nid = data.GetParameterValue("nid");
+                    nid = MultipartFormDataParser.Parse(ms, boundary).GetParameterValue("nid");
 
                     ms.Flush();
                 }
@@ -40,6 +36,8 @@ namespace WebAPIService.PREMIUMAGENCY
             #region Paths
 
             string homeSquareT037Path = $"{workPath}/eventController/ItemRankings/hs/T037/";
+
+            string JapanChristmas2010 = $"{workPath}/eventController/Christmas/2010/ItemRankings/";
 
 
             string MikuLiveJukeboxPath = $"{workPath}/eventController/MikuLiveJukebox";
@@ -134,6 +132,29 @@ namespace WebAPIService.PREMIUMAGENCY
                                  "</xml>";
                         }
                     }
+                case "310":
+                    {
+                        Directory.CreateDirectory(JapanChristmas2010);
+                        string filePath = $"{JapanChristmas2010}/getItemRankingTable.xml";
+
+                        if (File.Exists(filePath))
+                        {
+                            LoggerAccessor.LogInfo($"[PREMIUMAGENCY] - GetItemRankingTable FOUND for PUBLIC Japan Christmas 2010 {eventId}!");
+                            string res = File.ReadAllText(filePath);
+                            return res;
+                        }
+                        else
+                        {
+                            LoggerAccessor.LogInfo($"[PREMIUMAGENCY] - GetItemRankingTable FALLBACK sent for PUBLIC Japan Christmas 2010 {eventId}!\nExpected path {filePath}");
+                            return "<xml>\r\n\t" +
+                                 "<result type=\"int\">1</result>\r\n\t" +
+                                 "<description type=\"text\">Success</description>\r\n\t" +
+                                 "<error_no type=\"int\">0</error_no>\r\n\t" +
+                                 "<error_message type=\"text\">None</error_message>\r\n\r\n\t" +
+                                 $"<status type=\"int\">0</status>\r\n" +
+                                 "</xml>";
+                        }
+                    }
                 default:
                     {
                         LoggerAccessor.LogError($"[PREMIUMAGENCY] - GetItemRankingTable unhandled for eventId {eventId} | POSTDATA: \n{PostData}");
@@ -142,23 +163,19 @@ namespace WebAPIService.PREMIUMAGENCY
             }
         }
 
-        public static string? entryItemRankingPointsHandler(byte[]? PostData, string? ContentType, string workPath, string eventId, string fulluripath, string method)
+        public static string entryItemRankingPointsHandler(byte[] PostData, string ContentType, string workPath, string eventId, string fulluripath, string method)
         {
             string nid = string.Empty;
 
             if (method == "GET")
-            {
                 nid = HttpUtility.ParseQueryString(fulluripath).Get("nid");
-            }
             else
             {
                 string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 using (MemoryStream ms = new MemoryStream(PostData))
                 {
-                    var data = MultipartFormDataParser.Parse(ms, boundary);
-
-                    nid = data.GetParameterValue("nid");
+                    nid = MultipartFormDataParser.Parse(ms, boundary).GetParameterValue("nid");
 
                     ms.Flush();
                 }
@@ -284,24 +301,22 @@ namespace WebAPIService.PREMIUMAGENCY
         }
 
 
-        public static string? getItemRankingTargetListHandler(byte[]? PostData, string? ContentType, string workPath, string eventId, string fulluripath, string method)
+        public static string getItemRankingTargetListHandler(byte[] PostData, string ContentType, string workPath, string eventId, string fulluripath, string method)
         {
-            string? nid = string.Empty;
+            string nid = string.Empty;
 
             if (method == "GET")
-            {
                 nid = HttpUtility.ParseQueryString(fulluripath).Get("nid");
-            }
             else
             {
                 string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
-                using MemoryStream ms = new MemoryStream(PostData);
-                var data = MultipartFormDataParser.Parse(ms, boundary);
+                using (MemoryStream ms = new MemoryStream(PostData))
+                {
+                    nid = MultipartFormDataParser.Parse(ms, boundary).GetParameterValue("nid");
 
-                nid = data.GetParameterValue("nid");
-
-                ms.Flush();
+                    ms.Flush();
+                }
             }
 
             if (nid == null || eventId == null)

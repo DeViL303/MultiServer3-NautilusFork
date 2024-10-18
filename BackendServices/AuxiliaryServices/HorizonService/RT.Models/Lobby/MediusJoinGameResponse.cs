@@ -2,7 +2,6 @@ using System.IO;
 using CustomLogger;
 using Horizon.RT.Common;
 using Horizon.LIBRARY.Common.Stream;
-using System.Collections.Generic;
 
 namespace Horizon.RT.Models
 {
@@ -19,14 +18,14 @@ namespace Horizon.RT.Models
         public MessageId MessageID { get; set; }
 
         public MediusCallbackStatus StatusCode;
-        public MediusGameHostType GameHostType;
-        public NetConnectionInfo? ConnectInfo;
+        public MGCL_GAME_HOST_TYPE GameHostType;
+        public NetConnectionInfo ConnectInfo;
         /// <summary>
         /// MaxPlayers
         /// </summary>
         public long MaxPlayers;
 
-        public List<int> approvedMaxPlayersAppIds = new() { 20371, 20374, 20624, 22500, 22920, 22924, 22930, 23360, 24000, 24180 };
+        public bool SetMaxPlayers = false;
 
         public override void Deserialize(MessageReader reader)
         {
@@ -36,13 +35,11 @@ namespace Horizon.RT.Models
             reader.ReadBytes(3);
 
             StatusCode = reader.Read<MediusCallbackStatus>();
-            GameHostType = reader.Read<MediusGameHostType>();
+            GameHostType = reader.Read<MGCL_GAME_HOST_TYPE>();
             ConnectInfo = reader.Read<NetConnectionInfo>();
 
-            if (reader.MediusVersion == 113 && approvedMaxPlayersAppIds.Contains(reader.AppId))
-            {
+            if (reader.MediusVersion == 113 && SetMaxPlayers)
                 MaxPlayers = reader.ReadInt64();
-            }
         }
 
         public override void Serialize(MessageWriter writer)
@@ -56,9 +53,11 @@ namespace Horizon.RT.Models
             writer.Write(GameHostType);
             writer.Write(ConnectInfo);
 
-            if (writer.MediusVersion == 113 && approvedMaxPlayersAppIds.Contains(writer.AppId))
+            if (writer.MediusVersion == 113 && SetMaxPlayers)
             {
+#if DEBUG
                 LoggerAccessor.LogInfo($"[MediusJoinGameResponse] - Setting MaxPlayers for {writer.AppId}");
+#endif
                 writer.Write(MaxPlayers);
             }
         }

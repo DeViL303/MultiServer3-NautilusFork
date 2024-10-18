@@ -13,29 +13,29 @@ namespace Horizon.RT.Models
         /// <summary>
         /// NetAddressList
         /// </summary>
-        public NetAddressList AddressList = new();
+        public NetAddressList AddressList = new NetAddressList();
         /// <summary>
         /// WorldID of the Connected client
         /// </summary>
-        public int WorldID;
+        public int TargetWorldID;
         /// <summary>
         /// ServerKey
         /// </summary>
-        public RSA_KEY? ServerKey = new();
+        public RSA_KEY ServerKey = new RSA_KEY();
         /// <summary>
         /// Session Key
         /// </summary>
-        public string? SessionKey;
+        public string SessionKey;
         /// <summary>
         /// Access Token
         /// </summary>
-        public string? AccessKey;
+        public string AccessKey;
 
         public void Deserialize(BinaryReader reader)
         {
             Type = reader.Read<NetConnectionType>();
             AddressList = reader.Read<NetAddressList>();
-            WorldID = reader.ReadInt32();
+            TargetWorldID = reader.ReadInt32();
             ServerKey = reader.Read<RSA_KEY>();
             SessionKey = reader.ReadString(Constants.NET_SESSION_KEY_LEN);
             AccessKey = reader.ReadString(Constants.NET_ACCESS_KEY_LEN);
@@ -46,7 +46,7 @@ namespace Horizon.RT.Models
         {
             writer.Write(Type);
             writer.Write(AddressList);
-            writer.Write(WorldID);
+            writer.Write(TargetWorldID);
             writer.Write(ServerKey);
             writer.Write(SessionKey, Constants.NET_SESSION_KEY_LEN);
             writer.Write(AccessKey, Constants.NET_ACCESS_KEY_LEN);
@@ -57,7 +57,7 @@ namespace Horizon.RT.Models
         {
             return $"Type: {Type} " +
                 $"AddressList: {AddressList} " +
-                $"WorldID: {WorldID} " +
+                $"WorldID: {TargetWorldID} " +
                 $"ServerKey: {ServerKey} " +
                 $"SessionKey: {SessionKey} " +
                 $"AccessKey: {AccessKey}";

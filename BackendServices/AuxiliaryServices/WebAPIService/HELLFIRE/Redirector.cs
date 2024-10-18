@@ -1,4 +1,4 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using HttpMultipartParser;
 using System.IO;
 
@@ -6,9 +6,9 @@ namespace WebAPIService.HELLFIRE
 {
     public class Redirector
     {
-        public static string? ProcessMainHomeTycoonRedirector(byte[] PostData, string ContentType)
+        public static string ProcessMainHomeTycoonRedirector(byte[] PostData, string ContentType)
         {
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary))
             {

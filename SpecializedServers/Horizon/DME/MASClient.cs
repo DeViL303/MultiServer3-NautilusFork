@@ -10,7 +10,7 @@ using Horizon.LIBRARY.Common;
 using System.Collections.Concurrent;
 using System.Net;
 using Horizon.LIBRARY.Pipeline.Attribute;
-using Horizon.MEDIUS;
+using Horizon.SERVER;
 
 namespace Horizon.DME
 {
@@ -108,11 +108,11 @@ namespace Horizon.DME
 
             _ = Task.Run(async () =>
             {
-                Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(10)); // Set timeout to 10 seconds
+                Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(30)); // Set timeout to 30 seconds
 
                 if (await Task.WhenAny(_masConnectionTaskCompletionSource.Task, timeoutTask) == timeoutTask)
                 {
-                    LoggerAccessor.LogError("[DMEMediusManager] - Start() - Failed to authenticate with the MAS server within 10 seconds, aborting client...");
+                    LoggerAccessor.LogError("[DMEMediusManager] - Start() - Failed to authenticate with the MAS server within 30 seconds, aborting client...");
                     await Stop(); // Status already as false.
                 }
                 else
@@ -305,7 +305,8 @@ namespace Horizon.DME
                         if (_masChannel != null)
                             await _masChannel.WriteAndFlushAsync(new RT_MSG_CLIENT_CONNECT_TCP()
                             {
-                                AppId = 120, // We authenticate with DME server appid.
+                                TargetWorldId = 1,
+                                AppId = ApplicationId,
                                 Key = DmeClass.GlobalAuthPublic
                             });
 
@@ -369,19 +370,7 @@ namespace Horizon.DME
                     }
                 case RT_MSG_SERVER_CHEAT_QUERY cheatQuery:
                     {
-                        // We can query Client RAM, isn't that neat ;).
-                        if (_masChannel != null && cheatQuery.QueryType == CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY)
-                        {
-                            byte[]? CheatQueryData = MemoryQuery.QueryValueFromOffset(cheatQuery.StartAddress, cheatQuery.Length);
-                            await _masChannel.WriteAndFlushAsync(new RT_MSG_SERVER_CHEAT_QUERY()
-                            {
-                                QueryType = CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY,
-                                SequenceId = cheatQuery.SequenceId,
-                                StartAddress = cheatQuery.StartAddress,
-                                Data = CheatQueryData,
-                                Length = (CheatQueryData != null) ? CheatQueryData.Length : 0
-                            });
-                        }
+
                         break;
                     }
                 case RT_MSG_SERVER_APP serverApp:

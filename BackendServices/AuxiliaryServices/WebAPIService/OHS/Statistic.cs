@@ -1,5 +1,5 @@
 using System;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using System.IO;
@@ -8,11 +8,11 @@ namespace WebAPIService.OHS
 {
     public class Statistic
     {
-        public static string? Set(byte[] PostData, string ContentType)
+        public static string Set(byte[] PostData, string ContentType)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
 
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary))
             {
@@ -49,11 +49,11 @@ namespace WebAPIService.OHS
         }
 
 
-        public static string? HeatmapTracker(byte[] PostData, string ContentType)
+        public static string HeatmapTracker(byte[] PostData, string ContentType)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
 
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary))
             {
@@ -94,11 +94,11 @@ namespace WebAPIService.OHS
                 return JaminProcessor.JaminFormat("{ [\"status\"] = \"fail\" }", 0);
         }
 
-        public static string? PointsTracker(byte[] PostData, string ContentType)
+        public static string PointsTracker(byte[] PostData, string ContentType)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
 
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             if (!string.IsNullOrEmpty(boundary))
             {
@@ -117,7 +117,7 @@ namespace WebAPIService.OHS
                     try
                     {
 #if DEBUG
-                        dataforohs = JaminProcessor.JaminDeFormat(data.GetParameterValue("data"), false, 0);
+                        dataforohs = JaminProcessor.JaminDeFormat(data.GetParameterValue("data"), true, 0);
                         LoggerAccessor.LogInfo($"[OHS] Points Tracker Data : {dataforohs}");
 #endif
                     }

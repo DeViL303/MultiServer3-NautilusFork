@@ -6,7 +6,7 @@ namespace Horizon.DME.PluginArgs
 {
     public class OnMediusMessageArgs
     {
-        public ClientObject? Player { get; set; } = null;
+        public DMEObject? Player { get; set; } = null;
 
         public IChannel? Channel { get; set; } = null;
 

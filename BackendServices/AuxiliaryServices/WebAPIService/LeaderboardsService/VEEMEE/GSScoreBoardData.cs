@@ -8,11 +8,13 @@ namespace WebAPIService.LeaderboardsService.VEEMEE
 {
     public class GSScoreBoardData
     {
+        private static object _Lock = new object();
+
         public class ScoreboardEntry
         {
-            public string? psnid { get; set; }
+            public string psnid { get; set; }
             public int score { get; set; }
-            public string? duration { get; set; }
+            public string duration { get; set; }
         }
 
         private static List<ScoreboardEntry> scoreboard = new List<ScoreboardEntry>();
@@ -78,9 +80,12 @@ namespace WebAPIService.LeaderboardsService.VEEMEE
                 filePath = $"{LeaderboardClass.APIPath}/VEEMEE/sfrgbt/leaderboard_alltime.xml";
             }
 
-            Directory.CreateDirectory(directoryPath);
-            File.WriteAllText(filePath, ConvertScoreboardToXml());
-            CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - goalie_sfrgbt - scoreboard alltime XML updated.");
+            lock (_Lock)
+            {
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(filePath, ConvertScoreboardToXml());
+                CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - goalie_sfrgbt - scoreboard alltime XML updated.");
+            }
         }
 
         public static void UpdateTodayScoreboardXml(bool global, string date)
@@ -99,32 +104,57 @@ namespace WebAPIService.LeaderboardsService.VEEMEE
                 filePath = $"{LeaderboardClass.APIPath}/VEEMEE/sfrgbt/leaderboard_{date}.xml";
             }
 
-            Directory.CreateDirectory(directoryPath);
-            File.WriteAllText(filePath, ConvertScoreboardToXml());
-            CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - goalie_sfrgbt - scoreboard {date} XML updated.");
+            lock (_Lock)
+            {
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(filePath, ConvertScoreboardToXml());
+                CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - goalie_sfrgbt - scoreboard {date} XML updated.");
+            }
         }
 
         public static void SanityCheckLeaderboards(string directoryPath, DateTime thresholdDate)
         {
             if (Directory.Exists(directoryPath))
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
-
-                foreach (FileInfo file in directoryInfo.GetFiles("leaderboard_*.xml"))
+                try
                 {
-                    // Extract date from the file name
-                    if (DateTime.TryParseExact(
-                            file.Name.Replace("leaderboard_", string.Empty).Replace(".xml", string.Empty),
-                            "yyyy_MM_dd",
-                            CultureInfo.InvariantCulture,
-                            DateTimeStyles.None,
-                            out DateTime leaderboardDate)
-                        && leaderboardDate < thresholdDate)
+                    DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+
+                    foreach (FileInfo file in directoryInfo.GetFiles("leaderboard_*.xml"))
                     {
-                        // If the leaderboard date is older than the threshold, delete the file
-                        file.Delete();
-                        CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - goalie_sfrgbt - Removed outdated leaderboard: {file.Name}.");
+                        try
+                        {
+                            // Extract date from the file name
+                            if (DateTime.TryParseExact(
+                                    file.Name.Replace("leaderboard_", string.Empty).Replace(".xml", string.Empty),
+                                    "yyyy_MM_dd",
+                                    CultureInfo.InvariantCulture,
+                                    DateTimeStyles.None,
+                                    out DateTime leaderboardDate)
+                                && leaderboardDate < thresholdDate)
+                            {
+                                // If the leaderboard date is older than the threshold, delete the file
+                                try
+                                {
+                                    file.Delete();
+
+                                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - goalie_sfrgbt - Removed outdated leaderboard: {file.Name}.");
+                                }
+                                catch (Exception e)
+                                {
+                                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - goalie_sfrgbt - Error while removing leaderboard: {file.Name} (Exception: {e}).");
+                                }
+                            }
+                        }
+                        catch (ArgumentException e)
+                        {
+                            CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - goalie_sfrgbt - Error while parsing leaderboard name: {file.Name} (ArgumentException: {e}).");
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - goalie_sfrgbt - Error while creating directoryInfo of path: {directoryPath} (Exception: {e}).");
                 }
             }
         }

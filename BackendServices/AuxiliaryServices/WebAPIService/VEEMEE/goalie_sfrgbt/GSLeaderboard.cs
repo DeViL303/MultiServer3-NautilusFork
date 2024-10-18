@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 
 namespace WebAPIService.VEEMEE.goalie_sfrgbt
 {
     public class GSLeaderboard
     {
-        public static string? GetLeaderboardPOST(byte[]? PostData, string? ContentType, bool global, string apiPath)
+        public static string GetLeaderboardPOST(byte[] PostData, string ContentType, bool global, string apiPath)
         {
             string key = string.Empty;
             string psnid = string.Empty;

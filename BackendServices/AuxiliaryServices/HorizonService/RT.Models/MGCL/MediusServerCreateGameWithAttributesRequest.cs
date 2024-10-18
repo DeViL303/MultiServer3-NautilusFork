@@ -9,11 +9,11 @@ namespace Horizon.RT.Models
     {
         public override byte PacketType => (byte)MediusMGCLMessageIds.ServerCreateGameWithAttributesRequest;
 
-        public MessageId? MessageID { get; set; }
+        public MessageId MessageID { get; set; }
         public int ApplicationID;
         public int MaxClients;
         public MediusWorldAttributesType Attributes;
-        public uint WorldID;
+        public int WorldID;
 
         public override void Deserialize(MessageReader reader)
         {
@@ -24,7 +24,7 @@ namespace Horizon.RT.Models
             ApplicationID = reader.ReadInt32();
             MaxClients = reader.ReadInt32();
             Attributes = reader.Read<MediusWorldAttributesType>();
-            WorldID = reader.ReadUInt32();
+            WorldID = reader.ReadInt32();
         }
 
         public override void Serialize(MessageWriter writer)
@@ -46,7 +46,7 @@ namespace Horizon.RT.Models
                 $"ApplicationID: {ApplicationID} " +
                 $"MaxClients: {MaxClients} " +
                 $"Attributes: {Attributes} " +
-                $"MediusWorldUID: {WorldID}";
+                $"WorldUID: {WorldID}";
         }
     }
 }

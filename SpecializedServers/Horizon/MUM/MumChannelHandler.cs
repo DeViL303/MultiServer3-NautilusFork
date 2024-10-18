@@ -1,11 +1,12 @@
 using Horizon.RT.Common;
 using CustomLogger;
-using Horizon.MEDIUS;
+using Horizon.SERVER;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
-using CyberBackendLibrary.HTTP;
-using CyberBackendLibrary.Crypto;
+using NetworkLibrary.HTTP;
+using NetworkLibrary.Crypto;
+using Horizon.MUM.Models;
 
 namespace Horizon.MUM
 {
@@ -42,13 +43,19 @@ namespace Horizon.MUM
         public static string GetCRC32ChannelsList()
         {
             // No need to protect the CRC list, nothing critical in here.
+            Ionic.Crc.CRC32? crc = new();
 
             string XMLData = "<Root>";
 
             foreach (Channel channel in MediusClass.Manager.GetAllChannels())
             {
-                XMLData += $"<CRC32 name=\"{channel.Name}\">{new CastleLibrary.Utils.Crc32().Get(Encoding.UTF8.GetBytes(channel.Name + XMLSerializeChannel(channel))):X}</CRC32>";
+                byte[] ChannelData = Encoding.UTF8.GetBytes(channel.Name + XMLSerializeChannel(channel));
+                crc.SlurpBlock(ChannelData, 0, ChannelData.Length);
+                XMLData += $"<CRC32 name=\"{channel.Name}\">{crc.Crc32Result:X4}</CRC32>";
+                crc.Reset();
             }
+
+            crc = null;
 
             return XMLData + "</Root>";
         }

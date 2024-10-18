@@ -11,12 +11,12 @@ using Horizon.LIBRARY.Pipeline.Tcp;
 using System.Collections.Concurrent;
 using System.Net;
 using Horizon.MUIS.Config;
-using System.Globalization;
-using Newtonsoft.Json.Linq;
-using Horizon.MEDIUS;
-
-using System.Text;
-using CyberBackendLibrary.DataTypes;
+using Horizon.SERVER;
+using static Horizon.SERVER.Medius.BaseMediusComponent;
+using Horizon.MUM.Models;
+using Horizon.SERVER.Medius;
+using NetworkLibrary.Extension;
+using Horizon.SERVER.Extension.PlayStationHome;
 
 namespace Horizon.MUIS
 {
@@ -39,13 +39,7 @@ namespace Horizon.MUIS
         protected ScertServerHandler? _scertHandler = null;
         private uint _clientCounter = 0;
 
-        protected internal class ChannelData
-        {
-            public int ApplicationId { get; set; } = 0;
-            public string? ExtraData { get; set; } // Just as a neat storage space for anything.
-            public ConcurrentQueue<BaseScertMessage> RecvQueue { get; } = new();
-            public ConcurrentQueue<BaseScertMessage> SendQueue { get; } = new();
-        }
+        private static ChannelData? channelData = null;
 
         protected ConcurrentDictionary<string, ChannelData> _channelDatas = new();
 
@@ -84,31 +78,39 @@ namespace Horizon.MUIS
                 if (_channelDatas.TryGetValue(key, out var data))
                 {
                     data.RecvQueue.Enqueue(message);
+
+                    if (message is RT_MSG_SERVER_ECHO serverEcho)
+                        data.ClientObject?.OnRecvServerEcho(serverEcho);
+                    else if (message is RT_MSG_CLIENT_ECHO clientEcho)
+                        data.ClientObject?.OnRecvClientEcho(clientEcho);
+
+                    data.ClientObject?.OnRecv(message);
                 }
 
                 // Log if id is set
                 if (message.CanLog())
-                    LoggerAccessor.LogInfo($"TCP RECV {channel}: {message}");
+                    LoggerAccessor.LogInfo($"MUIS RECV {channel}: {message}");
             };
 
             var bootstrap = new ServerBootstrap();
             bootstrap
                 .Group(_bossGroup, _workerGroup)
                 .Channel<TcpServerSocketChannel>()
-                .Option(ChannelOption.SoBacklog, 100)
                 .Handler(new LoggingHandler(LogLevel.INFO))
                 .ChildHandler(new ActionChannelInitializer<ISocketChannel>(channel =>
                 {
                     IChannelPipeline pipeline = channel.Pipeline;
 
-                    pipeline.AddLast(new WriteTimeoutHandler(15));
+                    pipeline.AddLast(new WriteTimeoutHandler(60 * 15));
                     pipeline.AddLast(new ScertEncoder());
                     pipeline.AddLast(new ScertIEnumerableEncoder());
                     pipeline.AddLast(new ScertTcpFrameDecoder(DotNetty.Buffers.ByteOrder.LittleEndian, 1024, 1, 2, 0, 0, false));
                     pipeline.AddLast(new ScertDecoder());
                     pipeline.AddLast(new ScertMultiAppDecoder());
                     pipeline.AddLast(_scertHandler);
-                }));
+                }))
+                .ChildOption(ChannelOption.TcpNodelay, true)
+                .ChildOption(ChannelOption.SoTimeout, 1000 * 60 * 15);
 
             _boundChannel = await bootstrap.BindAsync(Port);
         }
@@ -143,7 +145,12 @@ namespace Horizon.MUIS
             if (_scertHandler == null || _scertHandler.Group == null)
                 return;
 
+#if NET8_0_OR_GREATER
+            /* ToArray() is necessary, else, weird issues happens in NET8.0+ (https://github.com/dotnet/runtime/issues/105576) */
+            await Task.WhenAll(_scertHandler.Group.ToArray().Select(c => Tick(c)));
+#else
             await Task.WhenAll(_scertHandler.Group.Select(c => Tick(c)));
+#endif
         }
 
         private async Task Tick(IChannel clientChannel)
@@ -151,7 +158,7 @@ namespace Horizon.MUIS
             if (clientChannel == null)
                 return;
 
-            List<BaseScertMessage> responses = new List<BaseScertMessage>();
+            List<BaseScertMessage> responses = new();
             string key = clientChannel.Id.AsLongText();
 
             try
@@ -191,10 +198,10 @@ namespace Horizon.MUIS
 
         #region Message Processing
 
-        protected void ProcessMessage(BaseScertMessage message, IChannel clientChannel, ChannelData data)
+        protected async void ProcessMessage(BaseScertMessage message, IChannel clientChannel, ChannelData data)
         {
             // Get ScertClient data
-            var scertClient = clientChannel.GetAttribute(Horizon.LIBRARY.Pipeline.Constants.SCERT_CLIENT).Get();
+            var scertClient = clientChannel.GetAttribute(LIBRARY.Pipeline.Constants.SCERT_CLIENT).Get();
             if (scertClient.CipherService != null)
             {
                 scertClient.CipherService.EnableEncryption = MuisClass.Settings.EncryptMessages;
@@ -203,12 +210,37 @@ namespace Horizon.MUIS
                 {
                     case RT_MSG_CLIENT_HELLO clientHello:
                         {
-                            // send hello
+                            if (data.State > ClientState.HELLO)
+                            {
+                                LoggerAccessor.LogError($"Unexpected RT_MSG_CLIENT_HELLO from {clientChannel.RemoteAddress}: {clientHello}");
+                                break;
+                            }
+
+                            data.State = ClientState.HELLO;
                             Queue(new RT_MSG_SERVER_HELLO() { RsaPublicKey = MuisClass.Settings.EncryptMessages ? MuisClass.Settings.DefaultKey.N : Org.BouncyCastle.Math.BigInteger.Zero }, clientChannel);
                             break;
                         }
                     case RT_MSG_CLIENT_CRYPTKEY_PUBLIC clientCryptKeyPublic:
                         {
+                            if (data.State > ClientState.HANDSHAKE)
+                            {
+                                LoggerAccessor.LogError($"Unexpected RT_MSG_CLIENT_CRYPTKEY_PUBLIC from {clientChannel.RemoteAddress}: {clientCryptKeyPublic}");
+                                break;
+                            }
+
+                            /*
+                            // Ensure key is correct
+                            if (!clientCryptKeyPublic.PublicKey.Reverse().SequenceEqual(MediusStarter.Settings.MPSKey.N.ToByteArrayUnsigned()))
+                            {
+                                LoggerAccessor.LogError($"Client {clientChannel.RemoteAddress} attempting to authenticate with invalid key {Encoding.Default.GetString(clientCryptKeyPublic.PublicKey)}");
+                                data.State = ClientState.DISCONNECTED;
+                                await clientChannel.CloseAsync();
+                                break;
+                            }
+                            */
+
+                            data.State = ClientState.CONNECT_1;
+
                             if (clientCryptKeyPublic.PublicKey != null)
                             {
                                 // generate new client session key
@@ -221,21 +253,57 @@ namespace Horizon.MUIS
                         }
                     case RT_MSG_CLIENT_CONNECT_TCP clientConnectTcp:
                         {
-                            data.ApplicationId = clientConnectTcp.AppId;
-                            scertClient.ApplicationID = clientConnectTcp.AppId;
+                            if (data.State > ClientState.CONNECT_1)
+                            {
+                                LoggerAccessor.LogError($"Unexpected RT_MSG_CLIENT_CONNECT_TCP from {clientChannel.RemoteAddress}: {clientConnectTcp}");
+                                break;
+                            }
 
                             List<int> pre108ServerComplete = new() { 10130, 10334, 10421, 10442, 10538, 10540, 10550, 10582, 10584, 10724 };
 
-                            if (scertClient.CipherService.HasKey(CipherContext.RC_CLIENT_SESSION) && scertClient.RsaAuthKey != null && scertClient.CipherService.EnableEncryption == true)
-                                Queue(new RT_MSG_SERVER_CRYPTKEY_GAME() { GameKey = scertClient.CipherService.GetPublicKey(CipherContext.RC_CLIENT_SESSION) }, clientChannel);
+                            // No need to apply the connection delay, MUIS is expected to be a One-Shot server.
 
-                            // If this is a PS3 client
-                            if (scertClient.IsPS3Client || scertClient.MediusVersion >= 109)
+                            data.ApplicationId = clientConnectTcp.AppId;
+                            scertClient.ApplicationID = clientConnectTcp.AppId;
+
+                            Channel? targetChannel = MediusClass.Manager.GetChannelByChannelId(clientConnectTcp.TargetWorldId, data.ApplicationId);
+
+                            if (targetChannel == null)
+                            {
+                                Channel DefaultChannel = MediusClass.Manager.GetOrCreateDefaultLobbyChannel(data.ApplicationId, scertClient.MediusVersion ?? 0);
+
+                                if (DefaultChannel.Id == clientConnectTcp.TargetWorldId)
+                                    targetChannel = DefaultChannel;
+
+                                if (targetChannel == null)
+                                {
+                                    LoggerAccessor.LogError($"[MUIS] - Client: {clientConnectTcp.AccessToken} tried to join, but targetted WorldId:{clientConnectTcp.TargetWorldId} doesn't exist!");
+                                    break;
+                                }
+                            }
+
+                            LoggerAccessor.LogInfo($"[MUIS] - Client Connected {clientChannel.RemoteAddress} with new ClientObject!");
+
+                            data.ClientObject = new(scertClient.MediusVersion ?? 0)
+                            {
+                                MuisIP = MuisClass.SERVER_IP,
+                                ApplicationId = clientConnectTcp.AppId
+                            };
+                            data.ClientObject.OnConnected();
+
+                            await data.ClientObject.JoinChannel(targetChannel);
+
+                            data.State = ClientState.AUTHENTICATED;
+
+                            // If this is a PS3 client or medius version superior to 108
+                            if (scertClient.IsPS3Client || scertClient.MediusVersion > 108)
                                 //Send a Server_Connect_Require with no Password needed
-                                Queue(new RT_MSG_SERVER_CONNECT_REQUIRE() { ReqServerPassword = 0x00 }, clientChannel);
+                                Queue(new RT_MSG_SERVER_CONNECT_REQUIRE(), clientChannel);
                             else
                             {
-                                //Do NOT send hereCryptKey Game
+                                //Older Medius titles do NOT use CRYPTKEY_GAME, newer ones have this.
+                                if (scertClient.CipherService != null && scertClient.CipherService.HasKey(CipherContext.RC_CLIENT_SESSION))
+                                    Queue(new RT_MSG_SERVER_CRYPTKEY_GAME() { GameKey = scertClient.CipherService.GetPublicKey(CipherContext.RC_CLIENT_SESSION) }, clientChannel);
                                 Queue(new RT_MSG_SERVER_CONNECT_ACCEPT_TCP()
                                 {
                                     PlayerId = 0,
@@ -243,20 +311,13 @@ namespace Horizon.MUIS
                                     PlayerCount = 0x0001,
                                     IP = (clientChannel.RemoteAddress as IPEndPoint)?.Address
                                 }, clientChannel);
+
+                                if (pre108ServerComplete.Contains(data.ApplicationId))
+                                    Queue(new RT_MSG_SERVER_CONNECT_COMPLETE() { ClientCountAtConnect = 0x0001 }, clientChannel);
                             }
 
-                            if (pre108ServerComplete.Contains(data.ApplicationId))
-                                Queue(new RT_MSG_SERVER_CONNECT_COMPLETE() { ClientCountAtConnect = 0x0001 }, clientChannel);
-
-                            switch (data.ApplicationId)
-                            {
-                                /*case 20374:
-                                    CheatQuery(0x100372c8, 5, clientChannel); // Check for 01.83 HDK online debug eboot version string.
-                                    break;*/
-                                case 20371:
-                                    CheatQuery(0x1003dd98, 5, clientChannel); // Check for 01.50 Retail Beta eboot version string.
-                                    break;
-                            }
+                            if (data.ApplicationId == 20371 || data.ApplicationId == 20374)
+                                CheatQuery(0x00010000, 512000, clientChannel, CheatQueryType.DME_SERVER_CHEAT_QUERY_SHA1_HASH, unchecked((int)0xDEADBEEF));
 
                             break;
                         }
@@ -266,22 +327,44 @@ namespace Horizon.MUIS
 
                             if (QueryData != null)
                             {
-                                LoggerAccessor.LogDebug($"[MUIS] - QUERY CHECK - Client:{(clientChannel.RemoteAddress as IPEndPoint)?.Address} Has Data:{DataTypesUtils.ByteArrayToHexString(QueryData)} in offset: {clientCheatQuery.StartAddress}");
+                                LoggerAccessor.LogDebug($"[MUIS] - QUERY CHECK - Client:{data.ClientObject?.IP} Has Data:{OtherExtensions.ByteArrayToHexString(QueryData)} in offset: {clientCheatQuery.StartAddress}");
 
-                                switch (data.ApplicationId)
+                                if (data.ApplicationId == 20371 || data.ApplicationId == 20374)
                                 {
-                                    case 20374:
-                                    case 20371:
-                                        if (QueryData.Length == 5 && QueryData[2] == 0x2e)
-                                            data.ExtraData = Encoding.ASCII.GetString(QueryData); // We store client version in ExtraData.
-                                        break;
+                                    switch (clientCheatQuery.SequenceId)
+                                    {
+                                        case -559038737:
+                                            switch (clientCheatQuery.StartAddress)
+                                            {
+                                                case 65536:
+                                                    if (data.ClientObject != null)
+                                                    {
+                                                        data.ClientObject.ClientHomeData = MediusClass.HomeOffsetsList.Where(x => !string.IsNullOrEmpty(x.Sha1Hash) && x.Sha1Hash[..^8]
+                                                        .Equals(OtherExtensions.ByteArrayToHexString(clientCheatQuery.Data), StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+                                                        if (!MediusClass.Settings.PlaystationHomeAllowAnyEboot && data.ClientObject.ClientHomeData == null)
+                                                        {
+                                                            string anticheatMsg = $"[MUIS] - HOME ANTI-CHEAT - DETECTED UNKNOWN EBOOT - User:{data.ClientObject.IP + ":" + data.ClientObject.AccountName} CID:{data.MachineId}";
+
+                                                            _ = data.ClientObject.CurrentChannel?.BroadcastSystemMessage(data.ClientObject.CurrentChannel.LocalClients.Where(x => x != data.ClientObject), anticheatMsg, byte.MaxValue);
+
+                                                            LoggerAccessor.LogError(anticheatMsg);
+
+                                                            data.State = ClientState.DISCONNECTED;
+                                                            await clientChannel.CloseAsync();
+                                                        }
+                                                    }
+                                                    break;
+                                            }
+                                            break;
+                                    }
                                 }
                             }
                             break;
                         }
                     case RT_MSG_CLIENT_CONNECT_READY_REQUIRE clientConnectReadyRequire:
                         {
-                            if (scertClient.CipherService.HasKey(CipherContext.RC_CLIENT_SESSION) && scertClient.RsaAuthKey != null && scertClient.MediusVersion >= 109 && scertClient.CipherService.EnableEncryption == true)
+                            if (scertClient.CipherService != null && scertClient.CipherService.HasKey(CipherContext.RC_CLIENT_SESSION) && !scertClient.IsPS3Client)
                                 Queue(new RT_MSG_SERVER_CRYPTKEY_GAME() { GameKey = scertClient.CipherService.GetPublicKey(CipherContext.RC_CLIENT_SESSION) }, clientChannel);
                             Queue(new RT_MSG_SERVER_CONNECT_ACCEPT_TCP()
                             {
@@ -309,6 +392,12 @@ namespace Horizon.MUIS
                         }
                     case RT_MSG_CLIENT_APP_TOSERVER clientAppToServer:
                         {
+                            if (data.State != ClientState.AUTHENTICATED)
+                            {
+                                LoggerAccessor.LogError($"Unexpected RT_MSG_CLIENT_APP_TOSERVER from {clientChannel.RemoteAddress}: {clientAppToServer}");
+                                break;
+                            }
+
                             if (clientAppToServer.Message != null)
                                 ProcessMediusMessage(clientAppToServer.Message, clientChannel, data);
                             break;
@@ -319,9 +408,24 @@ namespace Horizon.MUIS
                             break;
                         }
                     case RT_MSG_CLIENT_DISCONNECT _:
+                        {
+                            //Medius 1.08 (Used on WRC 4) haven't a state
+                            if (scertClient.MediusVersion > 108)
+                                data.State = ClientState.DISCONNECTED;
+
+                            await clientChannel.CloseAsync();
+
+                            LoggerAccessor.LogInfo($"[MUIS] - Client disconnected by request with no specific reason\n");
+                            break;
+                        }
                     case RT_MSG_CLIENT_DISCONNECT_WITH_REASON clientDisconnectWithReason:
                         {
-                            _ = clientChannel.CloseAsync();
+                            if (clientDisconnectWithReason.Reason <= RT_MSG_CLIENT_DISCONNECT_REASON.RT_MSG_CLIENT_DISCONNECT_LENGTH_MISMATCH)
+                                LoggerAccessor.LogInfo($"[MUIS] - Disconnected by request with reason of {clientDisconnectWithReason.Reason}\n");
+                            else
+                                LoggerAccessor.LogInfo($"[MUIS] - Disconnected by request with (application specified) reason of {clientDisconnectWithReason.Reason}\n");
+
+                            await clientChannel.CloseAsync();
                             break;
                         }
                     default:
@@ -520,17 +624,15 @@ namespace Horizon.MUIS
                 #region MediusGetUniverseInformationRequest
                 case MediusGetUniverseInformationRequest getUniverseInfo:
                     {
-                        int compAppId = MuisClass.Settings.CompatibleApplicationIds.Find(appId => appId == data.ApplicationId);
-
                         //Check if Client AppId equals the Appid in CompatibleAppId list
-                        if (data.ApplicationId == compAppId)
+                        if (data.ApplicationId == MuisClass.Settings.CompatibleApplicationIds.Find(appId => appId == data.ApplicationId))
                         {
                             if (MuisClass.Settings.Universes.TryGetValue(data.ApplicationId, out var infos))
                             {
                                 //Send Standard/Variable Flow
                                 foreach (var info in infos)
                                 {
-                                    var isLast = infos.LastOrDefault() == info;
+                                    bool isLast = infos.LastOrDefault() == info;
 
                                     #region INFO_UNIVERSES
                                     // MUIS Standard Flow - Deprecated after Medius Client/Server Library 1.50
@@ -625,26 +727,6 @@ namespace Horizon.MUIS
                                         if (getUniverseInfo.InfoType.HasFlag(MediusUniverseVariableInformationInfoFilter.INFO_DNS) ||
                                             getUniverseInfo.InfoType.HasFlag(MediusUniverseVariableInformationInfoFilter.INFO_EXTRAINFO))
                                         {
-                                            if (!string.IsNullOrEmpty(data.ExtraData) && !string.IsNullOrEmpty(info.ExtendedInfo) && info.ExtendedInfo.Contains(' '))
-                                            {
-                                                // Split the string based on whitespace
-                                                string[] parts = info.ExtendedInfo.Split(' ');
-
-                                                // Check if there is only one space
-                                                if (parts.Length == 2)
-                                                {
-                                                    switch (data.ApplicationId)
-                                                    {
-                                                        case 20371:
-                                                            info.ExtendedInfo = $"{parts[0]} {parts[1].Replace(HorizonServerConfiguration.HomeVersionBetaHDK, data.ExtraData)}";
-                                                            break;
-                                                        case 20374:
-                                                            info.ExtendedInfo = $"{parts[0]} {parts[1].Replace(HorizonServerConfiguration.HomeVersionRetail, data.ExtraData)}";
-                                                            break;
-                                                    }
-                                                }
-                                            }
-
                                             Queue(new RT_MSG_SERVER_APP()
                                             {
                                                 Message = new MediusUniverseVariableInformationResponse()
@@ -709,7 +791,7 @@ namespace Horizon.MUIS
                         }
                         else
                         {
-                            LoggerAccessor.LogWarn($"ApplicationID not compatible [{data.ApplicationId}]");
+                            LoggerAccessor.LogWarn($"[MUIS] - ApplicationID not compatible [{data.ApplicationId}]");
 
                             if (getUniverseInfo.InfoType.HasFlag(MediusUniverseVariableInformationInfoFilter.INFO_UNIVERSES))
                             {
@@ -747,18 +829,11 @@ namespace Horizon.MUIS
                     {
                         List<MediusChannelList_ExtraInfoResponse> channelResponses = new List<MediusChannelList_ExtraInfoResponse>();
 
-                        // Deadlocked only uses this to connect to a non-game channel (lobby)
-                        // So we'll filter by lobby here
-                        /*
-                        var channels = MUISStarter.Manager.GetChannelList(
+                        foreach (Channel channel in MuisClass.Manager.GetChannelList(
                             data.ApplicationId,
                             channelList_ExtraInfoRequest.PageID,
                             channelList_ExtraInfoRequest.PageSize,
-                            ChannelType.Lobby);
-                        
-
-
-                        foreach (var channel in channels)
+                            ChannelType.Lobby))
                         {
                             channelResponses.Add(new MediusChannelList_ExtraInfoResponse()
                             {
@@ -769,34 +844,15 @@ namespace Horizon.MUIS
                                 GameWorldCount = (ushort)channel.GameCount,
                                 PlayerCount = (ushort)channel.PlayerCount,
                                 MaxPlayers = (ushort)channel.MaxPlayers,
-                                GenericField1 = channel.GenericField1,
-                                GenericField2 = channel.GenericField2,
-                                GenericField3 = channel.GenericField3,
-                                GenericField4 = channel.GenericField4,
+                                GenericField1 = (uint)channel.GenericField1,
+                                GenericField2 = (uint)channel.GenericField2,
+                                GenericField3 = (uint)channel.GenericField3,
+                                GenericField4 = (uint)channel.GenericField4,
                                 GenericFieldLevel = channel.GenericFieldLevel,
                                 SecurityLevel = channel.SecurityLevel,
                                 EndOfList = false
                             });
                         }
-                        */
-
-                        channelResponses.Add(new MediusChannelList_ExtraInfoResponse()
-                        {
-                            MessageID = channelList_ExtraInfoRequest.MessageID,
-                            StatusCode = MediusCallbackStatus.MediusSuccess,
-                            MediusWorldID = 1,
-                            LobbyName = "US",
-                            GameWorldCount = 0,
-                            PlayerCount = 0,
-                            MaxPlayers = 256,
-                            GenericField1 = 0,
-                            GenericField2 = 0,
-                            GenericField3 = 0,
-                            GenericField4 = 0,
-                            GenericFieldLevel = 0,
-                            SecurityLevel = MediusWorldSecurityLevelType.WORLD_SECURITY_NONE,
-                            EndOfList = false
-                        });
 
                         if (channelResponses.Count == 0)
                         {
@@ -813,7 +869,7 @@ namespace Horizon.MUIS
                         else
                         {
                             // Ensure the end of list flag is set
-                            channelResponses[channelResponses.Count - 1].EndOfList = true;
+                            channelResponses[^1].EndOfList = true;
 
                             // Add to responses
                             Queue(channelResponses, clientChannel);
@@ -943,14 +999,8 @@ namespace Horizon.MUIS
         }
         #endregion
 
-        protected uint GenerateNewScertClientId()
-        {
-            return _clientCounter++;
-        }
-
-        #region QueryEngine
-
-        private bool CheatQuery(uint address, int Length, IChannel? clientChannel)
+        #region PokeEngine
+        private bool CheatQuery(uint address, int Length, IChannel? clientChannel, CheatQueryType Type = CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY, int SequenceId = 1)
         {
             // address = 0, don't read
             if (address == 0)
@@ -963,8 +1013,8 @@ namespace Horizon.MUIS
             // read client memory
             Queue(new RT_MSG_SERVER_CHEAT_QUERY()
             {
-                QueryType = CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY,
-                SequenceId = 1,
+                QueryType = Type,
+                SequenceId = SequenceId,
                 StartAddress = address,
                 Length = Length,
             }, clientChannel);
@@ -972,7 +1022,11 @@ namespace Horizon.MUIS
             // return read
             return true;
         }
-
         #endregion
+
+        protected uint GenerateNewScertClientId()
+        {
+            return _clientCounter++;
+        }
     }
 }

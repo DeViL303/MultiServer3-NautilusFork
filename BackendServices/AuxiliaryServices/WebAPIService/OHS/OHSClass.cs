@@ -27,12 +27,12 @@ namespace WebAPIService.OHS
             this.game = game;
         }
 
-        public string? ProcessRequest(byte[] PostData, string? ContentType, string directoryPath)
+        public string ProcessRequest(byte[] PostData, string ContentType, string directoryPath)
         {
             if (string.IsNullOrEmpty(absolutepath) || string.IsNullOrEmpty(directoryPath))
                 return null;
 
-            string? res = null;
+            string res = null;
 
             directoryPath = RemoveCommands(directoryPath);
 
@@ -88,7 +88,7 @@ namespace WebAPIService.OHS
                         else if (absolutepath.Contains(Commands[22]))
                             res = Leaderboard.Leaderboard_RequestByRank(PostData, ContentType, directoryPath, string.Empty, game);
                         else if (absolutepath.Contains(Commands[23]))
-                            res = Leaderboard.Leaderboard_Update(PostData, ContentType, directoryPath, string.Empty, game);
+                            res = Leaderboard.Leaderboard_Update(PostData, ContentType, directoryPath, string.Empty, game, false);
                         else if (absolutepath.Contains(Commands[24]))
                             res = Leaderboard.Leaderboard_UpdatesSameEntry(PostData, ContentType, directoryPath, string.Empty, game);
                         else if (absolutepath.Contains(Commands[25]))

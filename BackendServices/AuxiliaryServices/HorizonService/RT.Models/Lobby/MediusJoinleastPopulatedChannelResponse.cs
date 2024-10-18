@@ -1,4 +1,3 @@
-using System.IO;
 using Horizon.RT.Common;
 using Horizon.LIBRARY.Common.Stream;
 
@@ -11,18 +10,17 @@ namespace Horizon.RT.Models.Lobby
 
         public bool IsSuccess => StatusCode >= 0;
 
-        public MessageId? MessageID { get; set; }
+        public MessageId MessageID { get; set; }
 
         public MediusCallbackStatus StatusCode;
         public int MediusWorldID;
-        public NetConnectionInfo? ConnectInfo;
+        public NetConnectionInfo ConnectInfo;
 
         public override void Deserialize(MessageReader reader)
         {
             base.Deserialize(reader);
 
             MessageID = reader.Read<MessageId>();
-            //reader.ReadBytes(3);
 
             StatusCode = reader.Read<MediusCallbackStatus>();
             MediusWorldID = reader.ReadInt32();
@@ -34,7 +32,6 @@ namespace Horizon.RT.Models.Lobby
             base.Serialize(writer);
 
             writer.Write(MessageID ?? MessageId.Empty);
-            //writer.Write(new byte[3]);
 
             writer.Write(StatusCode);
             writer.Write(MediusWorldID);

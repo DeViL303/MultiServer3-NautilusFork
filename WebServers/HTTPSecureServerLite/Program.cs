@@ -3,19 +3,20 @@ using Newtonsoft.Json.Linq;
 using HTTPSecureServerLite;
 using System.Runtime;
 using WebAPIService.LeaderboardsService;
-using CyberBackendLibrary.GeoLocalization;
+using NetworkLibrary.GeoLocalization;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System;
 using System.Threading.Tasks;
-using CyberBackendLibrary.AIModels;
+using NetworkLibrary.AIModels;
 using System.Security.Cryptography;
-using CyberBackendLibrary.HTTP.PluginManager;
-using System.Diagnostics;
-using System.Security.Principal;
-using HttpMultipartParser;
-using SevenZip.Compression.LZ;
+using NetworkLibrary.HTTP.PluginManager;
+using System.Reflection;
+using NetworkLibrary.HTTP;
+using System.Collections.Concurrent;
+using NetworkLibrary.TCP_IP;
+using HashLib;
 
 public static class HTTPSServerConfiguration
 {
@@ -25,20 +26,30 @@ public static class HTTPSServerConfiguration
     public static string DNSConfig { get; set; } = $"{Directory.GetCurrentDirectory()}/static/routes.txt";
     public static string DNSOnlineConfig { get; set; } = string.Empty;
     public static bool DNSAllowUnsafeRequests { get; set; } = true;
+    public static string HttpVersion { get; set; } = "1.1";
     public static string APIStaticFolder { get; set; } = $"{Directory.GetCurrentDirectory()}/static/wwwapiroot";
     public static string HTTPSStaticFolder { get; set; } = $"{Directory.GetCurrentDirectory()}/static/wwwroot";
     public static string HTTPSTempFolder { get; set; } = $"{Directory.GetCurrentDirectory()}/static/wwwtemp";
     public static string ConvertersFolder { get; set; } = $"{Directory.GetCurrentDirectory()}/static/converters";
+    public static string ASPNETRedirectUrl { get; set; } = string.Empty;
     public static string PHPRedirectUrl { get; set; } = string.Empty;
     public static string PHPVersion { get; set; } = "php-8.3.0";
     public static string PHPStaticFolder { get; set; } = $"{Directory.GetCurrentDirectory()}/static/PHP";
     public static bool PHPDebugErrors { get; set; } = false;
+    public static int BufferSize { get; set; } = 4096;
     public static string HTTPSCertificateFile { get; set; } = $"{Directory.GetCurrentDirectory()}/static/SSL/MultiServer.pfx";
     public static string HTTPSCertificatePassword { get; set; } = "qwerty";
     public static HashAlgorithmName HTTPSCertificateHashingAlgorithm { get; set; } = HashAlgorithmName.SHA384;
+    public static bool ChunkedTransfers { get; set; } = false;
+    public static bool DomainFolder { get; set; } = false;
     public static bool NotFoundSuggestions { get; set; } = false;
+    public static bool NotFoundWebArchive { get; set; } = false;
+    public static int NotFoundWebArchiveDateLimit { get; set; } = 0;
+    public static bool EnableHTTPCompression { get; set; } = true;
     public static bool EnablePUTMethod { get; set; } = false;
+    public static bool EnableImageUpscale { get; set; } = false;
     public static bool EnableLiveTranscoding { get; set; } = false;
+    public static Dictionary<string, string>? MimeTypes { get; set; } = HTTPProcessor._mimeTypes;
     public static Dictionary<string, int>? DateTimeOffset { get; set; }
     public static string[]? HTTPSDNSList { get; set; } = {
             "www.outso-srv1.com",
@@ -99,14 +110,13 @@ public static class HTTPSServerConfiguration
             "www.ndreamsportal.com",
             "nonprod3.homerewards.online.scee.com",
             "www.services.heavyh2o.net",
-            "nDreams-multiserver-cdn"
+            "nDreams-multiserver-cdn",
+            "secure.cpreprod.homeps3.online.scee.com"
         };
     public static List<ushort>? Ports { get; set; } = new() { 443 };
     public static List<string>? RedirectRules { get; set; }
     public static List<string>? BannedIPs { get; set; }
-    public static Dictionary<int, Dictionary<string, object>>? PluginsCustomParameters { get; set; }
-
-    public static List<HTTPPlugin> plugins = PluginLoader.LoadPluginsFromFolder(PluginsFolder);
+    public static Dictionary<string, HTTPPlugin> plugins = PluginLoader.LoadPluginsFromFolder(PluginsFolder);
 
     /// <summary>
     /// Tries to load the specified configuration file.
@@ -129,6 +139,7 @@ public static class HTTPSServerConfiguration
                 new JProperty("online_routes_config", DNSOnlineConfig),
                 new JProperty("routes_config", DNSConfig),
                 new JProperty("allow_unsafe_requests", DNSAllowUnsafeRequests),
+                new JProperty("aspnet_redirect_url", ASPNETRedirectUrl),
                 new JProperty("php", new JObject(
                     new JProperty("redirect_url", PHPRedirectUrl),
                     new JProperty("version", PHPVersion),
@@ -138,22 +149,31 @@ public static class HTTPSServerConfiguration
                 new JProperty("api_static_folder", APIStaticFolder),
                 new JProperty("https_static_folder", HTTPSStaticFolder),
                 new JProperty("https_temp_folder", HTTPSTempFolder),
+                new JProperty("http_version", HttpVersion),
+                SerializeMimeTypes(),
                 SerializeDateTimeOffset(),
                 new JProperty("https_dns_list", HTTPSDNSList ?? Array.Empty<string>()),
                 new JProperty("converters_folder", ConvertersFolder),
+                new JProperty("buffer_size", BufferSize),
                 new JProperty("certificate_file", HTTPSCertificateFile),
                 new JProperty("certificate_password", HTTPSCertificatePassword),
                 new JProperty("certificate_hashing_algorithm", HTTPSCertificateHashingAlgorithm.Name),
                 new JProperty("default_plugins_port", DefaultPluginsPort),
                 new JProperty("plugins_folder", PluginsFolder),
                 new JProperty("404_not_found_suggestions", NotFoundSuggestions),
+                new JProperty("404_not_found_web_archive", NotFoundWebArchive),
+                new JProperty("404_not_found_web_archive_date_limit", NotFoundWebArchiveDateLimit),
+                new JProperty("enable_chunked_transfers", ChunkedTransfers),
+                new JProperty("enable_domain_folder", DomainFolder),
+                new JProperty("enable_http_compression", EnableHTTPCompression),
                 new JProperty("enable_put_method", EnablePUTMethod),
+                new JProperty("enable_image_upscale", EnableImageUpscale),
                 new JProperty("enable_live_transcoding", EnableLiveTranscoding),
                 new JProperty("Ports", new JArray(Ports ?? new List<ushort> { })),
                 new JProperty("RedirectRules", new JArray(RedirectRules ?? new List<string> { })),
                 new JProperty("BannedIPs", new JArray(BannedIPs ?? new List<string> { })),
                 new JProperty("plugins_custom_parameters", string.Empty)
-            ).ToString().Replace("/", "\\\\"));
+            ).ToString());
 
             return;
         }
@@ -168,12 +188,15 @@ public static class HTTPSServerConfiguration
             DNSConfig = GetValueOrDefault(config, "routes_config", DNSConfig);
             DNSAllowUnsafeRequests = GetValueOrDefault(config, "allow_unsafe_requests", DNSAllowUnsafeRequests);
             APIStaticFolder = GetValueOrDefault(config, "api_static_folder", APIStaticFolder);
+            ASPNETRedirectUrl = GetValueOrDefault(config, "aspnet_redirect_url", ASPNETRedirectUrl);
             PHPRedirectUrl = GetValueOrDefault(config.php, "redirect_url", PHPRedirectUrl);
             PHPVersion = GetValueOrDefault(config.php, "version", PHPVersion);
             PHPStaticFolder = GetValueOrDefault(config.php, "static_folder", PHPStaticFolder);
             PHPDebugErrors = GetValueOrDefault(config.php, "debug_errors", PHPDebugErrors);
             HTTPSStaticFolder = GetValueOrDefault(config, "https_static_folder", HTTPSStaticFolder);
             HTTPSTempFolder = GetValueOrDefault(config, "https_temp_folder", HTTPSTempFolder);
+            BufferSize = GetValueOrDefault(config, "buffer_size", BufferSize);
+            HttpVersion = GetValueOrDefault(config, "http_version", HttpVersion);
             ConvertersFolder = GetValueOrDefault(config, "converters_folder", ConvertersFolder);
             HTTPSCertificateFile = GetValueOrDefault(config, "certificate_file", HTTPSCertificateFile);
             HTTPSCertificatePassword = GetValueOrDefault(config, "certificate_password", HTTPSCertificatePassword);
@@ -181,8 +204,15 @@ public static class HTTPSServerConfiguration
             PluginsFolder = GetValueOrDefault(config, "plugins_folder", PluginsFolder);
             DefaultPluginsPort = GetValueOrDefault(config, "default_plugins_port", DefaultPluginsPort);
             NotFoundSuggestions = GetValueOrDefault(config, "404_not_found_suggestions", NotFoundSuggestions);
+            NotFoundWebArchive = GetValueOrDefault(config, "404_not_found_web_archive", NotFoundWebArchive);
+            NotFoundWebArchiveDateLimit = GetValueOrDefault(config, "404_not_found_web_archive_date_limit", NotFoundWebArchiveDateLimit);
+            ChunkedTransfers = GetValueOrDefault(config, "enable_chunked_transfers", ChunkedTransfers);
+            DomainFolder = GetValueOrDefault(config, "enable_domain_folder", DomainFolder);
+            EnableHTTPCompression = GetValueOrDefault(config, "enable_http_compression", EnableHTTPCompression);
             EnablePUTMethod = GetValueOrDefault(config, "enable_put_method", EnablePUTMethod);
+            EnableImageUpscale = GetValueOrDefault(config, "enable_image_upscale", EnableImageUpscale);
             EnableLiveTranscoding = GetValueOrDefault(config, "enable_live_transcoding", EnableLiveTranscoding);
+            MimeTypes = GetValueOrDefault(config, "mime_types", MimeTypes);
             DateTimeOffset = GetValueOrDefault(config, "datetime_offset", DateTimeOffset);
             HTTPSDNSList = GetValueOrDefault(config, "https_dns_list", HTTPSDNSList);
             // Deserialize Ports if it exists
@@ -221,32 +251,6 @@ public static class HTTPSServerConfiguration
             {
 
             }
-            try
-            {
-                string? NestedJson = config.plugins_custom_parameters;
-
-                if (!string.IsNullOrEmpty(NestedJson))
-                {
-                    PluginsCustomParameters = ParseNestedJsonArray(NestedJson);
-
-#if DEBUG
-                    if (PluginsCustomParameters != null)
-                    {
-                        foreach (var param in PluginsCustomParameters)
-                        {
-                            foreach (var keypair in param.Value)
-                            {
-                                LoggerAccessor.LogInfo($"[HTTPS] - Custom Parameter [{param.Key}] added: {keypair.Key} - {keypair.Value}");
-                            }
-                        }
-                    }
-#endif
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggerAccessor.LogWarn($"Plugins extra data thrown an exception ({ex})");
-            }
         }
         catch (Exception ex)
         {
@@ -268,15 +272,6 @@ public static class HTTPSServerConfiguration
                         return returnvalue;
                 }
             }
-            else if (obj is JArray jArray)
-            {
-                if (int.TryParse(propertyName, out int index) && index >= 0 && index < jArray.Count)
-                {
-                    T? returnvalue = jArray[index].ToObject<T>();
-                    if (returnvalue != null)
-                        return returnvalue;
-                }
-            }
         }
         return defaultValue;
     }
@@ -292,74 +287,32 @@ public static class HTTPSServerConfiguration
         return new JProperty("datetime_offset", jObject);
     }
 
-    private static Dictionary<int, Dictionary<string, object>> ParseNestedJsonArray(string jsonArray)
+    // Helper method for the MimeTypes config serialization.
+    private static JProperty SerializeMimeTypes()
     {
-        Dictionary<int, Dictionary<string, object>> dictionary = new();
-
-        int i = 0;
-
-        foreach (JObject obj in JArray.Parse(jsonArray).Children<JObject>())
+        JObject jObject = new();
+        foreach (var kvp in MimeTypes ?? new Dictionary<string, string>())
         {
-            AddPluginProperties(obj, dictionary, i);
-            i++;
+            jObject.Add(kvp.Key, kvp.Value);
         }
-
-        return dictionary;
-    }
-
-    private static void AddPluginProperties(JObject obj, Dictionary<int, Dictionary<string, object>> dictionary, int index)
-    {
-        if (!dictionary.ContainsKey(index))
-            dictionary.Add(index, new Dictionary<string, object> { });
-
-        foreach (JProperty property in obj.Properties())
-        {
-            if (property.Value is JValue value)
-                // If value is JValue (primitive), add it directly to dictionary
-                dictionary[index][property.Name] = value.Value;
-            else if (property.Value is JArray array)
-            {
-                // If value is JArray, recursively process its elements
-                List<object> list = new();
-                foreach (var item in array.Children())
-                {
-                    if (item is JObject @object)
-                    {
-                        Dictionary<int, Dictionary<string, object>> subDictionary = new();
-                        AddPluginProperties(@object, subDictionary, index);
-                        list.Add(subDictionary);
-                    }
-                    else
-                        list.Add(((JValue)item).Value);
-                }
-                dictionary[index][property.Name] = list;
-            }
-            else if (property.Value is JObject @object)
-            {
-                // If value is JObject, recursively process its properties
-                Dictionary<int, Dictionary<string, object>> subDictionary = new();
-                AddPluginProperties(@object, subDictionary, index);
-                dictionary[index][property.Name] = subDictionary;
-            }
-        }
+        return new JProperty("mime_types", jObject);
     }
 }
 
 class Program
 {
-    static string configDir = Directory.GetCurrentDirectory() + "/static/";
-    static string configPath = configDir + "https.json";
-    static string DNSconfigMD5 = string.Empty;
-    static bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT || Environment.OSVersion.Platform == PlatformID.Win32S || Environment.OSVersion.Platform == PlatformID.Win32Windows;
-    static Timer? Leaderboard = null;
-    static Timer? FilesystemTree = null;
-    static Task? DNSThread = null;
-    static Task? DNSRefreshThread = null;
-    static HTTPSecureServer? Server;
-    static readonly FileSystemWatcher dnswatcher = new();
+    private static string configDir = Directory.GetCurrentDirectory() + "/static/";
+    private static string configPath = configDir + "https.json";
+    private static string DNSconfigMD5 = string.Empty;
+    private static Timer? Leaderboard = null;
+    private static Timer? FilesystemTree = null;
+    private static Task? DNSThread = null;
+    private static Task? DNSRefreshThread = null;
+    private static ConcurrentBag<HttpsProcessor>? HTTPSBag = null;
+    private static readonly FileSystemWatcher dnswatcher = new();
 
     // Event handler for DNS change event
-    static void OnDNSChanged(object source, FileSystemEventArgs e)
+    private static void OnDNSChanged(object source, FileSystemEventArgs e)
     {
         try
         {
@@ -389,22 +342,23 @@ class Program
         }
     }
 
-    static void StartOrUpdateServer()
+    private static void StartOrUpdateServer()
     {
-        Server?.Stop();
-        Server = null;
-
-        if (HTTPSServerConfiguration.EnableLiveTranscoding && IsWindows)
-            if (!IsAdministrator())
+        if (HTTPSBag != null)
+        {
+            foreach (HttpsProcessor httpsBag in HTTPSBag)
             {
-                LoggerAccessor.LogWarn("Live transcoding functionality needs administrator rights, trying to restart as admin...");
-                if (StartAsAdmin(Process.GetCurrentProcess().MainModule?.FileName))
-                    Environment.Exit(0);
-                else
-                    LoggerAccessor.LogError("Live transcoding functionality will not work due to missing administrator rights!");
+                httpsBag.StopServer();
             }
+        }
 
-        CyberBackendLibrary.SSL.SSLUtils.InitCerts(HTTPSServerConfiguration.HTTPSCertificateFile, HTTPSServerConfiguration.HTTPSCertificatePassword,
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        WebAPIService.WebArchive.WebArchiveRequest.ArchiveDateLimit = HTTPSServerConfiguration.NotFoundWebArchiveDateLimit;
+
+        NetworkLibrary.SSL.SSLUtils.InitializeSSLCertificates(HTTPSServerConfiguration.HTTPSCertificateFile, HTTPSServerConfiguration.HTTPSCertificatePassword,
             HTTPSServerConfiguration.HTTPSDNSList, HTTPSServerConfiguration.HTTPSCertificateHashingAlgorithm);
 
         LeaderboardClass.APIPath = HTTPSServerConfiguration.APIStaticFolder;
@@ -448,20 +402,31 @@ class Program
         if (HTTPSServerConfiguration.plugins.Count > 0)
         {
             int i = 0;
-            foreach (HTTPPlugin plugin in HTTPSServerConfiguration.plugins)
+            foreach (var plugin in HTTPSServerConfiguration.plugins)
             {
-                if (HTTPSServerConfiguration.PluginsCustomParameters != null && HTTPSServerConfiguration.PluginsCustomParameters.ContainsKey(i))
-                    _ = plugin.HTTPStartPlugin(HTTPSServerConfiguration.APIStaticFolder, (ushort)(HTTPSServerConfiguration.DefaultPluginsPort + i), HTTPSServerConfiguration.PluginsCustomParameters[i]);
-                else
-                    _ = plugin.HTTPStartPlugin(HTTPSServerConfiguration.APIStaticFolder, (ushort)(HTTPSServerConfiguration.DefaultPluginsPort + i), null);
+                _ = plugin.Value.HTTPStartPlugin(HTTPSServerConfiguration.APIStaticFolder, (ushort)(HTTPSServerConfiguration.DefaultPluginsPort + i));
                 i++;
             }
         }
 
-        Server = new HTTPSecureServer(HTTPSServerConfiguration.Ports, new CancellationTokenSource().Token);
+        if (HTTPSServerConfiguration.Ports != null)
+        {
+            HTTPSBag = new();
+
+            Parallel.ForEach(HTTPSServerConfiguration.Ports, port =>
+            {
+                if (TCP_UDPUtils.IsTCPPortAvailable(port))
+                    HTTPSBag.Add(new HttpsProcessor(HTTPSServerConfiguration.HTTPSCertificateFile, HTTPSServerConfiguration.HTTPSCertificatePassword, "*", port, port.ToString().EndsWith("443")));
+            });
+        }
+        else
+        {
+            HTTPSBag = null;
+            LoggerAccessor.LogError("[HTTPS] - No ports were found in the server configuration, ignoring server startup...");
+        }
     }
 
-    static Task RefreshDNS()
+    private static Task RefreshDNS()
     {
         if (DNSThread != null && !SecureDNSConfigProcessor.Initiated)
         {
@@ -477,13 +442,11 @@ class Program
         return Task.CompletedTask;
     }
 
-    static string ComputeMD5FromFile(string filePath)
+    private static string ComputeMD5FromFile(string filePath)
     {
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            // Convert the byte array to a hexadecimal string
-            return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", string.Empty);
-        }
+        using FileStream stream = File.OpenRead(filePath);
+        // Convert the byte array to a hexadecimal string
+        return NetHasher.ComputeMD5String(stream);
     }
 
     static void Main()
@@ -491,10 +454,29 @@ class Program
         dnswatcher.NotifyFilter = NotifyFilters.LastWrite;
         dnswatcher.Changed += OnDNSChanged;
 
-        if (!IsWindows)
+        if (!NetworkLibrary.Extension.OtherExtensions.IsWindows)
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        else
+            TechnitiumLibrary.Net.Firewall.FirewallHelper.CheckFirewallEntries(Assembly.GetEntryAssembly()?.Location);
 
-        LoggerAccessor.SetupLogger("HTTPSecureServer");
+        LoggerAccessor.SetupLogger("HTTPSecureServer", Directory.GetCurrentDirectory());
+
+#if DEBUG
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A FATAL ERROR OCCURED!");
+            LoggerAccessor.LogError(args.ExceptionObject as Exception);
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            LoggerAccessor.LogError("[Program] - A task has thrown a Unobserved Exception!");
+            LoggerAccessor.LogError(args.Exception);
+            args.SetObserved();
+        };
+
+        IPUtils.GetIPInfos(IPUtils.GetLocalIPAddress().ToString(), IPUtils.GetLocalSubnet());
+#endif
 
         GeoIP.Initialize();
 
@@ -504,44 +486,38 @@ class Program
 
         if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
         {
-            LoggerAccessor.LogInfo("Console Inputs are now available while server is running. . .");
-
             while (true)
             {
-                string? stdin = Console.ReadLine();
+                LoggerAccessor.LogInfo("Press any keys to access server actions...");
 
-                if (!string.IsNullOrEmpty(stdin))
+                Console.ReadLine();
+
+                LoggerAccessor.LogInfo("Press one of the following keys to trigger an action: [R (Reboot),S (Shutdown)]");
+
+                switch (char.ToLower(Console.ReadKey().KeyChar))
                 {
-                    switch (stdin.ToLower())
-                    {
-                        case "shutdown":
-                            LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
+                    case 's':
+                        LoggerAccessor.LogWarn("Are you sure you want to shut down the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Shutting down. Goodbye!");
-                                Environment.Exit(0);
-                            }
-                            break;
-                        case "reboot":
-                            LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Shutting down. Goodbye!");
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case 'r':
+                        LoggerAccessor.LogWarn("Are you sure you want to reboot the server? [y/N]");
 
-                            if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
-                            {
-                                LoggerAccessor.LogInfo("Rebooting!");
+                        if (char.ToLower(Console.ReadKey().KeyChar) == 'y')
+                        {
+                            LoggerAccessor.LogInfo("Rebooting!");
 
-                                HTTPSServerConfiguration.RefreshVariables(configPath);
+                            HTTPSServerConfiguration.RefreshVariables(configPath);
 
-                                StartOrUpdateServer();
-                            }
-                            break;
-                        default:
-                            LoggerAccessor.LogWarn($"Unknown command entered: {stdin}");
-                            break;
-                    }
+                            StartOrUpdateServer();
+                        }
+                        break;
                 }
-                else
-                    LoggerAccessor.LogWarn("No command entered!");
             }
         }
         else
@@ -549,43 +525,6 @@ class Program
             LoggerAccessor.LogWarn("\nConsole Inputs are locked while server is running. . .");
 
             Thread.Sleep(Timeout.Infinite);
-        }
-    }
-
-    /// <summary>
-    /// Know if we are the true administrator of the Windows system.
-    /// <para>Savoir si est réellement l'administrateur Windows.</para>
-    /// </summary>
-    /// <returns>A boolean.</returns>
-#pragma warning disable
-    private static bool IsAdministrator()
-    {
-        return new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-    }
-#pragma warning restore
-
-    private static bool StartAsAdmin(string? filePath)
-    {
-        if (string.IsNullOrEmpty(filePath))
-            return false;
-
-        try
-        {
-            new Process()
-            {
-                StartInfo =
-                    {
-                        FileName = filePath,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    }
-            }.Start();
-
-            return true;
-        }
-        catch
-        {
-            return false;
         }
     }
 }

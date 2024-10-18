@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
+	<IsTrimmable>true</IsTrimmable>
+	<IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CyberBackendLibrary\CyberBackendLibrary.csproj" />
+    <ProjectReference Include="..\..\NetworkLibrary\NetworkLibrary.csproj" />
   </ItemGroup>
 
 </Project>

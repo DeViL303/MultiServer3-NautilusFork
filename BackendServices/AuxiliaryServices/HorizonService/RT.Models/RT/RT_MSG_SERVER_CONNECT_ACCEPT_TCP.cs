@@ -13,10 +13,10 @@ namespace Horizon.RT.Models
 
         public ushort PlayerId = 0x0000;
         public uint ScertId = 0x10EC;
-        public ushort PlayerCount = 0x0001;
+        public ushort PlayerCount = 0x0001; // Be carefull, only increment when in a DME game.
 
         public byte[] UNK_07 = { 0x01, 0x08, 0x10 };
-        public IPAddress? IP;
+        public IPAddress IP;
 
         public override void Deserialize(MessageReader reader)
         {

@@ -9,11 +9,13 @@ namespace WebAPIService.LeaderboardsService.VEEMEE
 {
     public class olmScoreBoardData
     {
+        private static object _Lock = new object();
+
         public class ScoreboardEntry
         {
-            public string? psnid { get; set; }
+            public string psnid { get; set; }
             public int score { get; set; }
-            public string? throws { get; set; }
+            public string throws { get; set; }
         }
 
         private static List<ScoreboardEntry> scoreboard = new List<ScoreboardEntry>();
@@ -86,55 +88,82 @@ namespace WebAPIService.LeaderboardsService.VEEMEE
 
         public static void UpdateWeeklyScoreboardXml(string date)
         {
-            Directory.CreateDirectory($"{LeaderboardClass.APIPath}/VEEMEE/olm");
-            // Get all XML files in the scoreboard folder
-            foreach (string file in Directory.GetFiles($"{LeaderboardClass.APIPath}/VEEMEE/olm", "leaderboard_*.xml"))
+            lock (_Lock)
             {
-                // Extract date from the filename
-                Match match = Regex.Match(file, @"leaderboard_(\d{4}_\d{2}_\d{2}).xml");
-                if (match.Success)
-                {
-                    string fileDate = match.Groups[1].Value;
+                Directory.CreateDirectory($"{LeaderboardClass.APIPath}/VEEMEE/olm");
 
-                    // Parse the file date
-                    if (DateTime.TryParse(fileDate, out DateTime fileDateTime))
+                // Get all XML files in the scoreboard folder
+                foreach (string file in Directory.GetFiles($"{LeaderboardClass.APIPath}/VEEMEE/olm", "leaderboard_*.xml"))
+                {
+                    // Extract date from the filename
+                    Match match = Regex.Match(file, @"leaderboard_(\d{4}_\d{2}_\d{2}).xml");
+                    if (match.Success)
                     {
-                        // Check if the file is newer than 7 days
-                        if ((DateTime.Parse(date) - fileDateTime).TotalDays <= 7)
+                        string fileDate = match.Groups[1].Value;
+
+                        // Parse the file date
+                        if (DateTime.TryParse(fileDate, out DateTime fileDateTime))
                         {
-                            // Update the older scoreboard.
-                            File.WriteAllText(file, ConvertScoreboardToXml());
-                            CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - olm - Replaced old scoreboard file entry: {file}");
-                            return;
+                            // Check if the file is newer than 7 days
+                            if ((DateTime.Parse(date) - fileDateTime).TotalDays <= 7)
+                            {
+                                // Update the older scoreboard.
+                                File.WriteAllText(file, ConvertScoreboardToXml());
+                                CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - olm - Replaced old scoreboard file entry: {file}");
+                                return;
+                            }
                         }
                     }
                 }
+
+                File.WriteAllText($"{LeaderboardClass.APIPath}/VEEMEE/olm/leaderboard_{date}.xml", ConvertScoreboardToXml());
+                CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - olm - scoreboard {date} XML updated.");
             }
-            File.WriteAllText($"{LeaderboardClass.APIPath}/VEEMEE/olm/leaderboard_{date}.xml", ConvertScoreboardToXml());
-            CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - olm - scoreboard {date} XML updated.");
         }
 
         public static void SanityCheckLeaderboards(string directoryPath, DateTime thresholdDate)
         {
             if (Directory.Exists(directoryPath))
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
-
-                foreach (FileInfo file in directoryInfo.GetFiles("leaderboard_*.xml"))
+                try
                 {
-                    // Extract date from the file name
-                    if (DateTime.TryParseExact(
-                            file.Name.Replace("leaderboard_", string.Empty).Replace(".xml", string.Empty),
-                            "yyyy_MM_dd",
-                            CultureInfo.InvariantCulture,
-                            DateTimeStyles.None,
-                            out DateTime leaderboardDate)
-                        && leaderboardDate < thresholdDate)
+                    DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+
+                    foreach (FileInfo file in directoryInfo.GetFiles("leaderboard_*.xml"))
                     {
-                        // If the leaderboard date is older than the threshold, delete the file
-                        file.Delete();
-                        CustomLogger.LoggerAccessor.LogDebug($"[VEEMEE] - olm - Removed outdated leaderboard: {file.Name}.");
+                        try
+                        {
+                            // Extract date from the file name
+                            if (DateTime.TryParseExact(
+                                    file.Name.Replace("leaderboard_", string.Empty).Replace(".xml", string.Empty),
+                                    "yyyy_MM_dd",
+                                    CultureInfo.InvariantCulture,
+                                    DateTimeStyles.None,
+                                    out DateTime leaderboardDate)
+                                && leaderboardDate < thresholdDate)
+                            {
+                                // If the leaderboard date is older than the threshold, delete the file
+                                try
+                                {
+                                    file.Delete();
+
+                                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - olm - Removed outdated leaderboard: {file.Name}.");
+                                }
+                                catch (Exception e)
+                                {
+                                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - olm - Error while removing leaderboard: {file.Name} (Exception: {e}).");
+                                }
+                            }
+                        }
+                        catch (ArgumentException e)
+                        {
+                            CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - olm - Error while parsing leaderboard name: {file.Name} (ArgumentException: {e}).");
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    CustomLogger.LoggerAccessor.LogInfo($"[VEEMEE] - olm - Error while creating directoryInfo of path: {directoryPath} (Exception: {e}).");
                 }
             }
         }

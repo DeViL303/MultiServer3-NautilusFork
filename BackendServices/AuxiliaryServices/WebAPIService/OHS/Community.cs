@@ -4,20 +4,20 @@ using CustomLogger;
 using Newtonsoft.Json.Linq;
 using HttpMultipartParser;
 using Newtonsoft.Json;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 
 namespace WebAPIService.OHS
 {
     public class Community
     {
-        public static string? Community_Getscore(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
+        public static string Community_Getscore(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
             int output = 0;
 
             if (string.IsNullOrEmpty(batchparams))
             {
-                string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+                string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 if (!string.IsNullOrEmpty(boundary))
                 {
@@ -37,31 +37,22 @@ namespace WebAPIService.OHS
             {
                 if (!string.IsNullOrEmpty(dataforohs))
                 {
-                    JToken? Token = JToken.Parse(dataforohs);
+                    JToken Token = JToken.Parse(dataforohs);
 
                     if (Token != null)
                     {
-                        object? key = Utils.JtokenUtils.GetValueFromJToken(Token, "key");
+                        object key = Utils.JtokenUtils.GetValueFromJToken(Token, "key");
 
                         if (key != null)
                         {
-                            Directory.CreateDirectory(directorypath + $"/Community_Profiles");
-
                             if (File.Exists(directorypath + $"/Community_Profiles/{key}.json"))
                             {
-                                string tempreader = File.ReadAllText(directorypath + $"/Community_Profiles/{key}.json");
+                                // Check if the key name already exists in the JSON
+                                JToken existingKey = JObject.Parse(File.ReadAllText(directorypath + $"/Community_Profiles/{key}.json"))?.SelectToken($"$..{key}");
 
-                                JObject? jObject = JObject.Parse(tempreader);
-
-                                if (jObject != null)
-                                {
-                                    // Check if the key name already exists in the JSON
-                                    JToken? existingKey = jObject.SelectToken($"$..{key}");
-
-                                    if (existingKey != null)
-                                        // Get the value of the existing key
-                                        output = existingKey.Value<int>();
-                                }
+                                if (existingKey != null)
+                                    // Get the value of the existing key
+                                    output = existingKey.Value<int>();
                             }
                         }
                     }
@@ -74,20 +65,18 @@ namespace WebAPIService.OHS
 
             if (!string.IsNullOrEmpty(batchparams))
                 return "{ [\"score\"] = " + output.ToString() + " }";
-            else
-                dataforohs = JaminProcessor.JaminFormat($"{{ [\"status\"] = \"success\", [\"value\"] = {{ [\"score\"] = {output} }} }}", game);
 
-            return dataforohs;
+            return JaminProcessor.JaminFormat($"{{ [\"status\"] = \"success\", [\"value\"] = {{ [\"score\"] = {output} }} }}", game);
         }
 
-        public static string? Community_UpdateScore(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
+        public static string Community_UpdateScore(byte[] PostData, string ContentType, string directorypath, string batchparams, int game)
         {
-            string? dataforohs = null;
+            string dataforohs = null;
             int output = 0;
 
             if (string.IsNullOrEmpty(batchparams))
             {
-                string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+                string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
                 if (!string.IsNullOrEmpty(boundary))
                 {
@@ -107,11 +96,11 @@ namespace WebAPIService.OHS
             {
                 if (!string.IsNullOrEmpty(dataforohs))
                 {
-                    JToken? Token = JToken.Parse(dataforohs);
+                    JToken Token = JToken.Parse(dataforohs);
 
                     if (Token != null)
                     {
-                        object? key = Utils.JtokenUtils.GetValueFromJToken(Token, "key");
+                        object key = Utils.JtokenUtils.GetValueFromJToken(Token, "key");
 
                         int inc = Convert.ToInt32(Utils.JtokenUtils.GetValueFromJToken(Token, "inc"));
 
@@ -123,23 +112,26 @@ namespace WebAPIService.OHS
 
                             if (!string.IsNullOrEmpty(tempreader))
                             {
-                                JObject? jObject = JObject.Parse(tempreader);
+                                JObject jObject = JObject.Parse(tempreader);
 
                                 if (jObject != null)
                                 {
                                     // Check if the key name already exists in the JSON
-                                    JToken? existingKey = jObject.SelectToken($"$..{key}");
+                                    JToken existingKey = jObject.SelectToken($"$..{key}");
 
                                     if (existingKey != null)
-                                        // Get the value of the existing key
-                                        existingKey[key] = existingKey.Value<int>() + inc;
+                                    {
+                                        output = existingKey.Value<int>() + inc;
+                                        existingKey.Replace(output);
+                                    }
                                     else if (key != null)
                                     {
-                                        string? keyname = key.ToString();
-
+                                        string keyname = key.ToString();
                                         if (keyname != null)
-                                            // If the key doesn't exist, add it with the increment value
-                                            jObject.Add(new JProperty(keyname, inc));
+                                        {
+                                            output = inc;
+                                            jObject.Add(new JProperty(keyname, output));
+                                        }
                                     }
                                 }
 
@@ -148,9 +140,11 @@ namespace WebAPIService.OHS
                         }
                         else if (key != null)
                         {
-                            Directory.CreateDirectory(directorypath + "/Community_Profiles");
-                            File.WriteAllText(directorypath + $"/Community_Profiles/{key}.json", $"{{ \"{key}\":{inc} }}");
                             output = inc;
+
+                            Directory.CreateDirectory(directorypath + "/Community_Profiles");
+
+                            File.WriteAllText(directorypath + $"/Community_Profiles/{key}.json", $"{{ \"{key}\":{inc} }}");
                         }
                     }
                 }
@@ -162,10 +156,8 @@ namespace WebAPIService.OHS
 
             if (!string.IsNullOrEmpty(batchparams))
                 return "{ [\"score\"] = " + output.ToString() + " }";
-            else
-                dataforohs = JaminProcessor.JaminFormat($"{{ [\"status\"] = \"success\", [\"value\"] = {{ [\"score\"] = {output} }} }}", game);
 
-            return dataforohs;
+            return JaminProcessor.JaminFormat($"{{ [\"status\"] = \"success\", [\"value\"] = {{ [\"score\"] = {output} }} }}", game);
         }
     }
 }

@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Text.RegularExpressions;
 using CustomLogger;
-using CyberBackendLibrary.HTTP;
 using WebAPIService.NDREAMS.Aurora;
 using WebAPIService.NDREAMS.BlueprintHome;
 using WebAPIService.NDREAMS.Fubar;
+using WebAPIService.NDREAMS.Xi2;
 
 namespace WebAPIService.NDREAMS
 {
-    public class NDREAMSClass : IDisposable
+    public partial class NDREAMSClass : IDisposable
     {
         private bool disposedValue;
         private DateTime currentdate;
@@ -34,7 +34,7 @@ namespace WebAPIService.NDREAMS
             this.host = host;
         }
 
-        public string? ProcessRequest(Dictionary<string, string>? QueryParameters, byte[]? PostData = null, string? ContentType = null)
+        public string ProcessRequest(IDictionary<string, string> QueryParameters, byte[] PostData = null, string ContentType = null)
         {
             if (string.IsNullOrEmpty(absolutepath))
                 return null;
@@ -73,6 +73,14 @@ namespace WebAPIService.NDREAMS
                             return AuroraDBManager.ProcessAuroraXP(currentdate, PostData, ContentType, apipath);
                         case "/aurora/VRSignUp.php":
                             return VRSignUp.ProcessVRSignUp(PostData, ContentType, apipath);
+                        case "/xi2/cont/xi2_cont.php":
+                            return Cont.ProcessCont(currentdate, PostData, ContentType, apipath);
+                        case "/xi2/cont/battle_cont.php":
+                            return BattleCont.ProcessBattleCont(currentdate, PostData, ContentType, apipath);
+                        case "/xi2/cont/articles_cont.php":
+                            return ArticlesCont.ProcessArticlesCont(currentdate, PostData, ContentType, apipath);
+                        case "/xi2/cont/PStats.php":
+                            return PStats.ProcessPStats(PostData, ContentType);
                         case "/gateway/":
                             return "<xml></xml>"; // Not gonna emulate this encrypted mess.
                         case "/thecomplex/ComplexABTest.php":
@@ -86,7 +94,7 @@ namespace WebAPIService.NDREAMS
                     break;
                 case "GET":
                     {
-                        if (host == "nDreams-multiserver-cdn")
+                        if (host.Equals("nDreams-multiserver-cdn"))
                         {
                             if (File.Exists(filepath)) // We do some api filtering afterwards.
                             {
@@ -98,7 +106,17 @@ namespace WebAPIService.NDREAMS
                                         string[] segments = filepath.Trim('/').Split('/');
 
                                         if (segments.Length == 5) // Url is effectively a Blueprint Home Furn/Layout fetch, so we update current used slot for each.
-                                            File.WriteAllText(apipath + $"/NDREAMS/BlueprintHome/{segments[2]}/{segments[3]}/CurrentSlot.txt", segments[4][9..1]);
+                                        {
+#if NET7_0_OR_GREATER
+                                            Match match = BlueprintHomeRegex().Match(segments[4]);
+#else
+                                            Match match = Regex.Match(segments[4], @"blueprint_(\d+)\.xml");
+#endif
+                                            if (match.Success)
+                                                File.WriteAllText(apipath + $"/NDREAMS/BlueprintHome/{segments[2]}/{segments[3]}/CurrentSlot.txt", match.Groups[1].Value);
+                                            else
+                                                LoggerAccessor.LogError($"[NDREAMS] - Server received an invalid BlueprintHome layout slot number!");
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
@@ -151,5 +169,9 @@ namespace WebAPIService.NDREAMS
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+#if NET7_0_OR_GREATER
+        [GeneratedRegex(@"blueprint_(\d+)\.xml")]
+        private static partial Regex BlueprintHomeRegex();
+#endif
     }
 }

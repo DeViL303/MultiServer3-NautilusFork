@@ -1,10 +1,11 @@
 using System.Text;
 using System.Security.Cryptography;
 using lzo.net;
-using ComponentAce.Compression.Libs.zlib;
 using System.Text.RegularExpressions;
-using CyberBackendLibrary.DataTypes;
 using EndianTools;
+using Ionic.Zlib;
+using NetworkLibrary.Extension;
+using HashLib;
 
 namespace QuazalServer.QNetZ
 {
@@ -60,14 +61,14 @@ namespace QuazalServer.QNetZ
 		{
 			byte[] b = new byte[4];
 			s.Read(b, 0, 4);
-			return BitConverter.ToSingle(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(b) : b, 0);
+			return BitConverter.ToSingle(!BitConverter.IsLittleEndian ? EndianUtils.ReverseArray(b) : b, 0);
 		}
 
 		public static double ReadDouble(Stream s)
 		{
 			byte[] b = new byte[8];
 			s.Read(b, 0, 8);
-			return BitConverter.ToDouble(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(b) : b, 0);
+			return BitConverter.ToDouble(!BitConverter.IsLittleEndian ? EndianUtils.ReverseArray(b) : b, 0);
 		}
 
 		public static string ReadString(Stream s)
@@ -165,13 +166,13 @@ namespace QuazalServer.QNetZ
 
 		public static void WriteFloat(Stream s, float v)
 		{
-			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(v) : v);
+			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.ReverseFloat(v) : v);
 			s.Write(b, 0, 4);
 		}
 
 		public static void WriteFloatLE(Stream s, float v)
 		{
-			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(v) : v);
+			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.ReverseFloat(v) : v);
 			s.WriteByte(b[3]);
 			s.WriteByte(b[2]);
 			s.WriteByte(b[1]);
@@ -180,7 +181,7 @@ namespace QuazalServer.QNetZ
 
 		public static void WriteDouble(Stream s, double v)
 		{
-			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.EndianSwap(v) : v);
+			byte[] b = BitConverter.GetBytes(!BitConverter.IsLittleEndian ? EndianUtils.ReverseDouble(v) : v);
 			s.Write(b, 0, 8);
 		}
 
@@ -230,6 +231,7 @@ namespace QuazalServer.QNetZ
                 case "hg7j1":
                 case "yh64s":
                 case "uG9Kv3p":
+                case "1WguH+y":
                     using (LzoStream lzo = new(new MemoryStream(InData), System.IO.Compression.CompressionMode.Decompress))
                     {
                         lzo.CopyTo(memoryStream);
@@ -239,24 +241,19 @@ namespace QuazalServer.QNetZ
                         return memoryStream.ToArray();
                     }
 				default:
-                    ZOutputStream zoutputStream = new(memoryStream, false);
-                    byte[] array = new byte[InData.Length];
-                    Array.Copy(InData, 0, array, 0, InData.Length);
-                    zoutputStream.Write(array, 0, array.Length);
-                    zoutputStream.Close();
-                    memoryStream.Close();
-                    return memoryStream.ToArray();
+                    ZlibStream s = new(new MemoryStream(InData), CompressionMode.Decompress);
+                    MemoryStream result = new();
+                    s.CopyTo(result);
+                    return result.ToArray();
             }
         }
 
         public static byte[] Compress(byte[] InData)
         {
-            MemoryStream memoryStream = new();
-            ZOutputStream zoutputStream = new(memoryStream, 9, false);
-            zoutputStream.Write(InData, 0, InData.Length);
-            zoutputStream.Close();
-            memoryStream.Close();
-            return memoryStream.ToArray();
+            ZlibStream s = new(new MemoryStream(InData), CompressionMode.Compress);
+            MemoryStream result = new();
+            s.CopyTo(result);
+            return result.ToArray();
         }
 
         public static byte[] Encrypt(string key, byte[] data)
@@ -318,11 +315,10 @@ namespace QuazalServer.QNetZ
 		{
 			uint count = 0;
 			byte[] buff = Array.Empty<byte>();
-            MD5 md5 = MD5.Create();
             if (input.Length == 32 && Regex.IsMatch(input, @"\b[a-fA-F0-9]{32}\b")) // Might maybe conflict if user type in a md5 like pass, which is a very bad idea ^^.
 			{
                 count = pid % 1024;
-                buff = DataTypesUtils.HexStringToByteArray(input);
+                buff = OtherExtensions.HexStringToByteArray(input);
             }
             else
             {
@@ -331,7 +327,7 @@ namespace QuazalServer.QNetZ
             }
 
             for (uint i = 0; i < count; i++)
-                buff = md5.ComputeHash(buff);
+                buff = NetHasher.ComputeMD5(buff);
 
             return buff;
 		}

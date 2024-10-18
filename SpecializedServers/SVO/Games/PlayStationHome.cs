@@ -1,5 +1,5 @@
 using CustomLogger;
-using System.Net;
+using SpaceWizards.HttpListener;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Text;
@@ -15,11 +15,11 @@ namespace SVO
             {
                 if (request.Url == null)
                 {
-                    response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                     return;
                 }
 
-                string method = request.HttpMethod;
+                string? method = request.HttpMethod;
 
                 using (response)
                 {
@@ -38,7 +38,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -140,7 +140,7 @@ namespace SVO
                                             "      \r\n" +
                                             "</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -171,7 +171,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -275,7 +275,7 @@ namespace SVO
                                             "      \r\n" +
                                             "</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -307,7 +307,7 @@ namespace SVO
 
                                         if (string.IsNullOrEmpty(serverMac))
                                         {
-                                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                             return;
                                         }
                                         else
@@ -332,7 +332,7 @@ namespace SVO
                                                 $"<EULA name=\"eula\" mode=\"check\" href=\"unityNpLogin.jsp?region={region}\" eulahref=\"eulaDisplay.jsp?region={region}\" linkOption=\"NORMAL\" />\r\n" +
                                                 "</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -363,7 +363,7 @@ namespace SVO
 
                                         if (string.IsNullOrEmpty(serverMac))
                                         {
-                                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                             return;
                                         }
                                         else
@@ -393,7 +393,7 @@ namespace SVO
                                                 $"        <SET name=\"nohistory\" neverBackOnto=\"true\"/>\r\n" +
                                                 $"</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -424,7 +424,7 @@ namespace SVO
 
                                         if (string.IsNullOrEmpty(serverMac))
                                         {
-                                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                             return;
                                         }
                                         else
@@ -454,7 +454,7 @@ namespace SVO
                                                 $"        <SET name=\"nohistory\" neverBackOnto=\"true\"/>\r\n" +
                                                 $"</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -488,7 +488,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -520,7 +520,7 @@ namespace SVO
                                             $"<EULA name=\"eula\" mode=\"browser\" href=\"unityNpLogin.jsp?region={region}\" eulahref=\"eulaDisplay.jsp?region={region}\" linkOption=\"NORMAL\" />\r\n" +
                                             "</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -552,7 +552,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -582,7 +582,7 @@ namespace SVO
                                             $"        <SET name=\"nohistory\" neverBackOnto=\"true\"/>\r\n" +
                                             $"</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -614,7 +614,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -623,7 +623,7 @@ namespace SVO
 
                                         if (!request.HasEntityBody)
                                         {
-                                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                             return;
                                         }
 
@@ -699,7 +699,7 @@ namespace SVO
                                             "    </SP_Login>\r\n" +
                                             "</XML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -731,7 +731,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -758,7 +758,7 @@ namespace SVO
                                         else
                                             Medius_Announcement_Read = Encoding.UTF8.GetBytes(SVOServerConfiguration.MOTD);
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -790,7 +790,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -804,7 +804,7 @@ namespace SVO
                                             "   <REDIRECT name=\"toBlankPage\" href=\"homeInWorld.jsp\" linkOption=\"NORMAL\"/>\r\n\r\n" +
                                             "</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -836,7 +836,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -847,7 +847,7 @@ namespace SVO
                                         byte[] homeEnterWorld = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?> \r\n" +
                                             "<SVML>\r\n\r\n</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -879,7 +879,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -893,24 +893,20 @@ namespace SVO
 
                                         byte[] xmlMessage;
 
+                                        string? encodedFileName = SecurityElement.Escape(fileNameBeginsWith);
+
                                         if (fileExists)
                                         {
                                             string fileId = "1";
-
-                                            string? encodedFileName = SecurityElement.Escape(fileNameBeginsWith);
 
                                             xmlMessage = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
                                                 $"<XML>\r\n\r\n<XMLSVOFILETRANSFER direction=\"download\" filename=\"{encodedFileName}\" errorCode=\"None\" src=\"http://homeps3.svo.online.scee.com:10060/HUBPS3_SVML/fileservices/DownloadFileServlet?fileID={fileId}&amp;fileNameBeginsWith={encodedFileName}\"/>\r\n</XML>");
                                         }
                                         else
-                                        {
-                                            string? encodedFileName = SecurityElement.Escape(fileNameBeginsWith);
-
                                             xmlMessage = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-                                                $"<XML>\r\n\r\n<XMLSVOFILETRANSFER direction=\"download\" filename=\"{encodedFileName}\" errorCode=\"FileDoesNotExist\" src=\"\"/>\r\n</XML>");
-                                        }
+                                                    $"<XML>\r\n\r\n<XMLSVOFILETRANSFER direction=\"download\" filename=\"{encodedFileName}\" errorCode=\"FileDoesNotExist\" src=\"\"/>\r\n</XML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -946,7 +942,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -972,49 +968,40 @@ namespace SVO
                                                 response.AppendHeader("ETag", $"{Guid.NewGuid().ToString().Substring(0, 4)}-{Guid.NewGuid().ToString().Substring(0, 12)}");
                                             }
 
-                                            using (MemoryStream ms = new())
+                                            Directory.CreateDirectory($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices");
+
+                                            using FileStream fs = new($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices/{fileNameBeginsWith}", FileMode.Open);
+
+                                            int fileLen = Convert.ToInt32(fs.Length);
+
+                                            response.AppendHeader("Content-Length", fileLen.ToString());
+
+                                            // Create a byte array.
+                                            byte[] strArr = new byte[fileLen];
+
+                                            fs.Read(strArr, 0, fileLen);
+                                            fs.Flush();
+
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+
+                                            if (response.OutputStream.CanWrite)
                                             {
-                                                Directory.CreateDirectory($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices");
-
-                                                using (FileStream fs = new($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices/{fileNameBeginsWith}", FileMode.Open))
+                                                try
                                                 {
-                                                    int fileLen = Convert.ToInt32(fs.Length);
-
-                                                    response.AppendHeader("Content-Length", fileLen.ToString());
-
-                                                    // Create a byte array.
-                                                    byte[] strArr = new byte[fileLen];
-                                                    fs.Read(strArr, 0, fileLen);
-                                                    fs.Flush();
-
-
-                                                    //You have to rewind the MemoryStream before copying
-                                                    ms.Write(strArr, 0, fileLen);
-
-                                                    response.StatusCode = (int)HttpStatusCode.OK;
-
-                                                    if (response.OutputStream.CanWrite)
-                                                    {
-                                                        try
-                                                        {
-                                                            response.ContentLength64 = strArr.Length;
-                                                            response.OutputStream.Write(strArr, 0, strArr.Length);
-                                                        }
-                                                        catch (Exception)
-                                                        {
-                                                            // Not Important;
-                                                        }
-                                                    }
-
-                                                    fs.Flush();
+                                                    response.ContentLength64 = strArr.Length;
+                                                    response.OutputStream.Write(strArr, 0, strArr.Length);
                                                 }
-
-                                                ms.Flush();
+                                                catch (Exception)
+                                                {
+                                                    // Not Important;
+                                                }
                                             }
+
+                                            fs.Flush();
                                         }
                                         else
                                         {
-                                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                             return;
                                         }
                                     }
@@ -1036,7 +1023,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -1047,38 +1034,29 @@ namespace SVO
                                         byte[] xmlMessage;
                                         string fileNameBeginsWith = "UserTrackingLog.xml";
 
-                                        using (MemoryStream ms = new())
+                                        // Find number of bytes in stream.
+                                        int strLen = Convert.ToInt32(request.ContentLength64);
+
+                                        // Create a byte array.
+                                        byte[] strArr = new byte[strLen];
+
+                                        request.InputStream.Read(strArr, 0, strLen);
+
+                                        //We can do whatever we want with the POST information for the UseTrackingLog from any player it seems? 
+                                        //Lets just write to file!
+
+                                        Directory.CreateDirectory($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/tracking");
+
+                                        using (FileStream fs = new($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/tracking/{fileNameBeginsWith}", FileMode.OpenOrCreate))
                                         {
-                                            // Find number of bytes in stream.
-                                            int strLen = Convert.ToInt32(request.ContentLength64);
-                                            // Create a byte array.
-                                            byte[] strArr = new byte[strLen];
-
-                                            request.InputStream.Read(strArr, 0, strLen);
-
-                                            ms.Position = 0;
-
-                                            //You have to rewind the MemoryStream before copying
-                                            ms.Read(strArr, 0, strLen);
-
-                                            //We can do whatever we want with the POST information for the UseTrackingLog from any player it seems? 
-                                            //Lets just write to file!
-
-                                            Directory.CreateDirectory($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/tracking");
-
-                                            using (FileStream fs = new($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/tracking/{fileNameBeginsWith}", FileMode.OpenOrCreate))
-                                            {
-                                                fs.Write(strArr, 0, strLen);
-                                                fs.Flush();
-                                            }
-
-                                            ms.Flush();
+                                            fs.Write(strArr, 0, strLen);
+                                            fs.Flush();
                                         }
 
                                         xmlMessage = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n" +
                                         $"<XML>\r\n\r\n<XMLSVOFILETRANSFER direction=\"upload\" filename=\"{fileNameBeginsWith}\"/>\r\n</XML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -1108,7 +1086,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -1138,7 +1116,7 @@ namespace SVO
 
                                             Directory.CreateDirectory($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices");
 
-                                            using (FileStream fs = new FileStream($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices/{toUpload}", FileMode.OpenOrCreate))
+                                            using (FileStream fs = new($"{SVOServerConfiguration.SVOStaticFolder}/HUBPS3_SVML/fileservices/{toUpload}", FileMode.OpenOrCreate))
                                             {
                                                 fs.Write(buffer, 0, contentLength);
                                                 fs.Flush();
@@ -1152,7 +1130,7 @@ namespace SVO
                                         $"<XMLSVOFILETRANSFER direction=\"upload\" filename=\"{toUpload}\"/>\r\n" +
                                         $"</XML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -1182,7 +1160,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -1192,7 +1170,7 @@ namespace SVO
 
                                         string? region = HttpUtility.ParseQueryString(request.Url.Query).Get("region");
 
-                                        string? pageName = HttpUtility.ParseQueryString(request.Url.Query).Get("pageName");
+                                        string pageName = HttpUtility.ParseQueryString(request.Url.Query).Get("pageName") ?? string.Empty;
 
                                         byte[] xmlMessage;
 
@@ -1209,7 +1187,7 @@ namespace SVO
                                                 "  <QUICKLINK name=\"returnToPSP\" button=\"SV_PAD_BACK\" linkOption=\"\" href=\"file:///HOST_SVML/ReturnToPSP.svml\"/>\r\n" +
                                                 "</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -1237,7 +1215,7 @@ namespace SVO
                                                 "  <QUICKLINK name=\"returnToPSP\" button=\"SV_PAD_BACK\" linkOption=\"\" href=\"file:///HOST_SVML/ReturnToPSP.svml\"/>\r\n" +
                                                 "</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -1265,7 +1243,7 @@ namespace SVO
                                                 "  <QUICKLINK name=\"returnToPSP\" button=\"SV_PAD_BACK\" linkOption=\"\" href=\"file:///HOST_SVML/ReturnToPSP.svml\"/>\r\n" +
                                                 "</SVML>");
 
-                                            response.StatusCode = (int)HttpStatusCode.OK;
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                             if (response.OutputStream.CanWrite)
                                             {
@@ -1280,6 +1258,8 @@ namespace SVO
                                                 }
                                             }
                                         }
+                                        else
+                                            response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
                                     }
 
                                     break;
@@ -1298,7 +1278,7 @@ namespace SVO
 
                                     if (string.IsNullOrEmpty(serverMac))
                                     {
-                                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                         return;
                                     }
                                     else
@@ -1319,7 +1299,7 @@ namespace SVO
                                             "<SVML>\r\n" +
                                             "</SVML>");
 
-                                        response.StatusCode = (int)HttpStatusCode.OK;
+                                        response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                                         if (response.OutputStream.CanWrite)
                                         {
@@ -1341,7 +1321,7 @@ namespace SVO
                             break;
 
                         default:
-                            response.StatusCode = (int)HttpStatusCode.Forbidden;
+                            response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                             break;
 
                             #endregion
@@ -1351,7 +1331,7 @@ namespace SVO
             catch (Exception ex)
             {
                 LoggerAccessor.LogError($"[SVO] - Home_SVO thrown an assertion - {ex}");
-                response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
             }
         }
     }

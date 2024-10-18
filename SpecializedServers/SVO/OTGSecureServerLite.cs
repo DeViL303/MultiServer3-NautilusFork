@@ -1,18 +1,17 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using System.Net;
 using System.Text;
+using WatsonWebserver;
 using WatsonWebserver.Core;
-using WatsonWebserver.Lite;
-using Newtonsoft.Json;
 
 namespace SVO
 {
     public class OTGSecureServerLite
     {
         public static bool IsStarted = false;
-        private static WebserverLite? _Server;
+        private static Webserver? _Server;
         private readonly string ip;
         private readonly int port;
 
@@ -31,7 +30,7 @@ namespace SVO
             settings.Ssl.PfxCertificatePassword = certpass;
             settings.Ssl.Enable = true;
 
-            _Server = new WebserverLite(settings, DefaultRoute);
+            _Server = new Webserver(settings, DefaultRoute);
 
             StartServer();
         }
@@ -59,6 +58,7 @@ namespace SVO
             if (_Server != null && !_Server.IsListening)
             {
                 _Server.Routes.AuthenticateRequest = AuthorizeConnection;
+                _Server.Events.ExceptionEncountered += ExceptionEncountered;
                 _Server.Events.Logger = LoggerAccessor.LogInfo;
                 _Server.Settings.Debug.Responses = true;
                 _Server.Settings.Debug.Routing = true;
@@ -81,14 +81,18 @@ namespace SVO
 
             try
             {
-                string? UserAgent = ctx.Request.Useragent.ToLower();
+                string? UserAgent = null;
+
+                if (!string.IsNullOrEmpty(ctx.Request.Useragent))
+                    UserAgent = ctx.Request.Useragent.ToLower();
+
                 if (!string.IsNullOrEmpty(UserAgent) && (UserAgent.Contains("firefox") || UserAgent.Contains("chrome") || UserAgent.Contains("trident") || UserAgent.Contains("bytespider"))) // Get Away TikTok.
                 {
                     LoggerAccessor.LogInfo($"[OTG_HTTPS] - Client - {clientip}:{clientport} Requested the OTG_HTTPS Server while not being allowed!");
 
                     ctx.Response.StatusCode = (int)statusCode; // Send the other status.
                     ctx.Response.ContentType = "text/plain";
-                    sent = await ctx.Response.SendFinalChunk(Array.Empty<byte>());
+                    sent = await ctx.Response.Send();
 
                     return;
                 }
@@ -102,19 +106,7 @@ namespace SVO
             {
                 fullurl = HTTPProcessor.DecodeUrl(ctx.Request.Url.RawWithQuery);
 
-#if DEBUG
-                LoggerAccessor.LogJson(JsonConvert.SerializeObject(new
-                {
-                    HttpMethod = ctx.Request.Method,
-                    Url = ctx.Request.Url.Full,
-                    Headers = ctx.Request.Headers,
-                    HeadersValues = ctx.Request.Headers.AllKeys.SelectMany(key => ctx.Request.Headers.GetValues(key) ?? Enumerable.Empty<string>()),
-                    UserAgent = ctx.Request.Useragent,
-                    ClientAddress = ctx.Request.Source.IpAddress + ":" + ctx.Request.Source.Port,
-                }), $"[[OTG_HTTPS]] - Client - {clientip}:{clientport} Requested the OTG_HTTPS Server with URL : {ctx.Request.Url.RawWithQuery}" + " (" + ctx.Timestamp.TotalMs + "ms)");
-#else
                 LoggerAccessor.LogInfo($"[OTG_HTTPS] - Client - {clientip}:{clientport} Requested the OTG_HTTPS Server with URL : {ctx.Request.Url.RawWithQuery}" + " (" + ctx.Timestamp.TotalMs + "ms)");
-#endif
 
                 absolutepath = HTTPProcessor.ExtractDirtyProxyPath(ctx.Request.RetrieveHeaderValue("Referer")) + HTTPProcessor.RemoveQueryString(fullurl);
                 statusCode = HttpStatusCode.Continue;
@@ -193,7 +185,7 @@ namespace SVO
 
                         statusCode = HttpStatusCode.OK;
                         ctx.Response.StatusCode = (int)statusCode;
-                        ctx.Response.ContentType = HTTPProcessor.GetMimeType(Path.GetExtension(filePath));
+                        ctx.Response.ContentType = HTTPProcessor.GetMimeType(Path.GetExtension(filePath), HTTPProcessor._mimeTypes);
                         ctx.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                         ctx.Response.Headers.Add("Date", DateTime.Now.ToString("r"));
                         ctx.Response.Headers.Add("ETag", Guid.NewGuid().ToString()); // Well, kinda wanna avoid client caching.
@@ -220,6 +212,11 @@ namespace SVO
             if (!sent)
                 LoggerAccessor.LogWarn($"[OTG_HTTPS] - {clientip}:{clientport} Failed to receive the response! Client might have closed the wire.");
 #endif
+        }
+
+        private void ExceptionEncountered(object? sender, ExceptionEventArgs args)
+        {
+            LoggerAccessor.LogError(args.Exception);
         }
     }
 }

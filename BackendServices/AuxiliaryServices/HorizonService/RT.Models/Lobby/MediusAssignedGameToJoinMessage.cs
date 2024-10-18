@@ -17,13 +17,13 @@ namespace Horizon.RT.Models.Lobby
         public MediusCallbackStatus StatusCode;
         public int SystemSpecificStatusCode;
 
-        public MediusAssignedGameToJoin? mediusAssignedGameToJoin;
+        public MediusAssignedGameToJoin mediusAssignedGameToJoin;
 
         public int Unk1;
         public uint GameWorldID;
         public uint TeamID;
         public int PlayerCount;
-        public string? GameName; // GAMENAME_MAXLEN
+        public string GameName; // GAMENAME_MAXLEN
         public byte[] GameStats = new byte[Constants.GAMESTATS_MAXLEN];
         public int MinPlayers;
         public int MaxPlayers;
@@ -40,11 +40,11 @@ namespace Horizon.RT.Models.Lobby
         public int GenericField8;
         public MediusWorldStatus WorldStatus;
         public MediusJoinType JoinType;
-        public string? GamePassword; // GAMEPASSWORD_MAXLEN
-        public MediusGameHostType GameHostType;
-        public NetAddressList? AddressList;
+        public string GamePassword; // GAMEPASSWORD_MAXLEN
+        public MGCL_GAME_HOST_TYPE GameHostType;
+        public NetAddressList AddressList;
         public uint AppDataSize;
-        public string? AppData;
+        public string AppData;
 
         public override void Deserialize(MessageReader reader)
         {
@@ -81,7 +81,7 @@ namespace Horizon.RT.Models.Lobby
                 WorldStatus = reader.Read<MediusWorldStatus>();
                 JoinType = reader.Read<MediusJoinType>();
                 GamePassword = reader.ReadString(Constants.GAMEPASSWORD_MAXLEN);
-                GameHostType = reader.Read<MediusGameHostType>();
+                GameHostType = reader.Read<MGCL_GAME_HOST_TYPE>();
                 AddressList = reader.Read<NetAddressList>();
                 AppDataSize = reader.ReadUInt32();
                 AppData = reader.ReadString((int)AppDataSize);

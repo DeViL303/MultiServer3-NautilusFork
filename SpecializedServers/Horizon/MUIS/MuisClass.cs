@@ -7,7 +7,8 @@ using Horizon.PluginManager;
 using System.Net;
 using Horizon.HTTPSERVICE;
 using Horizon.LIBRARY.Database.Models;
-
+using Horizon.MUM;
+using Horizon.SERVER.Extension.PlayStationHome;
 
 namespace Horizon.MUIS
 {
@@ -19,12 +20,14 @@ namespace Horizon.MUIS
 
         public static IPAddress SERVER_IP = IPAddress.None;
 
-        public static MediusManager Manager = new();
+        public static MumManager Manager = new();
         public static MediusPluginsManager Plugins = new(HorizonServerConfiguration.PluginsFolder);
 
         public static RSA_KEY? GlobalAuthPublic = null;
 
         public static MUIS[]? UniverseInfoServers = null;
+
+        public static List<HomeOffsetsJsonData> HomeOffsetsList = new();
 
         private static Dictionary<int, AppSettings> _appSettings = new();
         private static AppSettings _defaultAppSettings = new(0);
@@ -191,6 +194,7 @@ namespace Horizon.MUIS
             RefreshServerIp();
 
             // Load settings
+            #region Check Config.json
             if (File.Exists(CONFIG_FILE))
                 // Populate existing object
                 JsonConvert.PopulateObject(File.ReadAllText(CONFIG_FILE), Settings, new JsonSerializerSettings()
@@ -202,10 +206,11 @@ namespace Horizon.MUIS
                 // Add the appids to the ApplicationIds list
                 Settings.CompatibleApplicationIds.AddRange(new List<int>
                 {
-                    11354, 21914, 21624, 20764, 20371, 20384, 22500, 10540, 22920, 22923, 22924, 21731, 21834, 23624, 20032,
-                    20034, 20454, 20314, 21874, 21244, 20304, 20463, 21614, 20344, 20434, 22204, 23360, 21513,
-                    21064, 20804, 20374, 21094, 20060, 10984, 10782, 10421, 10130, 10954, 21784, 21564, 21354,
-                    21564, 21574, 21584, 21594, 22274, 22284, 22294, 22304, 20040, 20041, 20042, 20043, 20044
+                    11204, 11354, 21914, 21624, 20764, 20371, 20384, 22500, 10540, 22920, 22923, 22924, 21731,
+                    21834, 23624, 20032, 20034, 20454, 20314, 21874, 21244, 20304, 20463, 21614, 20344, 20434,
+                    22204, 23360, 21513, 21064, 20804, 20374, 21094, 20060, 10984, 10782, 10421, 10130, 10954,
+                    21784, 21564, 21354, 21564, 21574, 21584, 21594, 22274, 22284, 22294, 22304, 20040, 20041,
+                    20042, 20043, 20044
                 });
 
                 string? iptofile = SERVER_IP?.ToString();
@@ -267,6 +272,23 @@ namespace Horizon.MUIS
                         ExtendedInfo = null,
                         UniverseBilling = "SCEA",
                         BillingSystemName = "Sony Computer Entertainment America, Inc. Billing System"
+                    }
+                });
+
+                Settings.Universes.Add(11204, new UniverseInfo[]
+                {
+                    new UniverseInfo()
+                    {
+                        Name = "JakX Online",
+                        Description = "Retail Europe Universe",
+                        Status = 1,
+                        UserCount = 1,
+                        MaxUsers = 15000,
+                        Endpoint = iptofile,
+                        SvoURL = null,
+                        ExtendedInfo = null,
+                        Port = 10075,
+                        UniverseId = 1
                     }
                 });
 
@@ -619,9 +641,7 @@ namespace Horizon.MUIS
                     }
                 });
 
-                if (string.IsNullOrEmpty(HorizonServerConfiguration.HomeVersionBetaHDK))
-                {
-                    Settings.Universes.Add(20371, new UniverseInfo[]
+                Settings.Universes.Add(20371, new UniverseInfo[]
                     {
                         new UniverseInfo()
                         {
@@ -634,38 +654,14 @@ namespace Horizon.MUIS
                             SvoURL = $"http://{iptofile}:10060/HUBPS3_SVML/unity/start.jsp ",
                             UniverseBilling = "SCEA",
                             BillingSystemName = "Sony Computer Entertainment America, Inc. Billing System",
-                            ExtendedInfo = null,
+                            ExtendedInfo = $"01.86 http://{iptofile}/dev.01.86/",
                             Port = 10075,
                             UniverseId = 1
                         }
                     });
-                }
-                else
-                {
-                    Settings.Universes.Add(20371, new UniverseInfo[]
-                    {
-                        new UniverseInfo()
-                        {
-                            Name = "muis",
-                            Description = "01",
-                            Endpoint = iptofile,
-                            Status = 1,
-                            UserCount = 1,
-                            MaxUsers = 15000,
-                            SvoURL = $"http://{iptofile}:10060/HUBPS3_SVML/unity/start.jsp ",
-                            UniverseBilling = "SCEA",
-                            BillingSystemName = "Sony Computer Entertainment America, Inc. Billing System",
-                            ExtendedInfo = $"{HorizonServerConfiguration.HomeVersionBetaHDK} http://{iptofile}/dev.{HorizonServerConfiguration.HomeVersionBetaHDK}/",
-                            Port = 10075,
-                            UniverseId = 1
-                        }
-                    });
-                }
 
-                if (string.IsNullOrEmpty(HorizonServerConfiguration.HomeVersionRetail))
-                {
-                    Settings.Universes.Add(20374, new UniverseInfo[]
-                    {
+                Settings.Universes.Add(20374, new UniverseInfo[]
+                     {
                         new UniverseInfo()
                         {
                             Name = "CPROD prod1 (Public MUIS)",
@@ -675,35 +671,13 @@ namespace Horizon.MUIS
                             UserCount = 1,
                             MaxUsers = 15000,
                             SvoURL = $"http://{iptofile}:10060/HUBPS3_SVML/unity/start.jsp ",
-                            ExtendedInfo = null,
+                            ExtendedInfo = $"01.86 http://{iptofile}/01.86/",
                             UniverseBilling = "SCEA",
                             BillingSystemName = "Sony Computer Entertainment America, Inc. Billing System",
                             Port = 10075,
                             UniverseId = 1
                         }
-                    });
-                }
-                else
-                {
-                    Settings.Universes.Add(20374, new UniverseInfo[]
-                    {
-                        new UniverseInfo()
-                        {
-                            Name = "CPROD prod1 (Public MUIS)",
-                            Description = "01",
-                            Endpoint = iptofile,
-                            Status = 1,
-                            UserCount = 1,
-                            MaxUsers = 15000,
-                            SvoURL = $"http://{iptofile}:10060/HUBPS3_SVML/unity/start.jsp ",
-                            ExtendedInfo = $"{HorizonServerConfiguration.HomeVersionRetail} http://{iptofile}/{HorizonServerConfiguration.HomeVersionRetail}/",
-                            UniverseBilling = "SCEA",
-                            BillingSystemName = "Sony Computer Entertainment America, Inc. Billing System",
-                            Port = 10075,
-                            UniverseId = 1
-                        }
-                    });
-                }
+                     });
 
                 Settings.Universes.Add(20384, new UniverseInfo[]
                 {
@@ -753,7 +727,7 @@ namespace Horizon.MUIS
                         UserCount = 1,
                         MaxUsers = 256,
                         Endpoint = iptofile,
-                        SvoURL = null,
+                        SvoURL = "http://twistedmetalx-prod3.svo.online.scea.com:10060/TWISTEDMETALX_XML/uri/URIStore.do",
                         ExtendedInfo = null,
                         UniverseBilling = null,
                         BillingSystemName = null,
@@ -1014,9 +988,52 @@ namespace Horizon.MUIS
                 // Save defaults
                 File.WriteAllText(CONFIG_FILE ?? Directory.GetCurrentDirectory() + "/static/muis.json", JsonConvert.SerializeObject(Settings, Formatting.Indented));
             }
+            #endregion
+
+            #region Check ebootdefs.json
+            if (!string.IsNullOrEmpty(HorizonServerConfiguration.EBOOTDEFSConfig) && File.Exists(HorizonServerConfiguration.EBOOTDEFSConfig))
+                LoadHomeOffsetsJson(File.ReadAllText(HorizonServerConfiguration.EBOOTDEFSConfig));
+            #endregion
 
             // Update default rsa key
-            Horizon.LIBRARY.Pipeline.Attribute.ScertClientAttribute.DefaultRsaAuthKey = Settings.DefaultKey;
+            LIBRARY.Pipeline.Attribute.ScertClientAttribute.DefaultRsaAuthKey = Settings.DefaultKey;
+        }
+
+        private static void LoadHomeOffsetsJson(string? jsonData)
+        {
+            if (string.IsNullOrEmpty(jsonData))
+                return;
+
+            Dictionary<string, HomeOffsetsJsonData>? HomeOffsetsDic = JsonConvert.DeserializeObject<Dictionary<string, HomeOffsetsJsonData>>(jsonData);
+
+            if (HomeOffsetsDic != null)
+            {
+                foreach (var kvp in HomeOffsetsDic)
+                {
+                    HomeOffsetsJsonData data = kvp.Value;
+                    data.Sha1Hash = kvp.Key;
+
+                    string[]? parts = data.Version?.Split('.');
+
+                    if (parts != null && parts.Length >= 2)
+                    {
+                        // Take the first two parts for major and minor versions.
+                        string major = parts[0];
+                        string minor = parts[1];
+
+                        // Concatenate any remaining parts as part of the decimal, if they exist.
+                        string remaining = string.Concat(parts.Skip(2));
+
+                        // Construct the double as major.minor and append the remaining if exists
+                        data.VersionAsDouble = Convert.ToDouble(remaining.Length > 0 ? $"{major},{minor}{remaining}" : $"{major},{minor}");
+                    }
+                }
+
+                lock (HomeOffsetsList)
+                    HomeOffsetsList = new List<HomeOffsetsJsonData>(HomeOffsetsDic.Values);
+            }
+            else
+                LoggerAccessor.LogError("[MediusClass] - LoadHomeOffsetsJson - jsonData was null or empty!");
         }
 
         private static void RefreshServerIp()
@@ -1027,7 +1044,7 @@ namespace Horizon.MUIS
             else
             {
                 if (string.IsNullOrWhiteSpace(Settings.PublicIpOverride))
-                    SERVER_IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress());
+                    SERVER_IP = IPAddress.Parse(NetworkLibrary.TCP_IP.IPUtils.GetPublicIPAddress());
                 else
                     SERVER_IP = IPAddress.Parse(Settings.PublicIpOverride);
             }
@@ -1079,7 +1096,7 @@ namespace Horizon.MUIS
                                     await HorizonServerConfiguration.Database.SetServerSettings(appId, appSettings.GetSettings());
                                 }
 
-                                CrudRoomManager.UpdateOrCreateRoom(Convert.ToString(appId), null, null, null, null, false);
+                                RoomManager.UpdateOrCreateRoom(Convert.ToString(appId), null, null, null, null, 0, null, false);
                             }
                         }
                     }

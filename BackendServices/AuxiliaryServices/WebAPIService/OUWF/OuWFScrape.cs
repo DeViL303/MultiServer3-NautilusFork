@@ -1,5 +1,5 @@
 using System.IO;
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using System.Xml;
@@ -10,9 +10,9 @@ namespace WebAPIService.OUWF
 {
     public class OuWFScrape
     {
-        public static string? Scrape(byte[]? PostData, string? ContentType)
+        public static string Scrape(byte[] PostData, string ContentType)
         {
-            string? boundary = HTTPProcessor.ExtractBoundary(ContentType);
+            string boundary = HTTPProcessor.ExtractBoundary(ContentType);
 
             using (MemoryStream ms = new MemoryStream(PostData))
             {

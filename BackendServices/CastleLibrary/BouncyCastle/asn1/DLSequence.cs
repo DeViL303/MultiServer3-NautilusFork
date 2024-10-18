@@ -7,9 +7,59 @@ namespace Org.BouncyCastle.Asn1
     {
         public static new readonly DLSequence Empty = new DLSequence();
 
+        public static new DLSequence Concatenate(params Asn1Sequence[] sequences)
+        {
+            if (sequences == null)
+                return Empty;
+
+            switch (sequences.Length)
+            {
+            case 0:
+                return Empty;
+            case 1:
+                return FromSequence(sequences[0]);
+            default:
+                return WithElements(ConcatenateElements(sequences));
+            }
+        }
+
+        public static new DLSequence FromElements(Asn1Encodable[] elements)
+        {
+            if (elements == null)
+                throw new ArgumentNullException(nameof(elements));
+
+            return elements.Length < 1 ? Empty : new DLSequence(elements);
+        }
+
+        public static new DLSequence FromElementsOptional(Asn1Encodable[] elements)
+        {
+            if (elements == null)
+                return null;
+
+            return elements.Length < 1 ? Empty : new DLSequence(elements);
+        }
+
+        public static new DLSequence FromSequence(Asn1Sequence sequence)
+        {
+            if (sequence is DLSequence dlSequence)
+                return dlSequence;
+
+            return WithElements(sequence.m_elements);
+        }
+
         public static new DLSequence FromVector(Asn1EncodableVector elementVector)
         {
             return elementVector.Count < 1 ? Empty : new DLSequence(elementVector);
+        }
+
+        public static new DLSequence Map(Asn1Sequence sequence, Func<Asn1Encodable, Asn1Encodable> func)
+        {
+            return sequence.Count < 1 ? Empty : new DLSequence(sequence.MapElements(func), clone: false);
+        }
+
+        internal static new DLSequence WithElements(Asn1Encodable[] elements)
+        {
+            return elements.Length < 1 ? Empty : new DLSequence(elements, clone: false);
         }
 
         /**
@@ -60,7 +110,7 @@ namespace Org.BouncyCastle.Asn1
                 return base.GetEncoding(encoding);
 
             return new ConstructedDLEncoding(Asn1Tags.Universal, Asn1Tags.Sequence,
-                Asn1OutputStream.GetContentsEncodings(Asn1OutputStream.EncodingDL, elements));
+                Asn1OutputStream.GetContentsEncodings(Asn1OutputStream.EncodingDL, m_elements));
         }
 
         internal override IAsn1Encoding GetEncodingImplicit(int encoding, int tagClass, int tagNo)
@@ -69,7 +119,7 @@ namespace Org.BouncyCastle.Asn1
                 return base.GetEncodingImplicit(encoding, tagClass, tagNo);
 
             return new ConstructedDLEncoding(tagClass, tagNo,
-                Asn1OutputStream.GetContentsEncodings(Asn1OutputStream.EncodingDL, elements));
+                Asn1OutputStream.GetContentsEncodings(Asn1OutputStream.EncodingDL, m_elements));
         }
 
         internal override DerBitString ToAsn1BitString()
@@ -84,7 +134,7 @@ namespace Org.BouncyCastle.Asn1
 
         internal override Asn1Set ToAsn1Set()
         {
-            return new DLSet(false, elements);
+            return new DLSet(false, m_elements);
         }
     }
 }

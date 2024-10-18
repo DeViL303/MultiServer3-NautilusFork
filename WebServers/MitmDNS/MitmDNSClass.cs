@@ -1,33 +1,35 @@
 using CustomLogger;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+#if NET7_0_OR_GREATER
 using System.Net.Http;
+#endif
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MitmDNS
 {
     public partial class MitmDNSClass
     {
-        public static ConcurrentDictionary<string, DnsSettings> DicRules = new();
-        public static List<KeyValuePair<string, DnsSettings>> StarRules = new();
+        public static Dictionary<string, DnsSettings> DicRules = new Dictionary<string, DnsSettings>();
+        public static Dictionary<string, DnsSettings> StarRules = new Dictionary<string, DnsSettings>();
         public static bool Initiated = false;
-        public MitmDNSUDPProcessor proc = new();
+        public MitmDNSUDPProcessor UDPproc = new MitmDNSUDPProcessor();
 
-        public async void StartUDPServer()
+        public void StartServerAsync(CancellationToken cancellationToken)
         {
-            await proc.RunSocket();
+            _ = Task.Run(() => UDPproc.Start(cancellationToken));
         }
 
-        public async void StopUDPServer()
+        public void StopServer()
         {
-            await proc.StopSocket();
+            UDPproc.Stop();
         }
 
         public async static void RenewConfig()
@@ -61,6 +63,9 @@ namespace MitmDNS
 
         private static void ParseRules(string Filename, bool IsFilename = true)
         {
+            DicRules.Clear();
+            StarRules.Clear();
+
             Initiated = false;
 
             LoggerAccessor.LogInfo("[DNS] - Parsing Configuration File...");
@@ -78,7 +83,7 @@ namespace MitmDNS
                     else
                     {
                         string[] split = s.Split(',');
-                        DnsSettings dns = new();
+                        DnsSettings dns = new DnsSettings();
                         switch (split[1].Trim().ToLower())
                         {
                             case "deny":
@@ -114,15 +119,29 @@ namespace MitmDNS
                             domain = domain.Replace("*", ".*");
 
                             lock (StarRules)
+#if NETCOREAPP2_0_OR_GREATER
+                                StarRules.TryAdd(domain, dns);
+#else
                             {
-                                if (!StarRules.Any(pair => pair.Key == domain))
-                                    StarRules.Add(new KeyValuePair<string, DnsSettings>(domain, dns));
+                                if (!StarRules.ContainsKey(domain))
+                                    StarRules.Add(domain, dns);
                             }
+#endif
                         }
                         else
                         {
-                            DicRules.TryAdd(domain, dns);
-                            DicRules.TryAdd("www." + domain, dns);
+                            lock (DicRules)
+                            {
+#if NETCOREAPP2_0_OR_GREATER
+                                DicRules.TryAdd(domain, dns);
+                                DicRules.TryAdd("www." + domain, dns);
+#else
+                                if (!DicRules.ContainsKey(domain))
+                                    DicRules.Add(domain, dns);
+                                if (!DicRules.ContainsKey("www." + domain))
+                                    DicRules.Add("www." + domain, dns);
+#endif
+                            }
                         }
                     }
                 });
@@ -139,7 +158,7 @@ namespace MitmDNS
             string[] lines = File.ReadAllLines(Filename);
 
             // Define a list to store extracted hostnames
-            List<string> hostnames = new();
+            List<string> hostnames = new List<string>();
 
             foreach (string line in lines)
             {
@@ -152,7 +171,7 @@ namespace MitmDNS
                     hostnames.Add(parts[1].Trim());
             }
 
-            DnsSettings dns = new();
+            DnsSettings dns = new DnsSettings();
 
             Parallel.ForEach(hostnames, hostname =>
             {
@@ -166,18 +185,28 @@ namespace MitmDNS
                         if (line.StartsWith("\t\tA"))
                         {
                             // Extract the IP address using a regular expression
-#if NET6_0
-                            Match match = new Regex(@"A\\s+(\\S+)").Match(line);
-#elif NET7_0_OR_GREATER
+#if NET7_0_OR_GREATER
                             Match match = SimpleDNSRegex().Match(line);
+#else
+                            Match match = new Regex(@"A\\s+(\\S+)").Match(line);
 #endif
                             if (match.Success)
                             {
                                 dns.Mode = HandleMode.Redirect;
                                 dns.Address = GetIp(match.Groups[1].Value);
 
-                                DicRules.TryAdd(hostname, dns);
-                                DicRules.TryAdd("www." + hostname, dns);
+                                lock (DicRules)
+                                {
+#if NETCOREAPP2_0_OR_GREATER
+                                    DicRules.TryAdd(hostname, dns);
+                                    DicRules.TryAdd("www." + hostname, dns);
+#else
+                                    if (!DicRules.ContainsKey(hostname))
+                                        DicRules.Add(hostname, dns);
+                                    if (!DicRules.ContainsKey("www." + hostname))
+                                        DicRules.Add("www." + hostname, dns);
+#endif
+                                }
 
                                 break;
                             }
@@ -210,15 +239,15 @@ namespace MitmDNS
                         {
                             IP = Dns.GetHostAddresses(ip).FirstOrDefault()?.MapToIPv4() ?? IPAddress.Loopback;
                         }
-                        catch // Host is invalid or non-existant, fallback to public/local server IP
+                        catch // Host is invalid or non-existant, fallback to local server IP
                         {
-                            IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress()); // Some legacy DNS clients doesn't support IPv6.
+                            IP = NetworkLibrary.TCP_IP.IPUtils.GetLocalIPAddress(); // Some legacy DNS clients doesn't support IPv6.
                         }
                         break;
                     }
                 default:
                     {
-                        IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress()); // Some legacy DNS clients doesn't support IPv6.
+                        IP = NetworkLibrary.TCP_IP.IPUtils.GetLocalIPAddress(); // Some legacy DNS clients doesn't support IPv6.
                         LoggerAccessor.LogError($"Unhandled UriHostNameType {Uri.CheckHostName(ip)} from {ip} in MitmDNSClass.GetIp()");
                         break;
                     }
@@ -228,7 +257,7 @@ namespace MitmDNS
         }
         #endregion
 
-        private static bool MyRemoteCertificateValidationCallback(object? sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+        private static bool MyRemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true; //This isn't a good thing to do, but to keep the code simple i prefer doing this, it will be used only on mono
         }

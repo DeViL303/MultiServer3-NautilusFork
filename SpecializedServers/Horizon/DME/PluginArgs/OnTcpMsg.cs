@@ -5,7 +5,7 @@ namespace Horizon.DME.PluginArgs
 {
     public class OnTcpMsg
     {
-        public ClientObject? Player { get; set; }
+        public DMEObject? Player { get; set; }
 
         public BaseScertMessage? Packet { get; set; }
 

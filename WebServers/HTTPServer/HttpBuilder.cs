@@ -1,7 +1,7 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using HTTPServer.Models;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 using System.Collections.Generic;
+using System.Net;
 
 namespace HTTPServer
 {
@@ -14,119 +14,131 @@ namespace HTTPServer
     {
         #region Public Methods
 
-        public static HttpResponse OK(bool KeepAlive = false)
+        public static HttpResponse OK()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.OK,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse NotImplemented(bool KeepAlive = false)
+        public static HttpResponse NotImplemented()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.NotImplemented,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse InternalServerError(bool KeepAlive = false)
+        public static HttpResponse InternalServerError()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.InternalServerError,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse MovedPermanently(string url, bool KeepAlive = false)
+        public static HttpResponse MovedPermanently(string url)
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.MovedPermanently,
                 Headers = new Dictionary<string, string>()
                 {
                     { HttpHeader.Location.ToString(), url }
-                }
+                },
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse PermanantRedirect(string url, bool KeepAlive = false)
+        public static HttpResponse PermanantRedirect(string url)
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
-                HttpStatusCode = HttpStatusCode.Permanent_Redirect,
+                HttpStatusCode = HttpStatusCode.PermanentRedirect,
                 Headers = new Dictionary<string, string>()
                 {
                     { HttpHeader.Location.ToString(), url }
-                }
+                },
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse Found(string url, bool KeepAlive = false)
+        public static HttpResponse Found(string url)
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.Found,
                 Headers = new Dictionary<string, string>()
                 {
                     { HttpHeader.Location.ToString(), url }
-                }
+                },
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse RedirectFromApacheRules(string url, int statuscode, bool KeepAlive = false)
+        public static HttpResponse RedirectFromApacheRules(string url, int statuscode)
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = (HttpStatusCode)statuscode,
                 Headers = new Dictionary<string, string>()
                 {
                     { HttpHeader.Location.ToString(), url }
-                }
+                },
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse NoContent(bool KeepAlive = false)
+        public static HttpResponse NoContent()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
-                HttpStatusCode = HttpStatusCode.No_Content,
+                HttpStatusCode = HttpStatusCode.NoContent,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse NotFound(HttpRequest request, string absolutepath, string Host, string ServerIP, string serverPort, bool HTMLResponse)
+        public static HttpResponse NotFound(HttpRequest request, string absolutepath, string Host, bool HTMLResponse)
         {
             if (!HTMLResponse)
-                return new HttpResponse(request.RetrieveHeaderValue("Connection") == "keep-alive")
+                return new HttpResponse()
                 {
-                    HttpStatusCode = HttpStatusCode.Not_Found,
+                    HttpStatusCode = HttpStatusCode.NotFound,
+                    ContentAsUTF8 = string.Empty
                 };
             else
-                return HttpResponse.Send(DefaultHTMLPages.GenerateNotFound(absolutepath, $"http://{(string.IsNullOrEmpty(Host) ? (ServerIP.Length > 15 ? "[" + ServerIP + "]" : ServerIP) : Host)}",
-                    HTTPServerConfiguration.HTTPStaticFolder, HTTPProcessor.GenerateServerSignature(), serverPort, HTTPServerConfiguration.NotFoundSuggestions).Result, "text/html", null, HttpStatusCode.Not_Found);
+                return HttpResponse.Send(DefaultHTMLPages.GenerateNotFound(absolutepath, $"http://{(string.IsNullOrEmpty(Host) ? (request.ServerIP.Length > 15 ? "[" + request.ServerIP + "]" : request.ServerIP) : Host)}",
+                    HTTPServerConfiguration.HTTPStaticFolder, "Apache 2.2.22 (Unix) DAV/2", request.ServerPort.ToString(), HTTPServerConfiguration.NotFoundSuggestions).Result, "text/html", null, HttpStatusCode.NotFound);
         }
 
-        public static HttpResponse NotAllowed(bool KeepAlive = false)
+        public static HttpResponse NotAllowed()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.Forbidden,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse MethodNotAllowed(bool KeepAlive = false)
+        public static HttpResponse MethodNotAllowed()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
                 HttpStatusCode = HttpStatusCode.MethodNotAllowed,
+                ContentAsUTF8 = string.Empty
             };
         }
 
-        public static HttpResponse MissingParameters(bool KeepAlive = false)
+        public static HttpResponse BadRequest()
         {
-            return new HttpResponse(KeepAlive)
+            return new HttpResponse()
             {
-                HttpStatusCode = HttpStatusCode.Missing_parameters,
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                ContentAsUTF8 = string.Empty
             };
         }
         #endregion

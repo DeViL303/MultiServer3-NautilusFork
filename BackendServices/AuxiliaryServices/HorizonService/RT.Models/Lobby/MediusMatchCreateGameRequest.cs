@@ -9,16 +9,16 @@ namespace Horizon.RT.Models
     {
         public override byte PacketType => (byte)MediusLobbyExtMessageIds.MatchCreateGameRequest;
 
-        public MessageId? MessageID { get; set; }
-        public string? SessionKey; // SESSIONKEY_MAXLEN
+        public MessageId MessageID { get; set; }
+        public string SessionKey; // SESSIONKEY_MAXLEN
         public int SupersetID;
         public int ApplicationID;
         public int MinPlayers;
         public int MaxPlayers;
         public int GameLevel;
-        public string? GameName;
-        public string? GamePassword;
-        public string? SpectatorPassword;
+        public string GameName;
+        public string GamePassword;
+        public string SpectatorPassword;
         public int PlayerSkillLevel;
         public int RulesSet;
         public int GenericField1;
@@ -29,15 +29,15 @@ namespace Horizon.RT.Models
         public int GenericField6;
         public int GenericField7;
         public int GenericField8;
-        public MediusGameHostType GameHostType;
+        public MGCL_GAME_HOST_TYPE GameHostType;
         public MediusWorldAttributesType WorldAttributesType;
         public MediusMatchOptions MatchOptions;
-        public string? ServerSessionKey; // SESSIONKEY_MAXLEN
+        public string ServerSessionKey; // SESSIONKEY_MAXLEN
         public byte[] RequestData = new byte[Constants.REQUESTDATA_MAXLEN]; // REQUESTDATA_MAXLEN
         public uint GroupMemberListSize;
         public uint ApplicationDataSize;
-        public byte[]? GroupMemberAccountIDList;
-        public string? ApplicationData;
+        public byte[] GroupMemberAccountIDList;
+        public string ApplicationData;
 
         public override void Deserialize(MessageReader reader)
         {
@@ -66,7 +66,7 @@ namespace Horizon.RT.Models
             GenericField6 = reader.ReadInt32();
             GenericField7 = reader.ReadInt32();
             GenericField8 = reader.ReadInt32();
-            GameHostType = reader.Read<MediusGameHostType>();
+            GameHostType = reader.Read<MGCL_GAME_HOST_TYPE>();
             WorldAttributesType = reader.Read<MediusWorldAttributesType>();
             MatchOptions = reader.Read<MediusMatchOptions>();
             ServerSessionKey = reader.ReadString(Constants.SESSIONKEY_MAXLEN);

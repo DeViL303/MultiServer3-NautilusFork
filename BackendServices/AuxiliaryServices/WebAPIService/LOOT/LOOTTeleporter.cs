@@ -1,4 +1,4 @@
-﻿using CustomLogger;
+using CustomLogger;
 using System.IO;
 
 namespace WebAPIService.LOOT
@@ -6,7 +6,7 @@ namespace WebAPIService.LOOT
     public class LOOTTeleporter
     {
 
-        public static string? FetchTeleporterInfo(string workPath)
+        public static string FetchTeleporterInfo(string workPath)
         {
             string LOOTTeleporterPath = $"{workPath}/LOOT/Teleporter";
             Directory.CreateDirectory(LOOTTeleporterPath);

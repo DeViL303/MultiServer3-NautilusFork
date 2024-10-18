@@ -1,10 +1,10 @@
-using CyberBackendLibrary.HTTP;
+using NetworkLibrary.HTTP;
 using CustomLogger;
 using HttpMultipartParser;
 using SVO.Games;
-using System.Net;
 using System.Text;
-using Newtonsoft.Json;
+using SpaceWizards.HttpListener;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SVO
 {
@@ -12,15 +12,21 @@ namespace SVO
     {
         public static bool IsStarted = false;
 
+        const ushort securePort = 10061;
+
+        private X509Certificate2? certificate;
         private Thread? thread;
         private volatile bool threadActive;
 
         private HttpListener? listener;
         private readonly string ip;
 
-        public SVOServer(string ip)
+        protected readonly int MaxConcurrentListeners = Environment.ProcessorCount;
+
+        public SVOServer(string ip, X509Certificate2? certificate = null)
         {
             this.ip = ip;
+            this.certificate = certificate;
 
             Start();
         }
@@ -93,9 +99,11 @@ namespace SVO
             try
             {
                 listener = new HttpListener();
+                if (certificate != null)
+                    listener.SetCertificate(securePort, certificate);
 				listener.Prefixes.Add(string.Format("http://{0}:{1}/", ip, 10058));
                 listener.Prefixes.Add(string.Format("http://{0}:{1}/", ip, 10060));
-                listener.Prefixes.Add(string.Format("http://{0}:{1}/", ip, 10061));
+                listener.Prefixes.Add(string.Format("https://{0}:{1}/", ip, securePort));
                 listener.Start();
             }
             catch (Exception e)
@@ -106,7 +114,7 @@ namespace SVO
             }
 
             HashSet<Task> requests = new();
-            for (int i = 0; i < Environment.ProcessorCount; i++)
+            for (int i = 0; i < MaxConcurrentListeners; i++)
                 requests.Add(listener.GetContextAsync());
 
             // wait for requests
@@ -117,34 +125,41 @@ namespace SVO
                     if (!threadActive) break;
 
                     Task t = await Task.WhenAny(requests);
-                    requests.Remove(t);
 
                     if (t is Task<HttpListenerContext>)
                     {
-                        HttpListenerContext? ctx = (t as Task<HttpListenerContext>)?.Result;
-                        requests.Add(ProcessContext(ctx));
-                        requests.Add(listener.GetContextAsync());
+                        HttpListenerContext? ctx = null;
+
+                        try
+                        {
+                            ctx = (t as Task<HttpListenerContext>)?.Result;
+                        }
+                        catch (AggregateException ex)
+                        {
+                            ex.Handle(innerEx =>
+                            {
+                                if (innerEx is TaskCanceledException)
+                                    return true; // Indicate that the exception was handled
+
+                                LoggerAccessor.LogWarn($"[SVO] - HttpListenerContext Task thrown an AggregateException: {ex}");
+
+                                return false;
+                            });
+                        }
+
+                        _ = Task.Run(() => ProcessContext(ctx));
                     }
+
+                    requests.Remove(t);
+                    requests.Add(listener.GetContextAsync());
                 }
                 catch (HttpListenerException e)
                 {
-                    if (e.ErrorCode != 995) LoggerAccessor.LogError("[SVO] - An Exception Occured: " + e.Message);
-                    listener.Stop();
-
-                    if (!listener.IsListening) // Check if server is closed, then, start it again.
-                        listener.Start();
-                    else
-                        threadActive = false;
+                    if (e.ErrorCode != 995) LoggerAccessor.LogError("[SVO] - A HttpListenerException Occured: " + e.Message);
                 }
                 catch (Exception e)
                 {
                     LoggerAccessor.LogError("[SVO] - An Exception Occured: " + e.Message);
-                    listener.Stop();
-
-                    if (!listener.IsListening) // Check if server is closed, then, start it again.
-                        listener.Start();
-                    else
-                        threadActive = false;
                 }
             }
         }
@@ -160,35 +175,27 @@ namespace SVO
 
             try
             {
-                clientip = ctx.Request.RemoteEndPoint.Address.ToString();
+                clientip = ctx.Request.RemoteEndPoint?.Address.ToString() ?? string.Empty;
 
                 if (IsIPBanned(clientip))
                     LoggerAccessor.LogError($"[SECURITY] - Client - {clientip} Requested the SVO server while being banned!");
                 else
                 {
-                    string? UserAgent = ctx.Request.UserAgent.ToLower();
+                    string? UserAgent = null;
+
+                    if (!string.IsNullOrEmpty(ctx.Request.UserAgent))
+                        UserAgent = ctx.Request.UserAgent.ToLower();
+
                     if (!string.IsNullOrEmpty(UserAgent) && (UserAgent.Contains("firefox") || UserAgent.Contains("chrome") || UserAgent.Contains("trident") || UserAgent.Contains("bytespider"))) // Get Away TikTok.
                     {
-                        ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                         LoggerAccessor.LogInfo($"[SVO] - Client - {clientip} Requested the SVO Server while not being allowed!");
                     }
                     else
                     {
                         if (ctx.Request.Url != null && !string.IsNullOrEmpty(ctx.Request.Url.AbsolutePath))
                         {
-#if DEBUG
-                            LoggerAccessor.LogJson(JsonConvert.SerializeObject(new
-                            {
-                                HttpMethod = ctx.Request.HttpMethod,
-                                Url = ctx.Request.Url.ToString(),
-                                Headers = ctx.Request.Headers,
-                                HeadersValues = ctx.Request.Headers.AllKeys.SelectMany(key => ctx.Request.Headers.GetValues(key) ?? Enumerable.Empty<string>()),
-                                UserAgent = ctx.Request.UserAgent,
-                                ClientAddress = ctx.Request.RemoteEndPoint.ToString(),
-                            }), $"[[SVO]] - Client - {clientip} Requested the SVO Server with URL : {ctx.Request.Url}");
-#else
                             LoggerAccessor.LogInfo($"[SVO] - Client - {clientip} Requested the SVO Server with URL : {ctx.Request.Url}");
-#endif
 
                             // get filename path
                             absolutepath = ctx.Request.Url.AbsolutePath;
@@ -239,7 +246,7 @@ namespace SVO
 
                                     File.WriteAllBytes($"{SVOServerConfiguration.SVOStaticFolder}/dataloaderweb/queue/{Guid.NewGuid()}.xml", datatooutput);
 
-                                    ctx.Response.StatusCode = (int)HttpStatusCode.OK;
+                                    ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
                                     ctx.Response.SendChunked = true;
 
                                     if (ctx.Response.OutputStream.CanWrite)
@@ -256,10 +263,10 @@ namespace SVO
                                     }
                                 }
                                 else
-                                    ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                    ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                 break;
                             default:
-                                ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                                 break;
                         }
                     }
@@ -287,8 +294,8 @@ namespace SVO
 
                         if (File.Exists(filePath))
                         {
-                            ctx.Response.StatusCode = (int)HttpStatusCode.OK;
-                            ctx.Response.ContentType = HTTPProcessor.GetMimeType(Path.GetExtension(filePath));
+                            ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                            ctx.Response.ContentType = HTTPProcessor.GetMimeType(Path.GetExtension(filePath), HTTPProcessor._mimeTypes);
 
                             ctx.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                             ctx.Response.Headers.Add("Date", DateTime.Now.ToString("r"));
@@ -311,7 +318,7 @@ namespace SVO
                             }
                         }
                         else
-                            ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.NotFound;
                     }
                 }
                 catch (HttpListenerException e) when (e.ErrorCode == 64)
@@ -320,16 +327,16 @@ namespace SVO
                     // This will cause server to throw error 64 (network interface not openned anymore)
                     // In that case, we send internalservererror so client try again.
 
-                    ctx.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
                 }
                 catch (Exception e)
                 {
                     LoggerAccessor.LogError("[SVO] - REQUEST ERROR: " + e.Message);
-                    ctx.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
                 }
             }
             else
-                ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
 
             try
             {

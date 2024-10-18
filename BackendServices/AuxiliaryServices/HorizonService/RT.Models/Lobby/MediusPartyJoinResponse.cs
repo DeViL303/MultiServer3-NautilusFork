@@ -1,7 +1,6 @@
 using System.IO;
 using Horizon.RT.Common;
 using Horizon.LIBRARY.Common.Stream;
-using System.Collections.Generic;
 
 namespace Horizon.RT.Models
 {
@@ -18,7 +17,7 @@ namespace Horizon.RT.Models
         /// <summary>
         /// Message ID
         /// </summary>
-        public MessageId? MessageID { get; set; }
+        public MessageId MessageID { get; set; }
         /// <summary>
         /// Response code for the request to join a party
         /// </summary>
@@ -26,17 +25,17 @@ namespace Horizon.RT.Models
         /// <summary>
         /// PartyHostType
         /// </summary>
-        public MediusGameHostType PartyHostType;
+        public MGCL_GAME_HOST_TYPE PartyHostType;
         /// <summary>
         /// ConnectionInfo of the player to return for this session
         /// </summary>
-        public NetConnectionInfo? ConnectionInfo;
+        public NetConnectionInfo ConnectionInfo;
 
         public int partyIndex;
 
         public int maxPlayers;
 
-        public List<int> maxPlayersUnpprovedList = new() { 21784, 20371, 20374 };
+        public bool SetMaxPlayers = false;
 
         public override void Deserialize(MessageReader reader)
         {
@@ -46,10 +45,10 @@ namespace Horizon.RT.Models
             reader.ReadBytes(3);
 
             StatusCode = reader.Read<MediusCallbackStatus>();
-            PartyHostType = reader.Read<MediusGameHostType>();
+            PartyHostType = reader.Read<MGCL_GAME_HOST_TYPE>();
             ConnectionInfo = reader.Read<NetConnectionInfo>();
             partyIndex = reader.ReadInt32();
-            if (!maxPlayersUnpprovedList.Contains(reader.AppId))
+            if (SetMaxPlayers)
                 maxPlayers = reader.ReadInt32();
         }
 
@@ -64,7 +63,7 @@ namespace Horizon.RT.Models
             writer.Write(PartyHostType);
             writer.Write(ConnectionInfo);
             writer.Write(partyIndex);
-            if (!maxPlayersUnpprovedList.Contains(writer.AppId))
+            if (SetMaxPlayers)
                 writer.Write(maxPlayers);
         }
 

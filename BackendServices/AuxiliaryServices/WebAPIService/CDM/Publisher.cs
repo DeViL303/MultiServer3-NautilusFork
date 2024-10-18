@@ -1,4 +1,4 @@
-﻿using CustomLogger;
+using CustomLogger;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -10,9 +10,9 @@ namespace WebAPIService.CDM
 {
     public class Publisher
     {
-        public static string? handlePublisherList(byte[] PostData, string ContentType, string workpath, string absolutePath)
+        public static string handlePublisherList(byte[] PostData, string ContentType, string workpath, string absolutePath)
         {
-            string pubListPath = $"{workpath}/CDM/Publishers/";
+            string pubListPath = $"{workpath}/CDM/Publishers";
 
             Directory.CreateDirectory(pubListPath);
             string filePath = $"{pubListPath}/list.xml";

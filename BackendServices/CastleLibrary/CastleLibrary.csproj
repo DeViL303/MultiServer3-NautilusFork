@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<!-- In case we disable signing for local builds, ignore identity mismatch with baseline version. -->
     <NoWarn Condition="'$(SignAssembly)' != 'true'">$(NoWarn);CP0003</NoWarn>
 
@@ -16,10 +17,12 @@
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
 	<DefineConstants />
     <Optimize>True</Optimize>
+	<IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CustomLogger\CustomLogger.csproj" />
+    <ProjectReference Include="..\EndianTools\EndianTools.csproj" />
   </ItemGroup>
 
 </Project>

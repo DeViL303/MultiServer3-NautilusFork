@@ -5,7 +5,8 @@ using Horizon.DME.PluginArgs;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Horizon.PluginManager;
-using Horizon.MEDIUS;
+using NetworkLibrary.Extension;
+using System;
 
 namespace Horizon.DME.Models
 {
@@ -16,11 +17,12 @@ namespace Horizon.DME.Models
 
         #region Id Management
 
-        private static ConcurrentDictionary<uint, World> _idToWorld = new();
+        private static ConcurrentDictionary<int, World> _idToWorld = new();
         private ConcurrentDictionary<int, bool> _pIdIsUsed = new();
+
         private static object _lock = new();
 
-        private void RegisterWorld(uint WorldId)
+        private void RegisterWorld(int GameChannelWorldId, int WorldId)
         {
             if (_idToWorld.Count > MAX_WORLDS)
             {
@@ -28,16 +30,29 @@ namespace Horizon.DME.Models
                 return;
             }
 
+            this.GameChannelWorldId = GameChannelWorldId;
             this.WorldId = WorldId;
 
-            _idToWorld.TryAdd(WorldId, this);
-            LoggerAccessor.LogInfo($"[DMEWorld] - Registered world with id {WorldId}");
+            if (_idToWorld.TryAdd(WorldId, this))
+                LoggerAccessor.LogInfo($"[DMEWorld] - Registered world with id {WorldId}");
+            else
+            {
+                this.WorldId = -1;
+                LoggerAccessor.LogError($"[DMEWorld] - Failed to register world with id {WorldId}");
+            }
         }
 
         private void FreeWorld()
         {
-            _idToWorld.TryRemove(WorldId, out _);
-            LoggerAccessor.LogInfo($"[DMEWorld] - Unregistered world with id {WorldId}");
+            if (_idToWorld.TryRemove(WorldId, out _))
+                LoggerAccessor.LogInfo($"[DMEWorld] - Unregistered world with id {WorldId}");
+            else
+                LoggerAccessor.LogError($"[DMEWorld] - Failed to unregister world with id {WorldId}");
+        }
+
+        public World? GetWorldById(int GameChannelWorldId, int DmeWorldId)
+        {
+            return _idToWorld.Values.FirstOrDefault(world => world.GameChannelWorldId == GameChannelWorldId && world.WorldId == DmeWorldId);
         }
 
         private bool TryRegisterNewClientIndex(out int index)
@@ -64,7 +79,15 @@ namespace Horizon.DME.Models
 
         #endregion
 
-        public uint WorldId { get; protected set; } = 0;
+        #region TokenManagement
+
+        public ConcurrentDictionary<ushort, ConcurrentList<int>> clientTokens = new();
+
+        #endregion
+
+        public int WorldId { get; protected set; } = -1;
+
+        public int GameChannelWorldId { get; protected set; } = -1;
 
         public int ApplicationId { get; protected set; } = 0;
 
@@ -82,15 +105,19 @@ namespace Horizon.DME.Models
 
         public Stopwatch WorldTimer { get; protected set; } = Stopwatch.StartNew();
 
-        public ConcurrentDictionary<int, ClientObject> Clients = new();
+        public ConcurrentDictionary<int, DMEObject> Clients = new();
+
+        private ConcurrentQueue<MediusServerJoinGameRequest> _requestQueue = new();
 
         public MPSClient? Manager { get; } = null;
         
-        public World(MPSClient manager, int appId, int maxPlayers, uint WorldId)
+        public World(MPSClient manager, int appId, int maxPlayers, int GameChannelWorldId, int WorldId)
         {
-            if (maxPlayers > MAX_CLIENTS_PER_WORLD)
+            MaxPlayers = (DmeClass.Settings.MaxClientsOverride != -1) ? DmeClass.Settings.MaxClientsOverride : maxPlayers;
+
+            if (MaxPlayers > MAX_CLIENTS_PER_WORLD)
             {
-                LoggerAccessor.LogError("[DMEWorld] - maxPlayers from request is higher than MaxClientsPerWorld allowed in DME config, world will not be created!");
+                LoggerAccessor.LogError($"[DMEWorld] - maxPlayers from {((DmeClass.Settings.MaxClientsOverride != -1) ? "dme config override parameter" : "request")} is higher than MaxClientsPerWorld allowed in DME config, world will not be created!");
                 return;
             }
 
@@ -101,8 +128,7 @@ namespace Horizon.DME.Models
             for (int i = 0; i < MAX_CLIENTS_PER_WORLD; ++i)
                 _pIdIsUsed.TryAdd(i, false);
 
-            RegisterWorld(WorldId);
-            MaxPlayers = maxPlayers;
+            RegisterWorld(GameChannelWorldId, WorldId);
         }
 
         public void Dispose()
@@ -116,7 +142,23 @@ namespace Horizon.DME.Models
             // Stop all clients
             await Task.WhenAll(Clients.Select(x => x.Value.Stop()));
 
+            _requestQueue.Clear();
+
             Dispose();
+        }
+
+        public Task EnqueueJoinGame(MediusServerJoinGameRequest request)
+        {
+            _requestQueue.Enqueue(request);
+            return Task.CompletedTask;
+        }
+
+        public async Task HandleIncomingJoinGame()
+        {
+            while (_requestQueue.TryDequeue(out MediusServerJoinGameRequest? request))
+            {
+                Manager?.Enqueue(await OnJoinGameRequest(request));
+            }
         }
 
         public Task HandleIncomingMessages()
@@ -126,7 +168,7 @@ namespace Horizon.DME.Models
             // Process clients
             for (int i = 0; i < MAX_CLIENTS_PER_WORLD; ++i)
             {
-                if (Clients.TryGetValue(i, out ClientObject? client))
+                if (Clients.TryGetValue(i, out DMEObject? client))
                     tasks.Add(client.HandleIncomingMessages());
             }
 
@@ -138,15 +180,17 @@ namespace Horizon.DME.Models
             // Process clients
             for (int i = 0; i < MAX_CLIENTS_PER_WORLD; ++i)
             {
-                if (Clients.TryGetValue(i, out ClientObject? client))
+                if (Clients.TryGetValue(i, out DMEObject? client))
                 {
                     if (client.Destroy || ForceDestruct || Destroyed)
                     {
                         await OnPlayerLeft(client);
                         Manager?.RemoveClient(client);
-                        _ = client.Stop();
                         Clients.TryRemove(i, out _);
+                        _ = client.Stop();
                     }
+                    else if (client.Timedout)
+                        client.ForceDisconnect();
                     else if (client.IsAggTime)
                         client.HandleOutgoingMessages();
                 }
@@ -167,7 +211,7 @@ namespace Horizon.DME.Models
 
         #region Send
 
-        public void BroadcastTcp(ClientObject source, byte[] Payload)
+        public void BroadcastTcp(DMEObject source, byte[] Payload)
         {
             RT_MSG_CLIENT_APP_SINGLE msg = new()
             {
@@ -184,7 +228,18 @@ namespace Horizon.DME.Models
             }
         }
 
-        public void BroadcastUdp(ClientObject source, byte[] Payload)
+        public void BroadcastTcpScertMessage(BaseScertMessage msg)
+        {
+            foreach (var client in Clients)
+            {
+                if (!client.Value.IsAuthenticated || !client.Value.IsConnected || !client.Value.HasRecvFlag(RT_RECV_FLAG.RECV_BROADCAST))
+                    continue;
+
+                client.Value.EnqueueTcp(msg);
+            }
+        }
+
+        public void BroadcastUdp(DMEObject source, byte[] Payload)
         {
             RT_MSG_CLIENT_APP_SINGLE msg = new()
             {
@@ -195,52 +250,51 @@ namespace Horizon.DME.Models
             foreach (var client in Clients)
             {
                 if (client.Value == source || !client.Value.IsAuthenticated || !client.Value.IsConnected || !client.Value.HasRecvFlag(RT_RECV_FLAG.RECV_BROADCAST))
-                //if (!client.Value.IsAuthenticated || !client.Value.IsConnected || !client.Value.HasRecvFlag(RT_RECV_FLAG.RECV_BROADCAST))
                     continue;
 
                 client.Value.EnqueueUdp(msg);
             }
         }
 
-        public void SendTcpAppList(ClientObject source, List<int> targetDmeIds, byte[] Payload)
+        public void SendTcpAppList(DMEObject source, List<int> targetDmeIds, byte[] Payload)
         {
             foreach (int targetId in targetDmeIds)
             {
-                if (Clients.TryGetValue(targetId, out ClientObject? client))
+                if (Clients.TryGetValue(targetId, out DMEObject? client))
                 {
                     if (client == null || !client.IsAuthenticated || !client.IsConnected || !client.HasRecvFlag(RT_RECV_FLAG.RECV_LIST))
                         continue;
 
-                    client.EnqueueTcp(new RT_MSG_CLIENT_APP_LIST()
+                    client.EnqueueTcp(new RT_MSG_CLIENT_APP_SINGLE()
                     {
-                        SourceIn = (short)source.DmeId,
+                        TargetOrSource = (short)source.DmeId,
                         Payload = Payload
                     });
                 }
             }
         }
 
-        public void SendUdpAppList(ClientObject source, List<int> targetDmeIds, byte[] Payload)
+        public void SendUdpAppList(DMEObject source, List<int> targetDmeIds, byte[] Payload)
         {
             foreach (int targetId in targetDmeIds)
             {
-                if (Clients.TryGetValue(targetId, out ClientObject? client))
+                if (Clients.TryGetValue(targetId, out DMEObject? client))
                 {
                     if (client == null || !client.IsAuthenticated || !client.IsConnected || !client.HasRecvFlag(RT_RECV_FLAG.RECV_LIST))
                         continue;
 
-                    client.EnqueueUdp(new RT_MSG_CLIENT_APP_LIST()
+                    client.EnqueueUdp(new RT_MSG_CLIENT_APP_SINGLE()
                     {
-                        SourceIn = (short)source.DmeId,
+                        TargetOrSource = (short)source.DmeId,
                         Payload = Payload
                     });
                 }
             }
         }
 
-        public void SendTcpAppSingle(ClientObject source, short targetDmeId, byte[] Payload)
+        public void SendTcpAppSingle(DMEObject source, short targetDmeId, byte[] Payload)
         {
-            ClientObject? target = Clients.FirstOrDefault(x => x.Value.DmeId == targetDmeId).Value;
+            DMEObject? target = Clients.FirstOrDefault(x => x.Value.DmeId == targetDmeId).Value;
 
             if (target != null && target.IsAuthenticated && target.IsConnected && target.HasRecvFlag(RT_RECV_FLAG.RECV_SINGLE))
             {
@@ -252,9 +306,9 @@ namespace Horizon.DME.Models
             }
         }
 
-        public void SendUdpAppSingle(ClientObject source, short targetDmeId, byte[] Payload)
+        public void SendUdpAppSingle(DMEObject source, short targetDmeId, byte[] Payload)
         {
-            ClientObject? target = Clients.FirstOrDefault(x => x.Value.DmeId == targetDmeId).Value;
+            DMEObject? target = Clients.FirstOrDefault(x => x.Value.DmeId == targetDmeId).Value;
 
             if (target != null && target.IsAuthenticated && target.IsConnected && target.HasRecvFlag(RT_RECV_FLAG.RECV_SINGLE))
             {
@@ -276,42 +330,72 @@ namespace Horizon.DME.Models
             ForceDestruct = request.BrutalFlag;
         }
 
-        public async Task OnPlayerJoined(ClientObject player)
+        public Task OnPlayerJoined(DMEObject player)
         {
-            player.HasJoined = true;
-
-            // Plugin
-            await DmeClass.Plugins.OnEvent(PluginEvent.DME_PLAYER_ON_JOINED, new OnPlayerArgs()
+            if (player.RemoteUdpEndpoint == null)
             {
-                Player = player,
-                Game = this
-            });
-
-            // Tell other clients
-            foreach (var client in Clients)
-            {
-                if (!client.Value.HasJoined || client.Value == player || !client.Value.HasRecvFlag(RT_RECV_FLAG.RECV_NOTIFICATION))
-                    continue;
-
-                client.Value.EnqueueTcp(new RT_MSG_SERVER_CONNECT_NOTIFY()
-                {
-                    PlayerIndex = (short)player.DmeId,
-                    ScertId = (short)player.ScertId,
-                    IP = player.RemoteUdpEndpoint?.Address ?? MediusClass.SERVER_IP
-                });
+                LoggerAccessor.LogError($"[World] - OnPlayerJoined - player {player.IP} on ApplicationId {player.ApplicationId} has no UdpEndpoint!");
+                return Task.CompletedTask;
             }
 
-            // Tell server
-            Manager?.Enqueue(new MediusServerConnectNotification()
-            {
-                MediusWorldUID = WorldId,
-                PlayerSessionKey = player.SessionKey ?? string.Empty,
-                ConnectEventType = MGCL_EVENT_TYPE.MGCL_EVENT_CLIENT_CONNECT
-            });
+            player.HasJoined = true;
+
+                // Plugin
+                DmeClass.Plugins.OnEvent(PluginEvent.DME_PLAYER_ON_JOINED, new OnPlayerArgs()
+                {
+                    Player = player,
+                    Game = this
+                }).Wait();
+
+                // Tell other clients
+                foreach (var client in Clients)
+                {
+                    if (!client.Value.HasJoined || client.Value == player || !client.Value.HasRecvFlag(RT_RECV_FLAG.RECV_NOTIFICATION))
+                        continue;
+
+                    client.Value.EnqueueTcp(new RT_MSG_SERVER_CONNECT_NOTIFY()
+                    {
+                        PlayerIndex = (short)player.DmeId,
+                        ScertId = (short)player.ScertId,
+                        IP = player.RemoteUdpEndpoint.Address
+                    });
+                }
+
+                _ = Task.Run(() => {
+                    ConcurrentBag<(RT_TOKEN_MESSAGE_TYPE, ushort, ushort)> tokenList = new();
+
+                    Parallel.ForEach(clientTokens.Keys, (ushort token) =>
+                    {
+                        if (clientTokens.TryGetValue(token, out ConcurrentList<int>? value) && value != null && value.Count > 0)
+                            tokenList.Add((RT_TOKEN_MESSAGE_TYPE.RT_TOKEN_SERVER_OWNED, token, (ushort)value[0]));
+                    });
+
+                    if (!tokenList.IsEmpty) // We need to actualize client with every owned tokens.
+                        player.EnqueueTcp(new RT_MSG_SERVER_TOKEN_MESSAGE()
+                        {
+                            TokenList = tokenList.ToList()
+                        });
+                });
+
+                // Tell server
+                Manager?.Enqueue(new MediusServerConnectNotification()
+                {
+                    MediusWorldUID = WorldId,
+                    PlayerSessionKey = player.SessionKey ?? string.Empty,
+                    ConnectEventType = MGCL_EVENT_TYPE.MGCL_EVENT_CLIENT_CONNECT
+                });
+
+            return Task.CompletedTask;
         }
 
-        public async Task OnPlayerLeft(ClientObject player)
+        public async Task OnPlayerLeft(DMEObject player)
         {
+            if (player.RemoteUdpEndpoint == null)
+            {
+                LoggerAccessor.LogError($"[World] - OnPlayerLeft - player {player.IP} on ApplicationId {player.ApplicationId} has no UdpEndpoint!");
+                return;
+            }
+
             player.HasJoined = false;
 
             // Plugin
@@ -321,13 +405,22 @@ namespace Horizon.DME.Models
                 Game = this
             });
 
-            if (player.MediusVersion == 109)
+            if (player.MediusVersion >= 109)
             {
-                //Migrate session master
-                if (player.DmeId == SessionMaster)
+                // Migrate session master
+                if (player.DmeId == SessionMaster && Clients.Any())
                 {
-                    SessionMaster++;
-                    LoggerAccessor.LogWarn($"[DMEWorld] - Session master migrated to client {SessionMaster}");
+                    DMEObject? preferredHost = Clients.ToArray()
+                        .Select(client => client.Value)
+                        .Where(client => client != player)
+                        .OrderBy(client => client.DmeId)
+                        .FirstOrDefault();
+
+                    if (preferredHost != null)
+                    {
+                        SessionMaster = preferredHost.DmeId;
+                        LoggerAccessor.LogWarn($"[DMEWorld] - Session master migrated to client {SessionMaster}");
+                    }
                 }
             }
 
@@ -341,7 +434,7 @@ namespace Horizon.DME.Models
                 {
                     PlayerIndex = (short)player.DmeId,
                     ScertId = (short)player.ScertId,
-                    IP = player.RemoteUdpEndpoint?.Address ?? MediusClass.SERVER_IP
+                    IP = player.RemoteUdpEndpoint.Address
                 });
             }
 
@@ -356,12 +449,12 @@ namespace Horizon.DME.Models
 #pragma warning disable
         public async Task<MediusServerJoinGameResponse> OnJoinGameRequest(MediusServerJoinGameRequest request)
         {
-            ClientObject newClient;
+            DMEObject newClient;
 
             await Task.Delay(100);
 
             // find existing client and reuse
-            var existingClient = Clients.FirstOrDefault(x => x.Value.SessionKey == request.ConnectInfo.SessionKey);
+            KeyValuePair<int, DMEObject> existingClient = Clients.FirstOrDefault(x => x.Value.SessionKey == request.ConnectInfo.SessionKey);
             if (existingClient.Value != null)
             {
                 // found existing
@@ -388,7 +481,7 @@ namespace Horizon.DME.Models
 
             if (TryRegisterNewClientIndex(out int newClientIndex))
             {
-                if (!Clients.TryAdd(newClientIndex, newClient = new ClientObject(request.ConnectInfo.SessionKey, this, newClientIndex)))
+                if (!Clients.TryAdd(newClientIndex, newClient = new DMEObject(request.ConnectInfo.SessionKey, this, newClientIndex)))
                 {
                     UnregisterClientIndex(newClientIndex);
                     return new MediusServerJoinGameResponse()
@@ -398,7 +491,10 @@ namespace Horizon.DME.Models
                     };
                 }
                 else
-                    newClient.OnDestroyed += (client) => { UnregisterClientIndex(client.DmeId); };
+                    newClient.OnDestroyed = (client) => {
+                        UnregisterClientIndex(client.DmeId);
+                        LoggerAccessor.LogWarn($"[DMEWorld] - Player:{client} left world {this}, {client.DmeId} Freed.");
+                    };
             }
             else
             {
@@ -413,14 +509,13 @@ namespace Horizon.DME.Models
             // Add client to manager
             Manager.AddClient(newClient);
 
-            if (DmeClass.GetAppSettingsOrDefault(ApplicationId).EnableDmeEncryption)
+            if (!DmeClass.GetAppSettingsOrDefault(ApplicationId).EnableDmeEncryption)
                 return new MediusServerJoinGameResponse()
                 {
                     MessageID = request.MessageID,
                     DmeClientIndex = newClient.DmeId,
                     AccessKey = request.ConnectInfo.AccessKey,
-                    Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS,
-                    pubKey = request.ConnectInfo.ServerKey
+                    Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS
                 };
             else
                 return new MediusServerJoinGameResponse()
@@ -428,7 +523,8 @@ namespace Horizon.DME.Models
                     MessageID = request.MessageID,
                     DmeClientIndex = newClient.DmeId,
                     AccessKey = request.ConnectInfo.AccessKey,
-                    Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS
+                    Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS,
+                    pubKey = request.ConnectInfo.ServerKey
                 };
         }
 #pragma warning restore

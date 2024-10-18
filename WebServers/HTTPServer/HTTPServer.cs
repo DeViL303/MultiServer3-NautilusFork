@@ -11,6 +11,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using ValueTaskSupplement;
+using NetworkLibrary.Extension;
 
 namespace HTTPServer
 {
@@ -21,38 +23,27 @@ namespace HTTPServer
         private readonly ConcurrentDictionary<int, TcpListener> _listeners = new();
         private readonly CancellationTokenSource _cts = null!;
         private readonly HttpProcessor Processor;
+        protected readonly int MaxConcurrentListeners = Environment.ProcessorCount;
 
         #endregion
 
         #region Public Methods
-        public HttpServer(List<ushort>? ports, List<Route> routes, CancellationToken cancellationToken)
+        public HttpServer(ushort listenerPort, List<Route> routes, HttpProcessor proc, CancellationToken cancellationToken)
         {
-			LoggerAccessor.LogWarn("[HTTP] - HTTP system is initialising, service will be available when initialized...");
+            LoggerAccessor.LogWarn($"[HTTP] - HTTP system is initialising on port: {listenerPort}, service will be available when initialized...");
 
-            Processor = new HttpProcessor();
+            Processor = proc;
+
+            routes.ForEach(route => Processor.AddRoute(route));
 
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            foreach (Route route in routes)
-            {
-                Processor.AddRoute(route);
-            }
-			
-            if (ports != null)
-            {
-                Parallel.ForEach(ports, port =>
-                {
-                    if (CyberBackendLibrary.TCP_IP.TCP_UDPUtils.IsPortAvailable(port))
-                        new Thread(() => CreateHTTPPortListener(port)).Start();
-                });
-            }
+            new Thread(() => CreateHTTPPortListener(listenerPort)).Start();
         }
 
         private void CreateHTTPPortListener(ushort listenerPort)
         {
-            _ = Processor.TryGetServerIP(listenerPort);
-
-            Task serverHTTP = Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 try
                 {
@@ -61,13 +52,22 @@ namespace HTTPServer
                     LoggerAccessor.LogInfo($"[HTTP] - Server initiated on port: {listenerPort}...");
                     _listeners.TryAdd(listenerPort, listener);
 
+                    HashSet<ValueTask<TcpClient>> requests = new();
+                    for (int i = 0; i < MaxConcurrentListeners; i++)
+                        requests.Add(listener.AcceptTcpClientAsync(_cts.Token));
+
                     while (!_cts.Token.IsCancellationRequested)
                     {
                         try
                         {
-                            TcpClient tcpClient = await listener.AcceptTcpClientAsync(_cts.Token);
-                            _ = Task.Run(() => Processor.HandleClient(tcpClient, listenerPort));
-                            Thread.Sleep(1);
+                            if (_cts.Token.IsCancellationRequested) break;
+
+                            (int, TcpClient) t = await ValueTaskEx.WhenAny(requests);
+
+                            _ = Task.Run(() => Processor.HandleClient(t.Item2, listenerPort));
+
+                            requests.RemoveAt(t.Item1);
+                            requests.Add(listener.AcceptTcpClientAsync(_cts.Token));
                         }
                         catch (OperationCanceledException)
                         {
@@ -79,33 +79,15 @@ namespace HTTPServer
                                 socketException.SocketErrorCode != SocketError.ConnectionReset && socketException.SocketErrorCode != SocketError.ConnectionAborted
                                 && socketException.SocketErrorCode != SocketError.ConnectionRefused)
                                 LoggerAccessor.LogError($"[HTTP] - Client loop thrown an IOException: {ex}");
-                            listener.Stop();
-
-                            if (!listener.Server.IsBound && CyberBackendLibrary.TCP_IP.TCP_UDPUtils.IsPortAvailable(listenerPort)) // Check if server is closed, then, start it again.
-                                listener.Start();
-                            else
-                                break;
                         }
                         catch (SocketException ex)
                         {
                             if (ex.ErrorCode != 995 && ex.SocketErrorCode != SocketError.ConnectionReset && ex.SocketErrorCode != SocketError.ConnectionAborted && ex.SocketErrorCode != SocketError.ConnectionRefused)
                                 LoggerAccessor.LogError($"[HTTP] - Client loop thrown a SocketException: {ex}");
-                            listener.Stop();
-
-                            if (!listener.Server.IsBound && CyberBackendLibrary.TCP_IP.TCP_UDPUtils.IsPortAvailable(listenerPort)) // Check if server is closed, then, start it again.
-                                listener.Start();
-                            else
-                                break;
                         }
                         catch (Exception ex)
                         {
                             if (ex.HResult != 995) LoggerAccessor.LogError($"[HTTP] - Client loop thrown an assertion: {ex}");
-                            listener.Stop();
-
-                            if (!listener.Server.IsBound && CyberBackendLibrary.TCP_IP.TCP_UDPUtils.IsPortAvailable(listenerPort)) // Check if server is closed, then, start it again.
-                                listener.Start();
-                            else
-                                break;
                         }
                     }
                 }

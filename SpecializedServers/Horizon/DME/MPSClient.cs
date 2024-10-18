@@ -11,7 +11,8 @@ using Horizon.DME.Models;
 using System.Collections.Concurrent;
 using System.Net;
 using Horizon.LIBRARY.Pipeline.Attribute;
-using Horizon.MEDIUS;
+using Horizon.SERVER;
+using NetworkLibrary.Extension;
 
 namespace Horizon.DME
 {
@@ -36,9 +37,8 @@ namespace Horizon.DME
             AUTHENTICATED
         }
 
-        private ConcurrentDictionary<string, ClientObject> _appIdToClient = new();
-        private ConcurrentDictionary<string, ClientObject> _accessTokenToClient = new();
-        private ConcurrentDictionary<string, ClientObject> _sessionKeyToClient = new();
+        private ConcurrentDictionary<string, DMEObject> _accessTokenToClient = new();
+        private ConcurrentDictionary<string, DMEObject> _sessionKeyToClient = new();
 
         private DateTime _utcConnectionState;
         private MPSConnectionState _mpsState = MPSConnectionState.NO_CONNECTION;
@@ -48,7 +48,7 @@ namespace Horizon.DME
         private Bootstrap? _bootstrap = null;
         private ScertServerHandler? _scertHandler = null;
 
-        private List<World> _worlds = new();
+        private ConcurrentList<World> _worlds = new();
         private ConcurrentQueue<World> _removeWorldQueue = new();
 
         private ConcurrentQueue<BaseScertMessage> _mpsRecvQueue { get; } = new();
@@ -62,21 +62,14 @@ namespace Horizon.DME
         }
 
         #region Clients
-        public ClientObject? GetClientByAppId(string appId)
-        {
-            if (_accessTokenToClient.TryGetValue(appId, out var result))
-                return result;
-
-            return null;
-        }
-        public ClientObject? GetClientByAccessToken(string accessToken)
+        public DMEObject? GetClientByAccessToken(string accessToken)
         {
             if (_accessTokenToClient.TryGetValue(accessToken, out var result))
                 return result;
 
             return null;
         }
-        public ClientObject? GetClientBySessionKey(string sessionKey)
+        public DMEObject? GetClientBySessionKey(string sessionKey)
         {
             if (_sessionKeyToClient.TryGetValue(sessionKey, out var result))
                 return result;
@@ -85,25 +78,31 @@ namespace Horizon.DME
         }
 
 
-        public void AddClient(ClientObject client)
+        public void AddClient(DMEObject client)
         {
             if (client.Destroy)
                 throw new InvalidOperationException($"Attempting to add {client} to MediusManager but client is ready to be destroyed.");
 
-            if (_accessTokenToClient.TryAdd(client.Token ?? string.Empty, client))
+            if (string.IsNullOrEmpty(client.Token) || string.IsNullOrEmpty(client.SessionKey))
+                throw new InvalidOperationException($"Attempting to add {client} but it has invalid token or SessionKey.");
+
+            if (_accessTokenToClient.TryAdd(client.Token, client))
             {
-                if (!_sessionKeyToClient.TryAdd(client.SessionKey ?? string.Empty, client))
-                    _accessTokenToClient.TryRemove(client.Token ?? string.Empty, out _);
+                if (!_sessionKeyToClient.TryAdd(client.SessionKey, client))
+                    _accessTokenToClient.TryRemove(client.Token, out _);
             }
         }
 
-        public void RemoveClient(ClientObject client)
+        public void RemoveClient(DMEObject client)
         {
             if (client == null)
                 return;
 
-            _sessionKeyToClient.TryRemove(client.SessionKey ?? string.Empty, out _);
-            _accessTokenToClient.TryRemove(client.Token ?? string.Empty, out _);
+            if (string.IsNullOrEmpty(client.Token) || string.IsNullOrEmpty(client.SessionKey))
+                throw new InvalidOperationException($"Attempting to remove {client} but it has invalid token or SessionKey.");
+
+            _sessionKeyToClient.TryRemove(client.SessionKey, out _);
+            _accessTokenToClient.TryRemove(client.Token, out _);
         }
 
         #endregion
@@ -213,7 +212,13 @@ namespace Horizon.DME
                 }
 
                 // Handle incoming for each world
-                await Task.WhenAll(_worlds.Select(x => x.HandleIncomingMessages()));
+                await Task.WhenAll(
+                    _worlds.SelectMany(world => new Task[]
+                    {
+                        world.HandleIncomingJoinGame(),
+                        world.HandleIncomingMessages()
+                    })
+                );
             }
             catch (Exception e)
             {
@@ -337,6 +342,7 @@ namespace Horizon.DME
                         if (_mpsChannel != null)
                             await _mpsChannel.WriteAndFlushAsync(new RT_MSG_CLIENT_CONNECT_TCP()
                             {
+                                TargetWorldId = 1,
                                 SessionKey = SessionKey,
                                 AccessToken = AccessKey,
                                 AppId = ApplicationId,
@@ -389,19 +395,7 @@ namespace Horizon.DME
                     }
                 case RT_MSG_SERVER_CHEAT_QUERY cheatQuery:
                     {
-                        // We can query Client RAM, isn't that neat ;).
-                        if (_mpsChannel != null && cheatQuery.QueryType == CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY)
-                        {
-                            byte[]? CheatQueryData = MemoryQuery.QueryValueFromOffset(cheatQuery.StartAddress, cheatQuery.Length);
-                            await _mpsChannel.WriteAndFlushAsync(new RT_MSG_SERVER_CHEAT_QUERY()
-                            {
-                                QueryType = CheatQueryType.DME_SERVER_CHEAT_QUERY_RAW_MEMORY,
-                                SequenceId = cheatQuery.SequenceId,
-                                StartAddress = cheatQuery.StartAddress,
-                                Data = CheatQueryData,
-                                Length = (CheatQueryData != null) ? CheatQueryData.Length : 0
-                            });
-                        }
+
                         break;
                     }
                 case RT_MSG_SERVER_APP serverApp:
@@ -444,7 +438,7 @@ namespace Horizon.DME
                             {
                                 bool offseted = false;
                                 int partyType = 0;
-                                uint gameOrPartyId = 0;
+                                int gameOrPartyId = 0;
                                 int accountId = 0;
                                 string msgId = string.Empty;
 
@@ -453,11 +447,11 @@ namespace Horizon.DME
                                 if (messageParts.Length == 5) // This is an ugly hack, anonymous accounts can have a negative ID which messes up the traditional parser.
                                 {
                                     offseted = true;
-                                    gameOrPartyId = uint.Parse(messageParts[0]);
+                                    gameOrPartyId = int.Parse(messageParts[0]);
                                     accountId = -int.Parse(messageParts[2]);
                                     msgId = messageParts[3];
                                 }
-                                else if (uint.TryParse(messageParts[0], out gameOrPartyId) &&
+                                else if (int.TryParse(messageParts[0], out gameOrPartyId) &&
                                     int.TryParse(messageParts[1], out accountId))
                                     msgId = messageParts[2];
                                 else
@@ -478,15 +472,27 @@ namespace Horizon.DME
                                     // Not Important.
                                 }
 
-                                World world = new(this, createGameWithAttributesRequest.ApplicationID, createGameWithAttributesRequest.MaxClients, gameOrPartyId);
-                                _worlds.Add(world);
+                                World world = new(this, createGameWithAttributesRequest.ApplicationID, createGameWithAttributesRequest.MaxClients, createGameWithAttributesRequest.WorldID, gameOrPartyId);
 
-                                Enqueue(new MediusServerCreateGameWithAttributesResponse()
+                                if (world.WorldId == -1)
                                 {
-                                    MessageID = new MessageId($"{world.WorldId}-{accountId}-{msgId}-{partyType}"),
-                                    Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS,
-                                    WorldID = (int)createGameWithAttributesRequest.WorldID,
-                                });
+                                    Enqueue(new MediusServerCreateGameWithAttributesResponse()
+                                    {
+                                        MessageID = new MessageId($"{world.WorldId}-{accountId}-{msgId}-{partyType}"),
+                                        Confirmation = MGCL_ERROR_CODE.MGCL_WORLDID_INUSE
+                                    });
+                                }
+                                else
+                                {
+                                    _worlds.Add(world);
+
+                                    Enqueue(new MediusServerCreateGameWithAttributesResponse()
+                                    {
+                                        MessageID = new MessageId($"{world.WorldId}-{accountId}-{msgId}-{partyType}"),
+                                        Confirmation = MGCL_ERROR_CODE.MGCL_SUCCESS,
+                                        MediusWorldId = createGameWithAttributesRequest.WorldID,
+                                    });
+                                }
                             }
                         }
                         catch (Exception e)
@@ -498,9 +504,9 @@ namespace Horizon.DME
                     }
                 case MediusServerJoinGameRequest joinGameRequest:
                     {
-                        if (uint.TryParse(joinGameRequest.MessageID.Value.Split('-')[0], out uint gameOrPartyId))
+                        if (int.TryParse(joinGameRequest.MessageID?.Value.Split('-')[0], out int gameOrPartyId))
                         {
-                            World? world = _worlds.FirstOrDefault(x => x.WorldId == gameOrPartyId);
+                            World? world = _worlds.FirstOrDefault(x => x.WorldId == gameOrPartyId && !x.Destroyed);
                             if (world == null)
                                 Enqueue(new MediusServerJoinGameResponse()
                                 {
@@ -508,7 +514,7 @@ namespace Horizon.DME
                                     Confirmation = MGCL_ERROR_CODE.MGCL_INVALID_ARG,
                                 });
                             else
-                                Enqueue(await world.OnJoinGameRequest(joinGameRequest));
+                                _ = world.EnqueueJoinGame(joinGameRequest);
                         }
                         else
                         {
@@ -519,9 +525,8 @@ namespace Horizon.DME
                                 MessageID = joinGameRequest.MessageID,
                                 Confirmation = MGCL_ERROR_CODE.MGCL_DME_ERROR,
                             });
-
-                            break;
                         }
+
                         break;
                     }
                 case MediusServerEndGameRequest endGameRequest:

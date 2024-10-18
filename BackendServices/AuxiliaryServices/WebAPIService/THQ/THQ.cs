@@ -7,9 +7,9 @@ namespace WebAPIService.THQ
 {
     public class THQ
     {
-        public static string? ProcessUFCUserData(Stream postdata, string? boundary, string apiPath)
+        public static string ProcessUFCUserData(Stream postdata, string boundary, string apiPath)
         {
-            string? returnstring = null;
+            string returnstring = null;
 
             if (!string.IsNullOrEmpty(boundary))
             {
@@ -30,26 +30,28 @@ namespace WebAPIService.THQ
 
                     string id = data.GetParameterValue("id");
 
-                    byte[]? ticketData = null;
+                    byte[] ticketData = null;
 
                     foreach (var file in data.Files)
                     {
-                        using Stream filedata = file.Data;
-                        filedata.Position = 0;
+                        using (Stream filedata = file.Data)
+                        {
+                            filedata.Position = 0;
 
-                        // Find the number of bytes in the stream
-                        int contentLength = (int)filedata.Length;
+                            // Find the number of bytes in the stream
+                            int contentLength = (int)filedata.Length;
 
-                        // Create a byte array
-                        byte[] buffer = new byte[contentLength];
+                            // Create a byte array
+                            byte[] buffer = new byte[contentLength];
 
-                        // Read the contents of the memory stream into the byte array
-                        filedata.Read(buffer, 0, contentLength);
+                            // Read the contents of the memory stream into the byte array
+                            filedata.Read(buffer, 0, contentLength);
 
-                        if (file.FileName == "ticket.bin")
-                            ticketData = buffer;
+                            if (file.FileName == "ticket.bin")
+                                ticketData = buffer;
 
-                        filedata.Flush();
+                            filedata.Flush();
+                        }
                     }
 
                     if (ticketData != null)

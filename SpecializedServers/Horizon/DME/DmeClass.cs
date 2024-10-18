@@ -287,10 +287,11 @@ namespace Horizon.DME
                 // Add the appids to the ApplicationIds list
                 Settings.ApplicationIds.AddRange(new List<int>
                 {
-                    10683, 10684, 11354, 21914, 21624, 20764, 20371, 22500, 10540, 22920, 21731, 21834, 23624, 20043,
-                    20032, 20034, 20454, 20314, 21874, 21244, 20304, 20463, 21614, 20344,
-                    20434, 22204, 23360, 21513, 21064, 20804, 20374, 21094, 22274, 20060,
-                    10984, 10782, 10421, 10130, 24000, 24180, 10954, 21784
+                    10680, 10683, 10684, 11354, 21914, 21624, 20764, 20371, 22500, 10540,
+					22920, 21731, 21834, 23624, 20043, 20032, 20034, 20454, 20314, 21874,
+					21244, 20304, 20463, 21614, 20344, 20434, 22204, 23360, 21513, 21064,
+					20804, 20374, 21094, 22274, 20060, 10984, 10782, 10421, 10130, 24000,
+					24180, 10954, 21784
                 });
 
                 Directory.CreateDirectory(Path.GetDirectoryName(CONFIG_FILE) ?? Directory.GetCurrentDirectory() + "/static");
@@ -343,7 +344,7 @@ namespace Horizon.DME
                                     await HorizonServerConfiguration.Database.SetServerSettings(appId, appSettings.GetSettings());
                                 }
 
-                                CrudRoomManager.UpdateOrCreateRoom(Convert.ToString(appId), null, null, null, null, false);
+                                RoomManager.UpdateOrCreateRoom(Convert.ToString(appId), null, null, null, null, 0, null, false);
                             }
                         }
                     }
@@ -362,18 +363,13 @@ namespace Horizon.DME
             else
             {
                 if (string.IsNullOrWhiteSpace(Settings.PublicIpOverride))
-                    SERVER_IP = IPAddress.Parse(CyberBackendLibrary.TCP_IP.IPUtils.GetPublicIPAddress());
+                    SERVER_IP = IPAddress.Parse(NetworkLibrary.TCP_IP.IPUtils.GetPublicIPAddress());
                 else
                     SERVER_IP = IPAddress.Parse(Settings.PublicIpOverride);
             }
         }
 
-        public static ClientObject? GetMPSClients(string appId)
-        {
-            return MPSManagers.Select(x => x.Value.GetClientByAppId(appId)).FirstOrDefault(x => x != null);
-        }
-
-        public static ClientObject? GetMPSClientByAccessToken(string? accessToken)
+        public static DMEObject? GetMPSClientByAccessToken(string? accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
                 return null;
@@ -381,7 +377,7 @@ namespace Horizon.DME
             return MPSManagers.Select(x => x.Value.GetClientByAccessToken(accessToken)).FirstOrDefault(x => x != null);
         }
 
-        public static ClientObject? GetMPSClientBySessionKey(string? sessionKey)
+        public static DMEObject? GetMPSClientBySessionKey(string? sessionKey)
         {
             if (string.IsNullOrEmpty(sessionKey))
                 return null;

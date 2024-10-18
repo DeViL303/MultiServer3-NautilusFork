@@ -6,18 +6,25 @@ namespace Horizon.LIBRARY.Pipeline.Attribute
 {
     public class ScertClientAttribute
     {
-        public static RsaKeyPair? DefaultRsaAuthKey = null;
+        public static RsaKeyPair DefaultRsaAuthKey = null;
 
         public int? MediusVersion { get; set; }
         public int ApplicationID { get; set; }
         public bool IsPS3Client => MediusVersion >= 112;
-        public CipherService? CipherService { get; set; } = null;
-        public RsaKeyPair? RsaAuthKey { get; set; } = null;
+        public CipherService CipherService { get; set; } = null;
+        public RsaKeyPair RsaAuthKey { get; set; } = null;
 
         public ScertClientAttribute()
         {
             // default
             MediusVersion = 108;
+            OnMediusVersionChanged();
+        }
+
+        public ScertClientAttribute(int MediusVersion)
+        {
+            // default
+            this.MediusVersion = MediusVersion;
             OnMediusVersionChanged();
         }
 

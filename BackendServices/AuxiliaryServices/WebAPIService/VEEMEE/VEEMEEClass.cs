@@ -1,8 +1,10 @@
 using System;
+using System.Text;
 using WebAPIService.VEEMEE.goalie_sfrgbt;
 using WebAPIService.VEEMEE.gofish;
 using WebAPIService.VEEMEE.nml;
 using WebAPIService.VEEMEE.olm;
+using WebAPIService.VEEMEE.wardrobe_wars;
 
 namespace WebAPIService.VEEMEE
 {
@@ -18,10 +20,20 @@ namespace WebAPIService.VEEMEE
             this.method = method;
         }
 
-        public (string?, string?) ProcessRequest(byte[]? PostData, string? ContentType, string apiPath)
+        public (byte[], string) ProcessRequest(byte[] postData, string contentType, string apiPath)
         {
-            if (string.IsNullOrEmpty(absolutepath))
+            if (string.IsNullOrEmpty(apiPath))
                 return (null, null);
+
+            string result = null;
+            string resultContentType = null;
+
+            if(absolutepath.Contains("//WardrobeWars/Images") && method == "GET")
+            {
+                byte[] resultImage = Podium.RequestWWImage(contentType, apiPath, absolutepath);
+                resultContentType = "image/jpeg";
+                return (resultImage, resultContentType);
+            }
 
             switch (method)
             {
@@ -29,82 +41,178 @@ namespace WebAPIService.VEEMEE
                     switch (absolutepath)
                     {
                         case "/goalie/goalieHSSetUserData.php":
-                            return (UserData.SetUserDataPOST(PostData, ContentType, true, apiPath), "text/xml");
+                            result = UserData.SetUserDataPOST(postData, contentType, true, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/sfrgbt/sfrgbtHSSetUserData.php":
-                            return (UserData.SetUserDataPOST(PostData, ContentType, false, apiPath), "text/xml");
+                            result = UserData.SetUserDataPOST(postData, contentType, false, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/goali/goalieHSGetUserData.php":
-                            return (UserData.GetUserDataPOST(PostData, ContentType, true, apiPath), "text/xml");
+                            result = UserData.GetUserDataPOST(postData, contentType, true, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/sfrgbt/sfrgbtHSGetUserData.php":
-                            return (UserData.GetUserDataPOST(PostData, ContentType, false, apiPath), "text/xml");
+                            result = UserData.GetUserDataPOST(postData, contentType, false, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/goalie/goalieHSGetLeaderboard.php":
-                            return (GSLeaderboard.GetLeaderboardPOST(PostData, ContentType, true, apiPath), "text/xml");
+                            result = GSLeaderboard.GetLeaderboardPOST(postData, contentType, true, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/sfrgbt/sfrgbtHSGetLeaderboard.php":
-                            return (GSLeaderboard.GetLeaderboardPOST(PostData, ContentType, false, apiPath), "text/xml");
+                            result = GSLeaderboard.GetLeaderboardPOST(postData, contentType, false, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSGetFishCaught.php":
-                            return (FishCaughtProcess.GetPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = FishCaughtProcess.GetPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSSetFishCaught.php":
-                            return (FishCaughtProcess.SetPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = FishCaughtProcess.SetPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSSetUserData.php":
-                            return (GFUserData.SetUserDataPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = GFUserData.SetUserDataPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSGetUserData.php":
-                            return (GFUserData.GetUserDataPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = GFUserData.GetUserDataPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSGetLeaderboard.php":
-                            return (GFLeaderboard.GetLeaderboardPOST(PostData, ContentType, 2, apiPath), "text/xml");
+                            result = GFLeaderboard.GetLeaderboardPOST(postData, contentType, 2, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSGetLeaderboardToday.php":
-                            return (GFLeaderboard.GetLeaderboardPOST(PostData, ContentType, 0, apiPath), "text/xml");
+                            result = GFLeaderboard.GetLeaderboardPOST(postData, contentType, 0, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/gofish/goFishHSGetLeaderboardYesterday.php":
-                            return (GFLeaderboard.GetLeaderboardPOST(PostData, ContentType, 1, apiPath), "text/xml");
+                            result = GFLeaderboard.GetLeaderboardPOST(postData, contentType, 1, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/olm/olmHSSetUserData.php":
-                            return (olmUserData.SetUserDataPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = olmUserData.SetUserDataPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/olm/olmHSGetUserData.php":
-                            return (olmUserData.GetUserDataPOST(PostData, ContentType, apiPath), "text/xml");
+                            result = olmUserData.GetUserDataPOST(postData, contentType, apiPath);
+                            resultContentType = "text/xml";
+                            break;
                         case "/commerce/get_count.php":
-                            return (Commerce.Get_Count(), null);
+                            result = Commerce.Get_Count();
+                            break;
                         case "/commerce/get_ownership.php":
-                            return (Commerce.Get_Ownership(), null);
+                            result = Commerce.Get_Ownership();
+                            break;
                         case "/data/parkChallenges.php":
-                            return (Data.ParkChallenges(apiPath), null);
+                            result = Data.ParkChallenges(apiPath);
+                            break;
                         case "/data/parkTasks.php":
-                            return (Data.ParkTasks(apiPath), null);
+                            result = Data.ParkTasks(apiPath);
+                            break;
                         case "/slot-management/getobjectspace.php":
-                            return (Slot.GetObjectSpace(PostData, ContentType), null);
+                            result = Slot.GetObjectSpace(postData, contentType);
+                            break;
                         case "/slot-management/getobjectslot.php":
-                            return (Slot.GetObjectSlot(PostData, ContentType), null);
+                            result = Slot.GetObjectSlot(postData, contentType);
+                            break;
                         case "/slot-management/remove.php":
-                            return (Slot.RemoveSlot(PostData, ContentType), null);
+                            result = Slot.RemoveSlot(postData, contentType);
+                            break;
                         case "/slot-management/heartbeat.php":
-                            return (Slot.HeartBeat(PostData, ContentType), null);
+                            result = Slot.HeartBeat(postData, contentType);
+                            break;
                         case "/stats/getconfig.php":
-                            return (Stats.GetConfig(false, PostData, ContentType, apiPath), null);
+                            result = Stats.GetConfig(false, postData, contentType, apiPath);
+                            break;
                         case "/stats/crash.php":
-                            return (Stats.Crash(PostData, ContentType, apiPath), null);
+                            result = Stats.Crash(postData, contentType, apiPath);
+                            break;
                         case "/stats_tracking/usage.php":
-                            return (Stats.Usage(PostData, ContentType), null);
+                            result = Stats.Usage(postData, contentType);
+                            break;
                         case "/storage/readconfig.php":
-                            return (Storage.ReadConfig(PostData, ContentType, apiPath), null);
+                            result = Storage.ReadConfig(postData, contentType, apiPath);
+                            break;
                         case "/storage/readtable.php":
-                            return (Storage.ReadTable(PostData, ContentType, apiPath), null);
+                            result = Storage.ReadTable(postData, contentType, apiPath);
+                            break;
                         case "/storage/writetable.php":
-                            return (Storage.WriteTable(PostData, ContentType, apiPath), null);
+                            result = Storage.WriteTable(postData, contentType, apiPath);
+                            break;
                         case "/nml/rc2/profile/verify.php":
-                            return (Profile.Verify(PostData, ContentType), null);
+                            result = Profile.Verify(postData, contentType);
+                            break;
                         case "/nml/rc2/profile/reward.php":
-                            return (Profile.Reward(PostData, ContentType), null);
+                            result = Profile.Reward(postData, contentType);
+                            break;
                         case "/nml/rc2/profile/get.php":
-                            return (Profile.Get(PostData, ContentType, apiPath), null);
+                            result = Profile.Get(postData, contentType, apiPath);
+                            break;
                         case "/nml/rc2/profile/set.php":
-                            return (Profile.Set(PostData, ContentType, apiPath), null);
+                            result = Profile.Set(postData, contentType, apiPath);
+                            break;
                         case "/nml/rc2/stats/getConfig.php":
-                            return (Stats.GetConfig(false, PostData, ContentType, apiPath), null);
+                            result = Stats.GetConfig(false, postData, contentType, apiPath);
+                            break;
+                        case "/audi_tech/getprofile.php":
+                            result = audi_tech.Profile.GetProfile(postData, contentType, apiPath);
+                            break;
+                        case "/audi_tech/setprofile.php":
+                            result = audi_tech.Profile.SetProfile(postData, contentType, apiPath);
+                            break;
+                        case "/audi_tech/getFriendsGhostTimes.php":
+                            result = audi_tech.Ghost.getFriendsGhostTimes(postData, contentType, apiPath);
+                            break;
+                        case "/audi_tech/getghost.php":
+                            return (audi_tech.Ghost.getGhost(postData, contentType, apiPath), null);
+                        case "/WardrobeWars/verify.php":
+                            result = Podium.Verify(postData, contentType, apiPath);
+                            break;
+                        case "/WardrobeWars/podium.php":
+                            result = Podium.CheckPodium(postData, contentType, apiPath);
+                            break;
+                        case "/WardrobeWars/podium_vote.php":
+                            result = Podium.RequestVote(postData, contentType, apiPath);
+                            break;
+                        case "/WardrobeWars/podium_score.php":
+                            result = Podium.RequestScore(postData, contentType, apiPath);
+                            break;
+                        case "/WardrobeWars/reward.php":
+                            result = Podium.RequestRewards(postData, contentType, apiPath);
+                            break;
+                        case "/WardrobeWars/screen.php":
+                            result = Podium.RequestScreens(postData, contentType, apiPath);
+                            break;
+                        //fullsecure endpoint 
+                        case "//WardrobeWars/photo.php":
+                            result = Podium.PostPhotoPart2(postData, contentType, apiPath, true);
+                            break;
+                            //part 1
+                        case "//WardrobeWars/photo-p1.php":
+                            result = Podium.PostPhotoPart1(postData, contentType);
+                            break;
+                            //part 2
+                        case "//WardrobeWars/photo-p2.php":
+                            result = Podium.PostPhotoPart2(postData, contentType, apiPath, false);
+                            break;
                         default:
+
                             break;
                     }
                     break;
                 case "GET":
                     switch (absolutepath)
                     {
+                        case "/audi_tech/hiscores.xml":
+                            result = audi_tech.Scoreboard.MockedScoreBoard; // TODO: implement real scoreboard.
+                            resultContentType = "text/xml";
+                            break;
                         case "/stats/getconfig.php":
-                            return (Stats.GetConfig(true, PostData, ContentType, apiPath), null);
+                            result = Stats.GetConfig(true, postData, contentType, apiPath);
+                            break;
                         default:
                             break;
                     }
@@ -112,6 +220,9 @@ namespace WebAPIService.VEEMEE
                 default:
                     break;
             }
+
+            if (!string.IsNullOrEmpty(result))
+                return (Encoding.UTF8.GetBytes(result), resultContentType);
 
             return (null, null);
         }

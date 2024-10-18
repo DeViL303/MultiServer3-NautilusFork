@@ -16,16 +16,16 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
 
     public class Channel
     {
-        public static int IdCounter = 0;
+        public static uint IdCounter = 0;
 
         public List<ClientObject> Clients = new List<ClientObject>();
         public List<Channel> Channels = new List<Channel>();
 
-        public int Id = 0;
+        public uint Id = 0;
         public int ApplicationId = 0;
         public ChannelType Type = ChannelType.Lobby;
         public string Name = "Default";
-        public string? Password = null;
+        public string Password = null;
         public int MinPlayers = 1;
         public int MaxPlayers = 10;
         public int GameLevel = 0;
@@ -38,7 +38,7 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
         public uint GenericField3 = 0;
         public uint GenericField4 = 0;
         public MediusWorldGenericFieldLevelType GenericFieldLevel = MediusWorldGenericFieldLevelType.MediusWorldGenericFieldLevel0;
-        public MediusGameHostType GameHostType;
+        public MGCL_GAME_HOST_TYPE GameHostType;
         public MediusWorldStatus WorldStatus;
 
         public virtual int PlayerCount => Clients.Count;
@@ -79,7 +79,7 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
             GameLevel = request.GameLevel;
             Password = request.GamePassword;
             PlayerSkillLevel = request.PlayerSkillLevel;
-            RuleSet = request.RuleSet;
+            RuleSet = request.RulesSet;
             GenericField1 = request.GenericField1;
             GenericField2 = request.GenericField2;
             GenericField3 = request.GenericField3;
@@ -133,9 +133,9 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
         #endregion
 
         #region Messages
-        public void BroadcastBinaryMessage(ClientObject source, MediusBinaryMessage msg)
+        public Task BroadcastBinaryMessage(ClientObject source, MediusBinaryMessage msg)
         {
-            foreach (ClientObject? client in Clients.Where(x => x != source))
+            foreach (ClientObject client in Clients.Where(x => x != source))
             {
                 client?.Queue(new MediusBinaryFwdMessage()
                 {
@@ -144,23 +144,28 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     Message = msg.Message
                 });
             }
+
+            return Task.CompletedTask;
         }
 
-        public void BroadcastBinaryMessage(ClientObject source, MediusBinaryMessage1 msg)
+        public Task BroadcastBinaryMessage(ClientObject source, MediusBinaryMessage1 msg)
         {
-            foreach (ClientObject? client in Clients.Where(x => x != source))
+            foreach (ClientObject client in Clients.Where(x => x != source))
             {
                 client?.Queue(new MediusBinaryFwdMessage1()
                 {
                     MessageType = msg.MessageType,
                     OriginatorAccountID = source.AccountId,
+                    MessageSize = msg.MessageSize,
                     Message = msg.Message
                 });
             }
+
+            return Task.CompletedTask;
         }
 
         #region GenericChatMessages
-        public void BroadcastChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
+        public Task BroadcastChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
         {
             foreach (var target in targets)
             {
@@ -187,9 +192,11 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     });
                 }
             }
+
+            return Task.CompletedTask;
         }
 
-        public void WhisperChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
+        public Task WhisperChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
         {
             foreach (var target in targets)
             {
@@ -216,9 +223,11 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     });
                 }
             }
+
+            return Task.CompletedTask;
         }
 
-        public void ClanChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
+        public Task ClanChatMessage(IEnumerable<ClientObject> targets, ClientObject source, string message)
         {
             foreach (var target in targets)
             {
@@ -245,10 +254,12 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     });
                 }
             }
+
+            return Task.CompletedTask;
         }
         #endregion
 
-        public void SendSystemMessage(ClientObject client, string message)
+        public Task SendSystemMessage(ClientObject client, string message)
         {
             if (client.MediusVersion >= 112)
             {
@@ -272,9 +283,11 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     TimeStamp = Utils.GetUnixTime()
                 });
             }
+
+            return Task.CompletedTask;
         }
 
-        public void BroadcastSystemMessage(IEnumerable<ClientObject> targets, string message)
+        public Task BroadcastSystemMessage(IEnumerable<ClientObject> targets, string message)
         {
             foreach (var target in targets)
             {
@@ -301,6 +314,8 @@ namespace Horizon.LIBRARY.libAntiCheat.Models
                     });
                 }
             }
+
+            return Task.CompletedTask;
         }
         #endregion
     }

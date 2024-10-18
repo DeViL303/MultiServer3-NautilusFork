@@ -39,8 +39,7 @@ namespace Org.BouncyCastle.Asn1
 
             if (obj is IAsn1Convertible asn1Convertible)
             {
-                Asn1Object asn1Object = asn1Convertible.ToAsn1Object();
-                if (asn1Object is Asn1Set converted)
+                if (!(obj is Asn1Object) && asn1Convertible.ToAsn1Object() is Asn1Set converted)
                     return converted;
             }
             else if (obj is byte[] bytes)
@@ -75,6 +74,22 @@ namespace Org.BouncyCastle.Asn1
         public static Asn1Set GetInstance(Asn1TaggedObject taggedObject, bool declaredExplicit)
         {
             return (Asn1Set)Meta.Instance.GetContextInstance(taggedObject, declaredExplicit);
+        }
+
+        public static Asn1Set GetOptional(Asn1Encodable element)
+        {
+            if (element == null)
+                throw new ArgumentNullException(nameof(element));
+
+            if (element is Asn1Set existing)
+                return existing;
+
+            return null;
+        }
+
+        public static Asn1Set GetTagged(Asn1TaggedObject taggedObject, bool declaredExplicit)
+        {
+            return (Asn1Set)Meta.Instance.GetTagged(taggedObject, declaredExplicit);
         }
 
         internal readonly Asn1Encodable[] m_elements;
@@ -188,40 +203,35 @@ namespace Org.BouncyCastle.Asn1
         private class Asn1SetParserImpl
             : Asn1SetParser
         {
-            private readonly Asn1Set outer;
-            private readonly int max;
-            private int index;
+            private readonly Asn1Set m_outer;
+            private int m_index;
 
-            public Asn1SetParserImpl(
-                Asn1Set outer)
+            public Asn1SetParserImpl(Asn1Set outer)
             {
-                this.outer = outer;
-                this.max = outer.Count;
+                m_outer = outer;
+                m_index = 0;
             }
 
             public IAsn1Convertible ReadObject()
             {
-                if (index == max)
+                var elements = m_outer.m_elements;
+                if (m_index >= elements.Length)
                     return null;
 
-                Asn1Encodable obj = outer[index++];
-                if (obj is Asn1Sequence)
-                    return ((Asn1Sequence)obj).Parser;
+                Asn1Encodable obj = elements[m_index++];
 
-                if (obj is Asn1Set)
-                    return ((Asn1Set)obj).Parser;
+                if (obj is Asn1Sequence asn1Sequence)
+                    return asn1Sequence.Parser;
+
+                if (obj is Asn1Set asn1Set)
+                    return asn1Set.Parser;
 
                 // NB: Asn1OctetString implements Asn1OctetStringParser directly
-//				if (obj is Asn1OctetString)
-//					return ((Asn1OctetString)obj).Parser;
 
                 return obj;
             }
 
-            public virtual Asn1Object ToAsn1Object()
-            {
-                return outer;
-            }
+            public virtual Asn1Object ToAsn1Object() => m_outer;
         }
 
         public Asn1SetParser Parser

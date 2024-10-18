@@ -7,7 +7,6 @@ namespace Horizon.RT.Models
     [MediusMessage(NetMessageClass.MessageClassLobbyReport, MediusMGCLMessageIds.ServerCreateGameOnMeRequest)]
     public class MediusServerCreateGameOnMeRequest : BaseMGCLMessage, IMediusRequest
     {
-
         public override byte PacketType => (byte)MediusMGCLMessageIds.ServerCreateGameOnMeRequest;
 
         public MessageId MessageID { get; set; }
@@ -15,8 +14,8 @@ namespace Horizon.RT.Models
         public byte[] GameStats = new byte[Constants.MGCL_GAMESTATS_MAXLEN];
         public string GamePassword; // MGCL_GAMEPASSWORD_MAXLEN
         public int ApplicationID;
-        public int MaxClients;
-        public int MinClients;
+        public int MaxPlayers;
+        public int MinPlayers;
         public int GameLevel;
         public int PlayerSkillLevel;
         public int RulesSet;
@@ -44,8 +43,8 @@ namespace Horizon.RT.Models
             GamePassword = reader.ReadString(Constants.MGCL_GAMEPASSWORD_MAXLEN);
             reader.ReadBytes(3);
             ApplicationID = reader.ReadInt32();
-            MaxClients = reader.ReadInt32();
-            MinClients = reader.ReadInt32();
+            MaxPlayers = reader.ReadInt32();
+            MinPlayers = reader.ReadInt32();
             GameLevel = reader.ReadInt32();
             PlayerSkillLevel = reader.ReadInt32();
             RulesSet = reader.ReadInt32();
@@ -73,8 +72,8 @@ namespace Horizon.RT.Models
             writer.Write(GamePassword, Constants.MGCL_GAMEPASSWORD_MAXLEN);
             writer.Write(new byte[3]);
             writer.Write(ApplicationID);
-            writer.Write(MaxClients);
-            writer.Write(MinClients);
+            writer.Write(MaxPlayers);
+            writer.Write(MinPlayers);
             writer.Write(GameLevel);
             writer.Write(PlayerSkillLevel);
             writer.Write(RulesSet);
@@ -100,8 +99,8 @@ namespace Horizon.RT.Models
                 $"GameStats: {System.BitConverter.ToString(GameStats)} " +
                 $"GamePassword: {GamePassword} " +
                 $"ApplicationID: {ApplicationID} " +
-                $"MaxClients: {MaxClients} " +
-                $"MinClients: {MinClients} " +
+                $"MaxClients: {MaxPlayers} " +
+                $"MinClients: {MinPlayers} " +
                 $"GameLevel: {GameLevel} " +
                 $"PlayerSkillLevel: {PlayerSkillLevel} " +
                 $"RulesSet: {RulesSet} " +

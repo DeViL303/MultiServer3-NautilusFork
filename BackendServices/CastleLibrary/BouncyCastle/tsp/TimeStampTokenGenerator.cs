@@ -137,17 +137,19 @@ namespace Org.BouncyCastle.Tsp
            string digestOID,
            string tsaPolicyOID,
            Asn1.Cms.AttributeTable signedAttr,
-           Asn1.Cms.AttributeTable unsignedAttr) : this(
-               makeInfoGenerator(key, cert, digestOID, signedAttr, unsignedAttr),
-               Asn1DigestFactory.Get(OiwObjectIdentifiers.IdSha1),
-               tsaPolicyOID != null ? new DerObjectIdentifier(tsaPolicyOID):null, false)
+           Asn1.Cms.AttributeTable unsignedAttr)
+            : this(
+                MakeInfoGenerator(key, cert, new DerObjectIdentifier(digestOID), signedAttr, unsignedAttr),
+                Asn1DigestFactory.Get(OiwObjectIdentifiers.IdSha1),
+                tsaPolicyOID != null ? new DerObjectIdentifier(tsaPolicyOID) : null,
+                false)
         {
         }
 
-        internal static SignerInfoGenerator makeInfoGenerator(
+        internal static SignerInfoGenerator MakeInfoGenerator(
           AsymmetricKeyParameter key,
           X509Certificate cert,
-          string digestOID,
+          DerObjectIdentifier digestOid,
           Asn1.Cms.AttributeTable signedAttr,
           Asn1.Cms.AttributeTable unsignedAttr)
         {
@@ -187,9 +189,9 @@ namespace Org.BouncyCastle.Tsp
             //    throw new TspException("Can't find a SHA-1 implementation.", e);
             //}
 
-            string digestName = CmsSignedHelper.GetDigestAlgName(digestOID);
-            string signatureName = digestName + "with"
-                + CmsSignedHelper.GetEncryptionAlgName(CmsSignedHelper.GetEncOid(key, digestOID));
+            string digestName = CmsSignedHelper.GetDigestAlgName(digestOid);
+            DerObjectIdentifier encOid = CmsSignedHelper.GetEncOid(key, digestOid.Id);
+            string signatureName = digestName + "with" + CmsSignedHelper.GetEncryptionAlgName(encOid);
 
             Asn1SignatureFactory sigfact = new Asn1SignatureFactory(signatureName, key);
             return new SignerInfoGeneratorBuilder()
@@ -338,7 +340,12 @@ namespace Org.BouncyCastle.Tsp
                 respExtensions = extGen.Generate();
             }
 
-            var timeStampTime = new Asn1GeneralizedTime(WithResolution(genTime, resolution));
+            /*
+             * RFC 3161. The ASN.1 GeneralizedTime syntax can include fraction-of-second details. Such syntax, without
+             * the restrictions from RFC 2459 Section 4.1.2.5.2, where GeneralizedTime is limited to represent the
+             * time with a granularity of one second, may be used here.
+             */
+            var timeStampTime = new DerGeneralizedTime(WithResolution(genTime, resolution));
 
             TstInfo tstInfo = new TstInfo(tsaPolicy, messageImprint,
                 new DerInteger(serialNumber), timeStampTime, accuracy,
