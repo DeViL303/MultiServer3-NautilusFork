@@ -1,5 +1,5 @@
 <h1 align="center">
-   Nautilus Toolset v1.01
+   Nautilus Toolset v1.02
 </h1>
 
 <h2 align="center">
@@ -9,30 +9,21 @@ Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3
 </h2>
 
 <h1 align="center">
-   Multiserver 3 by AgentDark447 - Nautilus Fork by DeViL303
+   Nautilus Fork by Home Laboratory
    </h1>
 
-This repository is a fork of AgentDark447's awesome server project, Multiserver3. This repo specifically focuses the development of a GUI addon that I call Nautilus, The changes made during the development of Nautilus could potentially affect the web tool or server component of Multiserver. For those looking to employ Multiserver as a game server, the official version is highly recommended and is available [HERE](https://github.com/GitHubProUser67/MultiServer3). This application is the product of the research done by Home Laboratory / Home Headquarters members over the last few years. 
+This repository is a place holder with information on Nautilus. For the source code of Nautilus and Multiserver the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
 
-Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+This application is the product of the PlayStation Home research done by Home Laboratory team members over the last few years. 
 
+Credits to the AgentDark447 and the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
-
-<h1 align="center">
-  Playstation Home Cache Archive
-   </h1>
-   
-   <div align="center">
-      
-Rew's Playstation Home cache archive can be found here: https://xethub.com/pebxcvi/PSHomeCacheDepot/
-
-</div>
 
 <h1 align="center">
    What is Nautilus?
    </h1>
    
-Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
+Nautilus is a Windows GUI designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
 
 Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
