@@ -12,18 +12,18 @@ Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3
    Nautilus Fork by Home Laboratory
    </h1>
 
-This repository is now just a place holder with information on Nautilus. For the source code of Nautilus and Multiserer the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
+This repository is a place holder with information on Nautilus. For the source code of Nautilus and Multiserver the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
 
-This application is the product of the PlayStation Home research done by Home Laboratory members over the last few years. 
+This application is the product of the PlayStation Home research done by Home Laboratory team members over the last few years. 
 
-Credits to the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+Credits to the AgentDark447 and the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
 
 <h1 align="center">
    What is Nautilus?
    </h1>
    
-Nautilus is a Windows GUI that I designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
+Nautilus is a Windows GUI designed to work on Playstation Home assets on a deeper level than has ever been possible before. The end goal is to have an All-in-One solution for automating common tasks and dealing with the many custom file types used in Home. 
 
 Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
