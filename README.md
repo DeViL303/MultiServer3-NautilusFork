@@ -4,7 +4,7 @@
 
 <h2 align="center">
    
-Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NautilusFork/releases/download/Release_v1.02/Nautilus_Toolset_v1.02.zip)
+Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NautilusFork/releases/download/Release_1.02/Nautilus_Toolset_v1.02.zip)
 
 </h2>
 
