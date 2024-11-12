@@ -4,7 +4,7 @@
 
 <h2 align="center">
    
-Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NautilusFork/releases/download/Release_v1.01/Nautilus_Toolset_v1.01_Final.zip)
+Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3-NautilusFork/releases/download/Release_v1.02/Nautilus_Toolset_v1.02.zip)
 
 </h2>
 
@@ -14,9 +14,14 @@ Download Latest Compiled Release [HERE](https://github.com/DeViL303/MultiServer3
 
 This repository is a place holder with information on Nautilus. For the source code of Nautilus and Multiserver the official repo is available [HERE](https://github.com/GitHubProUser67/MultiServer3). 
 
-This application is the product of the PlayStation Home research done by Home Laboratory team members over the last few years. 
+This application is the product of the PlayStation Home research and testing done by Home Laboratory team members over the last few years. 
 
-Credits to the AgentDark447 and the developers of Horizon, Multiserver3, UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+AgentDark447
+Rew
+Jumpsuit
+Kami
+
+Credits to the UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
 
 <h1 align="center">
