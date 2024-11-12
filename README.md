@@ -16,13 +16,7 @@ This repository is a place holder with information on Nautilus. For the source c
 
 This application is the product of the PlayStation Home research and testing done by Home Laboratory team members over the last few years. 
 
-AgentDark447
-Rew
-Jumpsuit
-Kami
-
-Credits to the developers of UnluacNET, Unluac jar's, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
-
+Also Credits to the developers of UnluacNET, Unluac jar's, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
 <h1 align="center">
    What is Nautilus?
