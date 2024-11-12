@@ -21,7 +21,7 @@ Rew
 Jumpsuit
 Kami
 
-Credits to the UnluacNET, Unluac jar, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+Credits to the developers of UnluacNET, Unluac jar's, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
 
 
 <h1 align="center">
