@@ -720,3 +720,11 @@ For the catalogue:
   - System
  - Disable this option if you want to browse and search all UUIDs.
 
+
+### Integration between tabs 
+- v1.02 brings more advanced features to try reduce the steps involved in working on CDN files
+- Some examples of this are:
+  - Create an ODC and its SHA1 and UUID get auto added to DB editor ready for the next step which is usually adding that item to the SQL.
+  - Create an SDC and its SHA1 gets auto added to scenelist editor and a new SceneID is created ready for the next step which is usually adding that item to the SceneList.xml
+  - Edit the Scenelist or the HCDB and their SHA1s are auto added to TSS editor, with the files held in a temporary folder until ready to be deployed.
+  - When ready all changed files and the new TSS files can be deployed to the live CDN with one click. 
