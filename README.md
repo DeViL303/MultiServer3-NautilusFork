@@ -26,6 +26,7 @@ Nautilus is a Windows GUI designed to work on Playstation Home assets on a deepe
 
 Note: Due to the nature of Homes millions of assets and the many edge cases involved this application will most likely never be "finished".
 
+### Important: Use of Nautilus is entirely at your own risk! It is recommended to backup your data beforehand!
 
 <div align="center">
 
@@ -48,8 +49,6 @@ Note: Due to the nature of Homes millions of assets and the many edge cases invo
 
 
 </div>
-
-### Important: Use of Nautilus is entirely at your own risk! It is recommended to backup your data beforehand!
 
 <h2 align="center">
    Home Archive Creator
