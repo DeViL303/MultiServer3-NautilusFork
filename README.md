@@ -180,6 +180,11 @@ For the Archive Unpacker, utilizing the drag-and-drop functionality from Windows
  - If you recreate the archive these will be recreated inside it again.
  - Enabling this option just means you wont ever see them, but they will still be there when needed
 
+#### Repack All
+- This mode sends each unpacked folder directly into the repacker tab and repacks it with the chosen settings.
+- Make sure to choose the correct repack format BEFORE starting the unpack process.
+- This will act like a converter - eg bulk repack sdat to bar, or sharc type sdats to normal for HDK builds.
+  
 <div align="center">
 
 
