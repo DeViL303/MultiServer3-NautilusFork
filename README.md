@@ -726,4 +726,5 @@ For the catalogue:
   - Create an ODC and its SHA1 and UUID get auto added to DB editor ready for the next step which is usually adding that item to the SQL.
   - Create an SDC and its SHA1 gets auto added to scenelist editor and a new SceneID is created ready for the next step which is usually adding that item to the SceneList.xml
   - Edit the Scenelist or the HCDB and their SHA1s are auto added to TSS editor, with the files held in a temporary folder until ready to be deployed.
-  - When ready all changed files and the new TSS files can be deployed to the live CDN with one click. 
+  - When ready all changed files and the new TSS files can be deployed to the live CDN with one click. This avoids timing issues in cases where someone is connecting just as you swap the files manually.
+     
