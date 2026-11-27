@@ -1,0 +1,118 @@
+﻿<UserControl x:Class="Nautilus2027.ArchiveToolTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424" HorizontalAlignment="Center"  >
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="700"/>
+                <ColumnDefinition Width="700"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: Home Archive Creator -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="Home Archive Creator" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="ArchiveCreatorDragArea" Style="{StaticResource DragAreaStyle2}" Height="100" Drop="ArchiveCreatorDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveCreatorHandler">
+                    <TextBlock x:Name="ArchiveCreatorDragAreaText" Text="Drag Folders or ZIP Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Timestamp:" Style="{StaticResource Sha1TextBlockStyle}"/>
+                    <TextBox x:Name="ArchiveCreatorTimestampTextBox" Text="FFFFFFFF" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="8" Width="70"/>
+                   
+                </StackPanel>
+                <!-- Radio Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="BAR:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorBAR" GroupName="ArchiveType" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorBAR_Checked"/>
+                    <TextBlock Text="BAR (Secure):" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorBAR_S" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorBAR_S_Checked"/>
+                    <TextBlock Text="SDAT:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="5,5,5,5" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorSDAT" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorSDAT_Checked"/>
+                    <TextBlock Text="SDAT SHARC:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="5,5,5,5" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorSDAT_SHARC" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorSDAT_SHARC_Checked"/>
+                    <TextBlock Text="CORE SHARC:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="5,5,5,5" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorCORE_SHARC" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorCORE_SHARC_Checked"/>
+                    <TextBlock Text="Config SHARC:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="5,5,5,5" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RadioButtonArchiveCreatorCONFIG_SHARC" GroupName="ArchiveType" Style="{StaticResource ModernRadioButtonStyle}" Checked="RadioButtonArchiveCreatorCONFIG_SHARC_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,5" Width="461">
+                    <TextBlock Text="Rename for CDN:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="0,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveCreatorRenameCDN" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveCreatorRenameCDN_Checked" Unchecked="CheckBoxArchiveCreatorRenameCDN_Unchecked"/>
+                    <TextBlock Text="Rename For Local:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveCreatorRenameLocal" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveCreatorRenameLocal_Checked" Unchecked="CheckBoxArchiveCreatorRenameLocal_Unchecked"/>
+                    <TextBlock Text="Ignore timestamp.txt:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveCreatorDeleteTimestamp" Style="{StaticResource ModernToggleSwitchStyle}" />
+                </StackPanel>
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Create Archive" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveCreatorExecuteButtonClick"/>
+                    <Button x:Name="ArchiveCreatorClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <Border BorderBrush="Transparent"
+BorderThickness="1"
+AllowDrop="True"
+Drop="ArchiveCreatorDragDropHandler">
+                    <TextBox x:Name="ArchiveCreatorTextBox" local:FileDrop.Handler="ArchiveCreatorDragDropHandler"
+                             Width="650"
+     Height="420"
+     Style="{StaticResource FileListTextBoxStyle}"
+     MouseDoubleClick="ArchiveCreatorTextBox_MouseDoubleClick"/>
+                </Border>
+            </StackPanel>
+
+            <!-- Right Side: Home Archive Unpacker -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="Home Archive Unpacker" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="ArchiveUnpackerDragArea" Style="{StaticResource DragAreaStyle2}" Height="100" Drop="ArchiveUnpackerDragDropHandler" MouseLeftButtonUp="ClickToBrowseArchiveUnpackerHandler">
+                    <TextBlock x:Name="ArchiveUnpackerDragAreaText" Text="Drag Folders, BAR, SDAT, or SHARC Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="UUID or Path Prefix:" Style="{StaticResource Sha1TextBlockStyle}"/>
+                    <TextBox x:Name="ArchiveUnpackerPathTextBox" Style="{StaticResource Sha1TextBoxStyle}" MaxLength="500" Width="331"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,5" Width="740">
+                    <TextBlock Text="AFS Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Width="0" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperFAST" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0"  Unchecked="CheckBoxArchiveMapperFAST_Unchecked" Checked="CheckBoxArchiveMapperFAST_Checked"/>
+                    <TextBlock Text="ExperiMENTAL Mapper:" Style="{StaticResource ArchiveFormatTextBlockStyle}"  Width="0" Foreground="White" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperEXP" Style="{StaticResource ModernToggleSwitchStyle}"  Width="0" Unchecked="CheckBoxArchiveMapperEXP_Unchecked" Checked="CheckBoxArchiveMapperEXP_Checked"/>
+                    <TextBlock Text="Validate Output:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="0,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperVerify" Style="{StaticResource ModernToggleSwitchStyle}" IsChecked="True" />
+                    <TextBlock Text="Coredata Mode:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperCoredata" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveMapperCoredata_Checked"/>
+                    <TextBlock Text="Raw Cache / Guess UUID Mode:"  Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperUUIDGuesser" Style="{StaticResource ModernToggleSwitchStyle}" />
+                    <TextBlock Text="Extract for Offline:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperOfflineMode" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveMapperOfflineMode_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,7,0,5" Width="465">
+                    <TextBlock Text="Compatibility Patches:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="0,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperPatchMDLs" Style="{StaticResource ModernToggleSwitchStyle}" />
+                    <TextBlock Text="Delete Files.txt/Manifest:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperDeleteFilestxt" IsChecked="True" Style="{StaticResource ModernToggleSwitchStyle}" />
+                    <TextBlock Text="Repack All:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" Margin="10,5,0,5" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="CheckBoxArchiveMapperRepackAll" Style="{StaticResource ModernToggleSwitchStyle}" Checked="CheckBoxArchiveMapperRepackAll_Checked" />
+                </StackPanel>
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Unpack and Map" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ArchiveUnpackerExecuteButtonClick"/>
+                    <Button x:Name="ArchiveUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+                <!-- Text Area -->
+                <TextBox x:Name="ArchiveUnpackerTextBox" local:FileDrop.Handler="ArchiveUnpackerDragDropHandler" Width="650" Height="420" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ArchiveUnpackerTextBox_MouseDoubleClick"/>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="Nautilus2027.AnimationToolTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: animation conversion -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="Animation Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="ANIToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="AniDragDropHandler" MouseLeftButtonUp="ClickToBrowseAniHandler">
+                    <TextBlock x:Name="ANIToolDragAreaText" Text="Drag Object Zips, Folders or ANI / GLB / FBX Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="ANI:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AnimationTargetANI" GroupName="AnimationTarget" Tag="ANI" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="AnimationTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AnimationTargetGLB" GroupName="AnimationTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="AnimationTargetRadio_Checked"/>
+                    <TextBlock Text="FBX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AnimationTargetFBX" GroupName="AnimationTarget" Tag="FBX" Style="{StaticResource ModernRadioButtonStyle}" Checked="AnimationTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AnimationConvertButton_Click"
+                            ToolTip="ANI -&gt; GLB (exact) or FBX (baked 30 fps, skinned), with the skeleton and a skinned model found beside it; GLB / FBX -&gt; ANI (one clip per animation / take). Results go to the tab's output folder (Settings): ANI\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AnimationInspectButton_Click"
+                            ToolTip="Show joints, channels, keys and the matching skeleton / model for each listed file"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AnimationPreviewButton_Click"
+                            ToolTip="Play the clip on its skeleton (bones drawn as lines, with the skinned model found beside it) - Space plays / pauses, the slider scrubs"/>
+                    <Button x:Name="ANIToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="ANIToolTextBox" local:FileDrop.Handler="AniDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+            <!-- Right Side: skeleton conversion -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="Skeleton Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="SKNToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="SknDragDropHandler" MouseLeftButtonUp="ClickToBrowseSknHandler">
+                    <TextBlock x:Name="SKNToolDragAreaText" Text="Drag Object Zips, Folders or SKN / GLB / FBX Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="SKN:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="SkeletonTargetSKN" GroupName="SkeletonTarget" Tag="SKN" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="SkeletonTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="SkeletonTargetGLB" GroupName="SkeletonTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="SkeletonTargetRadio_Checked"/>
+                    <TextBlock Text="FBX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="SkeletonTargetFBX" GroupName="SkeletonTarget" Tag="FBX" Style="{StaticResource ModernRadioButtonStyle}" Checked="SkeletonTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="SkeletonConvertButton_Click"
+                            ToolTip="SKN -&gt; GLB / FBX (with a skinned model that uses it, when found beside it); GLB / FBX -&gt; SKN. Results go to the tab's output folder (Settings): SKN\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="SkeletonInspectButton_Click"
+                            ToolTip="Show joints, channels, keys and the matching skeleton / model for each listed file"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="SkeletonPreviewButton_Click"
+                            ToolTip="Show the skeleton's bones and joints in the bind pose (with the skinned model found beside it)"/>
+                    <Button x:Name="SKNToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="SKNToolTextBox" local:FileDrop.Handler="SknDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

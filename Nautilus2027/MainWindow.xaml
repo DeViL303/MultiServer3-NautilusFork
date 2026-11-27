@@ -1,0 +1,171 @@
+﻿<Window x:Class="Nautilus2027.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Nautilus2027"
+        xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Nautilus Toolset v1.10 Beta 1" Height="850" Width="1480" MaxHeight="850" MaxWidth="1480"
+        ResizeMode="NoResize" WindowStyle="None" Background="#242424"
+        BorderBrush="#000000"
+                BorderThickness="1">
+    <Window.Resources>
+        <ResourceDictionary Source="Themes/Styles.xaml"/>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Custom Title Bar -->
+        <Grid Background="Transparent" Height="33" VerticalAlignment="Top" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Icon Image -->
+            <Image Grid.Column="0" Source="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=Icon}" Height="20" Width="20" Margin="5,0,0,0" VerticalAlignment="Center"/>
+
+            <!-- Window Title -->
+            <TextBlock Grid.Column="1" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=Title}" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                   Foreground="White" FontWeight="Bold" FontSize="12" Margin="10,0,0,0"/>
+
+            <!-- Custom Window Control Buttons -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <!-- Minimize Button -->
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE921;" Click="Minimize_Click" 
+                Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,10,0" Background="Transparent" Foreground="White"/>
+                <!-- Maximize Button -->
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE922;" Click="Maximize_Click" 
+                Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,10,0" Background="Transparent" Foreground="#555555"/>
+                <!-- Close Button -->
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE8BB;" Click="Close_Click" 
+                Width="24" Height="24" FontSize="10" BorderBrush="Transparent" Margin="0,0,7,0" Background="Transparent" Foreground="White"/>
+            </StackPanel>
+        </Grid>
+        <!-- Main Content -->
+        <DockPanel Margin="0,35,0,0" >
+            <TabControl Name="MainTabControl" SelectionChanged="TabControl_SelectionChanged">
+
+                <!-- TAB 1 BAR SHARC SDAT Archive packer unpacker-->
+                <TabItem Header="BAR / SDAT / SHARC" Tag="ArchiveTool">
+                    <local:ArchiveToolTab x:Name="ArchiveToolTabView"/>
+                </TabItem>
+
+
+                <!-- Tab 2: CDS Tool -->
+                <TabItem Header="CDS Tool" Tag="CDSTool" >
+                    <local:CdsToolTab x:Name="CdsToolTabView"/>
+                </TabItem>
+
+
+
+                <!-- Tab 3: HCDB Unpacker -->
+                <TabItem Header="HCDB / SQL" Tag="HCDBTool">
+                    <local:HcdbToolTab x:Name="HcdbToolTabView"/>
+                </TabItem>
+
+
+
+                <TabItem Header="DB Editor" Tag="SQLTool">
+                    <local:DbEditorTab x:Name="DbEditorTabView"/>
+                </TabItem>
+
+                <TabItem Header="SceneList" Tag="SceneList">
+                    <local:SceneListTab x:Name="SceneListTabView"/>
+                </TabItem>
+
+
+
+                <TabItem Header="TSS" Tag="TSS" >
+                    <local:TssTab x:Name="TssTabView"/>
+                </TabItem>
+
+
+
+                <!-- Tab 5 Scene IDs -->
+                <TabItem Header="SceneIDs" Tag="SceneIDTool" AllowDrop="True" Drop="SceneIDTabItem_Drop">
+                    <local:SceneIdsTab x:Name="SceneIdsTabView"/>
+                </TabItem>
+
+
+                <!-- Tab 6: LUAC -->
+                <TabItem Header="LUA / LUAC" Tag="LUACTool" >
+                    <local:LuaToolTab x:Name="LuaToolTabView"/>
+                </TabItem>
+
+                <!-- MDL / HKX -->
+                <TabItem Header="MDL / HKX" Tag="ModelTool">
+                    <local:ModelToolTab x:Name="ModelToolTabView"/>
+                </TabItem>
+
+                <!-- ANI / SKN -->
+                <TabItem Header="ANI / SKN" Tag="AnimationTool">
+                    <local:AnimationToolTab x:Name="AnimationToolTabView"/>
+                </TabItem>
+
+                <!-- ATMOS / CDATA -->
+                <TabItem Header="ATMOS / CDATA" Tag="AtmosEffectsTool">
+                    <local:AtmosEffectsTab x:Name="AtmosEffectsTabView"/>
+                </TabItem>
+
+                <!-- EFX / PROBE -->
+                <TabItem Header="EFX / PROBE" Tag="EfxProbeTool">
+                    <local:EfxProbeTab x:Name="EfxProbeTabView"/>
+                </TabItem>
+
+                <!-- AGF / RIG -->
+                <TabItem Header="AGF / RIG" Tag="AgfRigTool">
+                    <local:AgfRigTab x:Name="AgfRigTabView"/>
+                </TabItem>
+
+
+
+                <!-- Tab 8 SDC ODC Creator -->
+                <TabItem Header="SDC / ODC" Tag="SDCODCTool">
+                    <local:SdcOdcToolTab x:Name="SdcOdcToolTabView"/>
+                </TabItem>
+
+
+
+               
+
+
+
+                <!-- Tab 10: Path2Hash -->
+                <TabItem Header="Path2Hash" Tag="Path2Hash" AllowDrop="True" Drop="Path2HashTabItem_Drop" >
+                    <local:Path2HashTab x:Name="Path2HashTabView"/>
+                </TabItem>
+
+                
+               
+                <TabItem Header="EBOOT" Tag="EbootPatcher" >
+                    <local:EbootTab x:Name="EbootTabView"/>
+                </TabItem>
+
+                <!-- Tab 10 SHA1 Checker -->
+                <TabItem Header="Checker" Tag="SHAChecker" >
+                    <local:CheckerTab x:Name="CheckerTabView"/>
+                </TabItem>
+
+                
+                <TabItem Header="CDN Audit" Tag="CDNaudit" Visibility="Collapsed">
+                    <local:CdnAuditTab x:Name="CdnAuditTabView"/>
+                </TabItem>
+
+
+                <TabItem Header="Catalogue" Tag="Catalogue">
+                    <local:CatalogueTab x:Name="CatalogueTabView"/>
+                </TabItem>
+                <!-- Combined Tab for Media Tools -->
+                <TabItem Header="Media" Tag="MediaTool">
+                    <local:MediaTab x:Name="MediaTabView"/>
+                </TabItem>
+
+                <TabItem Header="Settings" Tag="SettngsTab" VerticalAlignment="Top">
+                    <local:SettingsTab x:Name="SettingsTabView"/>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </Grid>
+</Window>
+

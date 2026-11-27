@@ -1,0 +1,83 @@
+<UserControl x:Class="Nautilus2027.EfxProbeTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: particle effects -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="EFX Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="EFXToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="EfxDragDropHandler" MouseLeftButtonUp="ClickToBrowseEfxHandler">
+                    <TextBlock x:Name="EFXToolDragAreaText" Text="Drag Scene / Object Zips, Folders or EFX / SCENE / JSON / GLB Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="EFX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="EfxTargetEFX" GroupName="EfxTarget" Tag="EFX" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="EfxTargetRadio_Checked"/>
+                    <TextBlock Text="JSON:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="EfxTargetJSON" GroupName="EfxTarget" Tag="JSON" Style="{StaticResource ModernRadioButtonStyle}" Checked="EfxTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="EfxTargetGLB" GroupName="EfxTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="EfxTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="EfxConvertButton_Click"
+                            ToolTip="EFX -&gt; JSON (every node setting, texture and count, exact back) or GLB (emitter shapes placed as in the effect; move / turn / scale them in Blender); JSON / GLB -&gt; EFX. A .SCENE gives its effect placements as JSON or a GLB layout (move / turn / scale the FX boxes); converting those back with EFX picked writes the updated .SCENE, and a .SCENE with EFX picked copies out the effects it uses. Results go to the tab's output folder (Settings): EFX\&lt;format&gt; (scenes: EFX\Scenes)"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="EfxInspectButton_Click"
+                            ToolTip="Show the groups, particle counts, node graph and textures of each listed effect (or the effects a scene places, and where)"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="EfxPreviewButton_Click"
+                            ToolTip="Open the 3D viewer on the effect's emitter shapes and textures (the file on the clicked line first)"/>
+                    <Button x:Name="EFXToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="EFXToolTextBox" local:FileDrop.Handler="EfxDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+            <!-- Right Side: light probes -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="PROBE Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="PROBEToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="ProbeDragDropHandler" MouseLeftButtonUp="ClickToBrowseProbeHandler">
+                    <TextBlock x:Name="PROBEToolDragAreaText" Text="Drag Scene / Object Zips, Folders or PROBE / SCENE / JSON / GLB / FBX Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="PROBE:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ProbeTargetPROBE" GroupName="ProbeTarget" Tag="PROBE" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="ProbeTargetRadio_Checked"/>
+                    <TextBlock Text="JSON:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ProbeTargetJSON" GroupName="ProbeTarget" Tag="JSON" Style="{StaticResource ModernRadioButtonStyle}" Checked="ProbeTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ProbeTargetGLB" GroupName="ProbeTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="ProbeTargetRadio_Checked"/>
+                    <TextBlock Text="FBX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ProbeTargetFBX" GroupName="ProbeTarget" Tag="FBX" Style="{StaticResource ModernRadioButtonStyle}" Checked="ProbeTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ProbeConvertButton_Click"
+                            ToolTip="PROBE -&gt; JSON (every light: name, type, position, direction, colour; exact back) or GLB / FBX (a ball per light, a cone for the sun; move / turn them in Blender); JSON / GLB / FBX -&gt; PROBE. A .SCENE converts the probe it uses (PROBE picked copies it out). The baked lighting grid is kept as it is. Results go to the tab's output folder (Settings): PROBE\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ProbeInspectButton_Click"
+                            ToolTip="Show the version, grid and lights of each listed probe (or the probe a scene uses)"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ProbePreviewButton_Click"
+                            ToolTip="Open the 3D viewer on the probe's lights (the file on the clicked line first)"/>
+                    <Button x:Name="PROBEToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="PROBEToolTextBox" local:FileDrop.Handler="ProbeDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+        </Grid>
+    </StackPanel>
+</UserControl>

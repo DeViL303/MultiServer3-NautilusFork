@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="Nautilus2027.CheckerTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424" >
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <!-- Title TextBlock -->
+            <TextBlock Margin="15,10,15,10" Width="500" Text="SHA1 Checker" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+            <TextBlock Margin="15,10,15,10" Width="500" Text="Validate Mapped Content" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+            <!--<TextBlock Margin="15,10,15,10" Width="350" Text="Get File Details" Style="{StaticResource ToolTitleTextBlockStyle}"/> -->
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <!-- Drag-and-Drop Area -->
+            <Border x:Name="Sha1DragArea" Height="100" Width="500" Margin="15,0,15,0" Style="{StaticResource DragAreaStyle2}" AllowDrop="True" Drop="Sha1DragArea_Drop" MouseLeftButtonUp="SHA1BrowseButton_Click">
+                <TextBlock x:Name="SHA1DragAreaText" Text="Drag Folders or Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+            </Border>
+            <Border x:Name="VerifyDragArea" Height="100" Width="500" Margin="15,0,15,0"  Style="{StaticResource DragAreaStyle2}" AllowDrop="True" Drop="VerifyDragArea_Drop"  MouseLeftButtonUp="ArchiveUnpackerVerifyTestButtonClick">
+                <TextBlock x:Name="VerifyDragAreaText" Text="Drag Folders Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+            </Border>
+         <!--   <Border x:Name="GetInfoDragArea" Height="100" Width="350" Margin="15,0,15,0" Style="{StaticResource DragAreaStyle2}" MouseLeftButtonUp="SHA1BrowseButton_Click"> -->
+         <!--   <TextBlock x:Name="GetInfoDragAreaText" Text="Drag Folders or Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" /> 
+            </Border>-->
+        </StackPanel>
+
+        <!-- Buttons Row -->
+        <StackPanel Orientation="Horizontal" Margin="0,6,0,0" HorizontalAlignment="Center">
+            <Button x:Name="CopyButton" Content="Copy" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CopySHA1Button_Click"/>
+            <Button x:Name="ClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearSHA1Button_Click"/>
+        </StackPanel>
+
+        <!-- File List Box -->
+        <TextBox x:Name="Sha1TextBox" local:FileDrop.Handler="Sha1DragArea_Drop" Height="540" Width="1350" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Box collision (.HKX) for PlayStation Home from a model: port of the mdl2hkx Python reference (v0.5). -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+    <IsPublishable>false</IsPublishable>
+    <RootNamespace>Mdl2Hkx</RootNamespace>
+    <AssemblyName>Mdl2Hkx</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- one-body HKX exported by the HDK: the writer reuses its header and containers -->
+    <EmbeddedResource Include="HKX_TEMPLATE.HKX" LogicalName="Mdl2Hkx.HKX_TEMPLATE.HKX" />
+  </ItemGroup>
+
+</Project>

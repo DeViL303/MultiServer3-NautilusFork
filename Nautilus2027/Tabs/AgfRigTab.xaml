@@ -1,0 +1,76 @@
+<UserControl x:Class="Nautilus2027.AgfRigTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: TexGen layers -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="AGF Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="AGFToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="AgfDragDropHandler" MouseLeftButtonUp="ClickToBrowseAgfHandler">
+                    <TextBlock x:Name="AGFToolDragAreaText" Text="Drag Object Zips, Folders or AGF / PNG / TGA / BMP / JPG Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="AGF:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AgfTargetAGF" GroupName="AgfTarget" Tag="AGF" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="AgfTargetRadio_Checked"/>
+                    <TextBlock Text="PNG:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AgfTargetPNG" GroupName="AgfTarget" Tag="PNG" Style="{StaticResource ModernRadioButtonStyle}" Checked="AgfTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AgfConvertButton_Click"
+                            ToolTip="AGF -&gt; PNG: an indexed (256-colour) PNG with the AGF's own palette, and the original kept inside it. PNG / TGA / BMP / JPG -&gt; AGF: an indexed PNG keeps its palette and pixels exactly; any other image is matched to the original AGF's palette (kept inside PNGs made here, or an .AGF of the same name beside the image). Unchanged parts keep their original bytes. Results go to the tab's output folder (Settings): AGF\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AgfInspectButton_Click"
+                            ToolTip="Show the size, palette, background and drawn area of each listed layer, and its name in RESOURCES.XML"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AgfPreviewButton_Click"
+                            ToolTip="Open the viewer on the layer (the file on the clicked line first)"/>
+                    <Button x:Name="AGFToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="AGFToolTextBox" local:FileDrop.Handler="AgfDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+            <!-- Right Side: face rigs -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="RIG Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="RIGToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="RigDragDropHandler" MouseLeftButtonUp="ClickToBrowseRigHandler">
+                    <TextBlock x:Name="RIGToolDragAreaText" Text="Drag Object Zips, Folders or RIG / JSON Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="RIG:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RigTargetRIG" GroupName="RigTarget" Tag="RIG" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="RigTargetRadio_Checked"/>
+                    <TextBlock Text="JSON:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="RigTargetJSON" GroupName="RigTarget" Tag="JSON" Style="{StaticResource ModernRadioButtonStyle}" Checked="RigTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="RigConvertButton_Click"
+                            ToolTip="RIG -&gt; JSON: every face control by name (atg_fa_ctrl_...) with its four values, marked where the object's HEADCONTROLRIG.XML shows it as a slider. JSON -&gt; RIG: change values, rename, add or remove controls (kept in the hash order the game needs). Results go to the tab's output folder (Settings): RIG\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="RigInspectButton_Click"
+                            ToolTip="Show the controls of each listed face rig, which ones are sliders, and anything the XML lists that the rig lacks"/>
+                    <Button x:Name="RIGToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="RIGToolTextBox" local:FileDrop.Handler="RigDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+        </Grid>
+    </StackPanel>
+</UserControl>

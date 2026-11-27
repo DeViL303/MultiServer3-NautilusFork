@@ -1,0 +1,56 @@
+﻿<UserControl x:Class="Nautilus2027.SceneIdsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="#242424"  >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Side: SceneID Encrypter -->
+        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+            <TextBlock Text="SceneID Generator" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+            <TextBlock Text="Enter a Number or a range eg. 1-5000:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+            <TextBox x:Name="SceneIDnumberInputTextBox" MaxLength="11" Height="24" Width="60" Padding="0,2,0,0" Style="{StaticResource SceneIdInputTextBoxStyle}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="Legacy Mode:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                <CheckBox x:Name="legacyModeCheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Encrypt" Width="90" Style="{StaticResource DarkModeButtonStyle}" Click="SceneIDEncrypt_Click"/>
+                <Button x:Name="encryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearListHandler"/>
+            </StackPanel>
+            <TextBlock Text="Encrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+            <TextBox x:Name="encryptedSceneIDTextBox" Height="530" Width="600" Style="{StaticResource SceneIdTextBoxStyle}"/>
+        </StackPanel>
+
+        <!-- Right Side: SceneID Decrypter -->
+        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+            <TextBlock Text="SceneID Decrypter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+            <TextBlock Text="Enter SceneIDs / ChannelIDs (Or drag SceneList HERE):" Style="{StaticResource SceneIdTextBlockStyle}"/>
+            <TextBox x:Name="SceneIDDecryptInputTextBox" local:FileDrop.Handler="SceneIDTabItem_Drop" AcceptsReturn="True" TextWrapping="Wrap" Padding="0,2,0,0" Height="24" Width="290" Style="{StaticResource SceneIdInputTextBoxStyle}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="Legacy Mode:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+                <CheckBox x:Name="decrypterLegacyModeCheckBox" Style="{StaticResource ModernToggleSwitchStyle}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Decrypt" Width="90" Style="{StaticResource DarkModeButtonStyle}" Click="SceneIDDecrypt_Click"/>
+                <Button x:Name="DecryptedSceneIDClearButton" Width="80" Content="Clear" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSceneIDTextHandler"/>
+            </StackPanel>
+            <TextBlock Text="Decrypted SceneIDs:" Style="{StaticResource SceneIdTextBlockStyle}"/>
+            <TextBox x:Name="DecryptedSceneIDTextBox" local:FileDrop.Handler="SceneIDTabItem_Drop" Height="530" Width="600" Style="{StaticResource SceneIdTextBoxStyle}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

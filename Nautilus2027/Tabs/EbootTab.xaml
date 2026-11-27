@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="Nautilus2027.EbootTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <!-- Info only: identifies a decrypted Home EBOOT (ELF) and shows what's in it. Nothing is written. -->
+    <StackPanel Background="#242424" HorizontalAlignment="Center" Width="1140">
+        <TextBlock Text="Home EBOOT Information" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,10,0,15" HorizontalAlignment="Center"/>
+        <Border x:Name="EbootDragArea" Style="{StaticResource DragAreaStyle}" Drop="EbootDragDropHandler" MouseLeftButtonUp="ClickToBrowseHandlerEboot" Height="81" Margin="0,0,0,15" Width="713">
+            <TextBlock x:Name="EbootDragAreaText" Text="Drag a decrypted EBOOT (ELF) here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+        </Border>
+
+        <StackPanel x:Name="EbootInfoRows" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Build:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootBuild" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Title ID:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootTitleID" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="App ID:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootAppID" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="MUIS / SSFW:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootMuisVersion" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Service ID:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootServiceID" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="NP Comm ID:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootNPCommID" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="TSS URL:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootTSSURL" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Offline Name:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootOfflineName" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ELF:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootElf" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Signature (SHA1):" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootSignature" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"
+                         ToolTip="SHA1 of the first 500 KB of the ELF, used to look the build up in dependencies\ebootdefs.json"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Full File Path:" Foreground="White" FontSize="14" VerticalAlignment="Center" Width="130"/>
+                <TextBox x:Name="LoadedEbootFilePath" IsReadOnly="True" Style="{StaticResource SettingsTextBoxStyle}" Width="480"/>
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock x:Name="EbootNotes" Foreground="#A0A0A0" FontSize="12" TextWrapping="Wrap" Width="610" Margin="0,12,0,0" HorizontalAlignment="Center"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
+            <Button Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearEbootButton_Click"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

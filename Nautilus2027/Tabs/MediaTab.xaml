@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="Nautilus2027.MediaTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: Video Tool -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="Video Converter for Home" Style="{StaticResource ToolTitleTextBlockStyle}" />
+
+                <Border x:Name="VideoDragArea" Style="{StaticResource DragAreaStyle2}" MouseLeftButtonUp="VideoBrowseButton_Click">
+                    <TextBlock x:Name="VideoDragAreaText" Text="Drag Videos here / Click to browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+                </Border>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="YouTube URLs:" Style="{StaticResource Sha1TextBlockStyle}" />
+                    <TextBox x:Name="VideoYoutubeURLTextBox" Style="{StaticResource Sha1TextBoxStyle}" Width="300" />
+                </StackPanel>
+
+
+
+                <!-- Video Settings: Radio Button Panel -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="568">
+                    <TextBlock Text="360p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Video360pRadioButton" Margin="-5,0,25,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution" />
+                    <TextBlock Text="480p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Video480pRadioButton" Margin="-5,0,25,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution" />
+                    <TextBlock Text="576p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Video576pRadioButton" Margin="-5,0,25,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="VideoResolution" />
+                    <TextBlock Text="720p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Video720pRadioButton" Margin="-5,0,25,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution" />
+                    <TextBlock Text="1080p:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Video1080pRadioButton" Margin="-5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="VideoResolution" />
+                    <TextBlock Text="4:3 AR:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="5,0,0,0" />
+                    <CheckBox x:Name="AspectRatioFourThreeCheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                </StackPanel>
+
+
+
+                <!-- Audio Settings: Radio Button Panel -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0" Width="528">
+                    <TextBlock Text="160Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Audio160kRadioButton" Margin="-5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution" />
+                    <TextBlock Text="256Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Audio256kRadioButton" Margin="-5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" IsChecked="True" GroupName="AudioResolution" />
+                    <TextBlock Text="320Kbps:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" />
+                    <RadioButton x:Name="Audio320kRadioButton" Margin="-5,0,20,0" Style="{StaticResource ModernRadioButtonStyle}" GroupName="AudioResolution" />
+
+                    <TextBlock Text="+3dB:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="0,0,0,0" />
+                    <CheckBox x:Name="VideoAudioBoost3CheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                    <TextBlock Text="+6dB:" Style="{StaticResource Sha1TextBlockStyle}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                    <CheckBox x:Name="VideoAudioBoost6CheckBox" Margin="5,0,20,0" Style="{StaticResource ModernToggleSwitchStyle}" />
+                </StackPanel>
+
+                <!-- Buttons Row -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="videoConvertButton" Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ConvertVideoButton_Click" />
+                    <Button x:Name="videoClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearVideoButton_Click" />
+                </StackPanel>
+
+                <!-- File List Box -->
+                <TextBox x:Name="VideoTextBox" Height="420" AllowDrop="True" Style="{StaticResource FileListTextBoxStyle}" VerticalScrollBarVisibility="Auto" />
+            </StackPanel>
+
+            <!-- Right Side: BNK Unpacker -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="BNK Audio Packer / Unpacker" Style="{StaticResource ToolTitleTextBlockStyle}" />
+                <Border x:Name="BNKUnpackerDragArea" Style="{StaticResource DragAreaStyle2}" Drop="BNKUnpackerDragDropHandler" MouseLeftButtonUp="ClickToBrowseHandlerBNKUnpacker">
+                    <TextBlock x:Name="BNKUnpackerDragAreaText" Text="Drag Folders, BNK Files or Unpacked .bnk.json Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}" />
+                </Border>
+
+                <!-- Radio Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="25,45,0,0" Width="168" RenderTransformOrigin="0.5,0.5">
+                    <StackPanel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                            <SkewTransform />
+                            <RotateTransform Angle="0.429" />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </StackPanel.RenderTransform>
+
+
+                    <TextBlock Text="WAV:" Style="{StaticResource Sha1TextBlockStyle}" Foreground="White" IsEnabled="True" Margin="7,10" VerticalAlignment="Center" />
+                    <RadioButton x:Name="BNKRadioButtonWAV" GroupName="BNKOutputFormat" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" />
+
+                </StackPanel>
+
+                <!-- Buttons Row -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Unpack and Map" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="BNKUnpackerExecuteButtonClick"
+                            ToolTip="Each listed .BNK -&gt; a folder in the audio output folder with one WAV per wave (named from the bank), a copy of the bank and NAME.bnk.json. Done natively (PS-ADPCM and PCM16 decoded here)"/>
+                    <Button Content="Repack" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="BNKRepackButtonClick"
+                            ToolTip="Each listed NAME.bnk.json (from Unpack) -&gt; NAME.BNK in the Media output folder's Audio\Repacked: edited / replaced WAVs are encoded back (any rate or channel count; a new rate changes the pitch to match), everything else is kept byte for byte"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="BNKInspectButtonClick"
+                            ToolTip="List the waves of each listed bank: name, codec, rate, length, looping"/>
+                    <Button x:Name="BNKUnpackerClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearBNKUnpackerListHandler" />
+                </StackPanel>
+                <TextBox x:Name="BNKUnpackerTextBox" local:FileDrop.Handler="BNKUnpackerDragDropHandler" Height="420" Margin="0,55,0,0" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="BNKUnpackerTextBox_MouseDoubleClick" />
+
+                <!-- Text Area -->
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

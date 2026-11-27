@@ -1,5 +1,5 @@
 <h1 align="center">
-   Nautilus Toolset v1.02
+   Nautilus Toolset v1.10 Beta 1
 </h1>
 
 <h2 align="center">
@@ -16,7 +16,7 @@ This repository is a place holder with information on Nautilus. For the source c
 
 This application is the product of the PlayStation Home research and testing done by Home Laboratory team members over the last few years. 
 
-Also Credits to the developers of UnluacNET, Unluac jar's, scetool, HomeLuac :), create_pkg, vgmstream. More detailed credits to come. 
+Also Credits to the developers of UnluacNET, Unluac jar's, HomeLuac :), vgmstream. More detailed credits to come. 
 
 <h1 align="center">
    What is Nautilus?
@@ -73,6 +73,7 @@ For inputs into the Archive Creator, it is recommended to use the drag-and-drop 
 
 ##### Timestamp:
    - Enter a timestamp here. The default is FFFFFFFF. If less than 8 bytes are entered, they will be padded to 8 bytes with a prefix of 0.
+   - If the field is empty or not valid hex, FFFFFFFF is used (and noted in the debug log).
    - If a timestamp.txt file is present in your input folder, this GUI field will normally be disregarded.
 
 
@@ -259,7 +260,7 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 </div>
 
 <h1 align="center">
-   Tab 3: HCDB Encrypter / Decrypter
+   Tab 3: HCDB / SQL Encrypter / Decrypter
 </h1>
 
 <div align="center">
@@ -305,6 +306,11 @@ This tab handles all the smaller xml files that are encrypted with their SHA1. 9
 - Adding items - By default it will autofill next index, If you override this with existing UUID or index, if it does exist already it will ask if you want to replace the item.
 - Verifies all fields are correct format, that UUID is 8-8-8-8, SHA1 is 20bytes etc 
 - Easy add option, Drag in ODC, plaintext or encrypted and it will autofill out UUID, Timestamp, Version, SHA1 fields.
+- v1.10: Deleting items now renumbers every table that uses the Object Index, so items and their metadata always stay lined up.
+- v1.10: Edits are saved per metadata row, so editing one row no longer changes another row with the same keyname.
+- v1.10: Add / Replace runs as one transaction and checks for UUID clashes first, so a failed add can't leave a half-written item.
+- v1.10: Timestamps show as 8 hex digits (e.g. FFFFFFFF) however they are stored in the SQL. This also applies to the CSV export.
+- v1.10: Dragging in an ODC that has no timestamp fills in FFFFFFFF.
   
 </div>
 
@@ -499,7 +505,348 @@ You could also switch out the JAR files for others if you find better solutions.
 </div>
 
 <h1 align="center">
-   Tab 9: SDC / ODC Tool
+   Tab 9: MDL / HKX Tool
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+### Notes for the MDL / ANI / ATMOS / EFX / AGF tabs:
+- Every tool on these tabs takes Object or Scene zips, folders or single files. Folders are scanned recursively for files the tool can use.
+- If a dropped object has more than one usable file (several LODs, clips, skeletons etc.), a picker opens so you can tick the ones to add. It has Select All / None / Best LODs only.
+- Every converter works both ways: convert out to an open format, edit it in Blender / a text editor / an image editor, then convert it back.
+- Inspect shows what is in each listed file without converting anything.
+- Results go to that tab's output folder (set in Settings), with one folder per tool and format, e.g. Output/MDL_HKX/MDL/GLB/.
+- Corrupt, missing or half-finished XML and data files are reported in the log and skipped, they do not stop the rest of the task.
+
+<h2 align="center">
+   Model Converter
+</h2>
+
+#### Usage Instructions for Model Converter:
+- Drag in Object zips, folders or MDL / GLB / FBX / OBJ files, choose the output format and click Convert.
+- MDL -> GLB / FBX / OBJ: meshes, materials and DDS textures are exported so the model can be opened in Blender.
+- GLB / FBX / OBJ -> MDL: build a Home MDL from your own model.
+- Results go to Output/MDL_HKX/MDL/ next to the exe by default. Change this in Settings.
+
+#### Options for Model Converter:
+##### Output Format:
+   - MDL, GLB, FBX or OBJ.
+##### Max Texture Size:
+   - Textures bigger than this are shrunk when converting (aspect ratio is kept).
+
+#### Buttons:
+- Convert: Convert all listed models.
+- Inspect: Show meshes, vertices, materials and textures for each listed file.
+- Preview: Open the 3D viewer on the listed models.
+
+<h2 align="center">
+   Collision Converter
+</h2>
+
+#### Usage Instructions for Collision Converter:
+- Drag in Object zips, folders, HKX collision files or model files (MDL / GLB / FBX / OBJ).
+- HKX -> OBJ / GLB: view or edit an existing collision.
+- Model -> HKX: turn any model into a Havok collision file.
+- Results go to Output/MDL_HKX/HKX/ next to the exe by default.
+
+#### Options for Collision Converter:
+##### Output Format:
+   - HKX, OBJ or GLB.
+##### Complexity:
+   - Collision detail for HKX output.
+   - 1 = fewest, biggest boxes (smallest file).
+   - 2 = verified working in Home (recommended).
+   - 5 = exact fit (slow, large file).
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show details for each listed collision or model file.
+- Preview: Show collisions as shapes. For models, it shows the collision this converter would make at the chosen complexity, and the scene's original collision too when it is found.
+
+### 3D Preview Window
+- Left-drag: orbit, Right / Middle-drag: pan, Wheel: zoom.
+- W/S: forward / back, A/D or Left/Right: strafe, Up/Down or E/Q: up / down, J/L and I/K: turn.
+- Shift: faster, Ctrl: slower, F or R: reset view.
+- T: textures on / off, B: back faces, G: floor grid.
+- Each layer (model, collision, emitters, lights etc.) can be shown or hidden from the layer bar at the top.
+- If the list has more than one file, the file on the line you clicked opens first and you can step through the rest.
+- Files that move (EFX particles, ANI clips) get a play bar: Play / Pause, back to start, speed (0.1x - 4x) and a time slider. Space: play / pause, comma / full stop: step one frame.
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 10: ANI / SKN Tool
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+<h2 align="center">
+   Animation Converter
+</h2>
+
+#### Usage Instructions for Animation Converter:
+- Drag in Object zips, folders or ANI / GLB / FBX files, choose the output format and click Convert.
+- ANI -> GLB: exact conversion, with the skeleton and a skinned model found beside it, so you can play it in Blender.
+- ANI -> FBX: baked at 30 fps, skinned.
+- GLB / FBX -> ANI: one ANI per animation / take in the file.
+- The matching skeleton is found automatically: from the object, the files beside it, or the built-in avatar rigs.
+- Results go to Output/ANI_SKN/ANI/ next to the exe by default.
+
+#### Options for Animation Converter:
+##### Output Format:
+   - ANI, GLB or FBX.
+
+#### Buttons:
+- Convert: Convert all listed clips.
+- Inspect: Show joints, channels, keys and the matching skeleton / model for each listed file.
+- Preview: Play the clip on its skeleton. Bones are drawn as lines (root red, moving joints yellow, still joints grey).
+  - If a skinned model is found beside it, it moves with the clip and is drawn see-through so the bones show.
+  - For GLB / FBX files with several animations, the first one plays.
+
+<h2 align="center">
+   Skeleton Converter
+</h2>
+
+#### Usage Instructions for Skeleton Converter:
+- Drag in Object zips, folders or SKN / GLB / FBX files.
+- SKN -> GLB / FBX: exported with a skinned model that uses it, when one is found beside it.
+- GLB / FBX -> SKN: build a Home skeleton.
+- Results go to Output/ANI_SKN/SKN/ next to the exe by default.
+
+#### Options for Skeleton Converter:
+##### Output Format:
+   - SKN, GLB or FBX.
+
+#### Buttons:
+- Convert, Inspect, Clear as above.
+- Preview: Show the skeleton's bones and joints in the bind pose, with the skinned model found beside it.
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 11: ATMOS / CDATA Tool
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+<h2 align="center">
+   ATMOS Converter
+</h2>
+
+ATMOS files are the skies of Home scenes: sky dome, sun, fog and clouds. The cloud sprites themselves are stored in the .CDATA beside it.
+
+#### Usage Instructions for ATMOS Converter:
+- Drag in Scene / Object zips, folders or ATMOS / PROBE / SCENE / JSON / GLB / FBX files.
+- ATMOS -> JSON: every setting, converts back exactly.
+- ATMOS -> GLB / FBX: sky dome, sun, wispy clouds and every cloud sprite as a textured card, to edit in Blender.
+  - Sizes are in Home units (metres) and the sky is several km across, so zoom out in Blender and raise the camera's clip end.
+  - All settings are saved in a NAME.atmos.json beside the model (and inside the GLB). Keep it with the model to convert back.
+- JSON / GLB / FBX -> ATMOS + CDATA: moved / reshaped clouds and a moved sun are taken from the model.
+- .PROBE files convert their lights the same way (ATMOS picked writes the .PROBE back).
+- .SCENE files convert the sky and probe they use (ATMOS picked copies them out).
+- Scene zips without a sky are not added to this tool.
+- Results go to Output/ATMOS_CDATA/ATMOS/ next to the exe by default.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the sky type, sun, fogs and clouds (or a probe's lights, or a scene's sky and probe).
+- Preview: Open the 3D viewer on the sky.
+
+<h2 align="center">
+   CDATA Converter
+</h2>
+
+#### Usage Instructions for CDATA Converter:
+- Drag in Scene / Object zips, folders or CDATA / ATMOS / JSON / CSV / PLY / OBJ files.
+- The CDATA is read with the .ATMOS beside it.
+- CDATA -> JSON, CSV (spreadsheet) or PLY (point cloud for Blender / MeshLab / CloudCompare). One sprite per row / point, in world positions, with its cloud number and baked shading.
+- JSON / CSV / PLY / OBJ -> CDATA + ATMOS: move, add or delete sprites, and the counts and addresses are rebuilt for you. Keep the sky's .ATMOS beside the file.
+- Results go to Output/ATMOS_CDATA/CDATA/ next to the exe by default.
+
+#### Options for CDATA Converter:
+##### Output Format:
+   - CDATA, JSON, CSV or PLY.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the clouds of each file: sprite counts, centres, radius, and any sprites stuck at the edge or size mismatches.
+- Preview: Open the 3D viewer on the cloud sprites.
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 12: EFX / PROBE Tool
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+<h2 align="center">
+   EFX Converter
+</h2>
+
+EFX files are Home's particle effects (smoke, fire, sparkles, water etc.). Each effect is made of groups, and each group has an emitter, an update node graph and a texture.
+
+#### Usage Instructions for EFX Converter:
+- Drag in Scene / Object zips, folders or EFX / SCENE / JSON / GLB files.
+- EFX -> JSON: every node setting, texture and count. Converts back exactly.
+- EFX -> GLB: the emitter shapes, placed where the effect places them. Move / turn / scale them in Blender.
+- JSON / GLB -> EFX.
+- .SCENE files: their effect placements are written as JSON or a GLB layout (move / turn / scale the FX boxes).
+  - Converting those back with EFX picked writes the updated .SCENE.
+  - A .SCENE with EFX picked copies out the effects it uses.
+- Results go to Output/EFX_PROBE/EFX/ next to the exe by default (scenes go to EFX/Scenes/).
+
+#### Options for EFX Converter:
+##### Output Format:
+   - EFX, JSON or GLB.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the groups, particle counts, node graph and textures of each effect (or the effects a scene places, and where).
+- Preview: Open the 3D viewer on the effect's emitter shapes and textures, with the particles playing.
+  - This is a rough playback. Emitter placement, particle counts, lifetimes, gravity, floor collision and fade curves are read from the file. Speeds, spread and sizes are guessed and colours are not used, as the real effect runs a node graph on the PS3.
+  - Animated sprite sheets show the whole sheet. Scene files with several placed effects stay still.
+
+<h2 align="center">
+   PROBE Converter
+</h2>
+
+PROBE files hold a scene's lights and its baked lighting grid.
+
+#### Usage Instructions for PROBE Converter:
+- Drag in Scene / Object zips, folders or PROBE / SCENE / JSON / GLB / FBX files.
+- PROBE -> JSON: every light (name, type, position, direction, colour). Converts back exactly.
+- PROBE -> GLB / FBX: a ball per light and a cone for the sun. Move / turn them in Blender.
+- JSON / GLB / FBX -> PROBE.
+- A .SCENE converts the probe it uses (PROBE picked copies it out).
+- The baked lighting grid is kept as it is.
+- Results go to Output/EFX_PROBE/PROBE/ next to the exe by default.
+
+#### Options for PROBE Converter:
+##### Output Format:
+   - PROBE, JSON, GLB or FBX.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the version, grid and lights of each probe (or the probe a scene uses).
+- Preview: Open the 3D viewer on the probe's lights.
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 13: AGF / RIG Tool
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+<h2 align="center">
+   AGF Converter
+</h2>
+
+AGF files are the 256-colour image layers used for avatar faces and similar.
+
+#### Usage Instructions for AGF Converter:
+- Drag in Object zips, folders or AGF / PNG / TGA / BMP / JPG files.
+- AGF -> PNG: an indexed (256-colour) PNG with the AGF's own palette. The original AGF is kept inside the PNG.
+- PNG / TGA / BMP / JPG -> AGF:
+  - An indexed PNG keeps its palette and pixels exactly.
+  - Any other image is matched to the original AGF's palette. That palette is taken from inside a PNG made here, or from an .AGF of the same name beside the image.
+  - Unchanged parts keep their original bytes.
+- Results go to Output/AGF_RIG/AGF/ next to the exe by default.
+
+#### Options for AGF Converter:
+##### Output Format:
+   - AGF or PNG.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the size, palette, background and drawn area of each layer, and its name in RESOURCES.XML.
+- Preview: Open the viewer on the layer.
+
+<h2 align="center">
+   RIG Converter
+</h2>
+
+RIG files are face rigs: the face controls that sliders in Home move.
+
+#### Usage Instructions for RIG Converter:
+- Drag in Object zips, folders or RIG / JSON files.
+- RIG -> JSON: every face control by name (atg_fa_ctrl_...) with its four values. Controls that the object's HEADCONTROLRIG.XML shows as a slider are marked.
+- JSON -> RIG: change values, rename, add or remove controls. They are kept in the hash order the game needs.
+- Results go to Output/AGF_RIG/RIG/ next to the exe by default.
+
+#### Options for RIG Converter:
+##### Output Format:
+   - RIG or JSON.
+
+#### Buttons:
+- Convert: Convert all listed files.
+- Inspect: Show the controls of each rig, which ones are sliders, and anything the XML lists that the rig lacks.
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 14: SDC / ODC Tool
 </h1>
 
 <div align="center">
@@ -548,7 +895,7 @@ You could also switch out the JAR files for others if you find better solutions.
 
 
 <h1 align="center">
-   Tab 10: Path2Hash Tool
+   Tab 15: Path2Hash Tool
 </h1>
 
 <div align="center">
@@ -574,22 +921,28 @@ If you know the path to a file and it refuses to map normally, you can add the p
 </div>
 
 <h1 align="center">
-   Tab 11: Home EBOOT Information Viewer / Patcher
+   Tab 16: Home EBOOT Information
 </h1>
 
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/227e085f-db12-4243-8a57-5fc358aaaff6)
-
-
-
-
+<!-- screenshot -->
 
 </div>
 
-View and or Patch various fields in Home EBOOTS. 
+Identify Home EBOOTs and view their details. This tab is information only, nothing is patched or written.
 
-### Work in Progress
+#### Usage:
+- Drag in a decrypted EBOOT (ELF), or click to browse.
+- The build is identified by the SHA1 of the first 500KB of the ELF, looked up in dependencies/ebootdefs.json.
+- For known builds it shows: Build type and version, Title ID, App ID, MUIS / SSFW version, Service ID, NP Comm ID, TSS URL and Offline Name. Other Title IDs in the EBOOT are listed below.
+- If the MUIS version in the EBOOT doesn't match the build, it is shown as spoofed.
+- Unknown builds are searched for Title IDs, NP Comm IDs and a TSS URL instead, marked "(found by search)".
+- Also shows the ELF header details and the signature SHA1 (handy for adding new builds to ebootdefs.json).
+
+### Note:
+- Encrypted EBOOT.BIN / SELF files are recognised and their plain SCE header is shown, but they are not decrypted. Decrypt them first, for example in RPCS3: Utilities > Decrypt PS3 Binaries, then drop the .elf here.
+- scetool is no longer included.
 
 <div align="center">
 
@@ -602,7 +955,7 @@ View and or Patch various fields in Home EBOOTS.
 </div>
 
 <h1 align="center">
-   Tab 12: Checker
+   Tab 17: Checker
 </h1>
 
 <div align="center">
@@ -629,7 +982,42 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 13: Content Catalogue
+   Tab 18: CDN Audit
+</h1>
+
+<div align="center">
+
+<!-- screenshot -->
+
+</div>
+
+Use this tab to check a live CDN for missing or broken files.
+
+#### Usage:
+- Enter the TSS URL, choose a Territory (SCEE, SCEA, SCEJ, SCEAsia) and click Start.
+- It downloads the TSS and reads the SHA1s for ObjectCatalogue_5_<territory>.hcdb and SceneList.xml, and the content server URL.
+- It downloads and decrypts the HCDB to SQL, and exports it to CSV.
+- It downloads and decrypts the SceneList.xml.
+- It then downloads every SDC and ODC listed and checks each one against its SHA1.
+- Download failures and SHA1 verification failures are counted in the log and written to a fails log in the output folder.
+- Results go to Output/CDN_Audit/Audit/ next to the exe by default.
+
+#### Options:
+- Skip SDC Verification: Don't download / check the SDCs.
+- Skip ODC Verification: Don't download / check the ODCs (much faster on a big catalogue).
+
+<div align="center">
+
+
+</div>
+
+<div align="center">
+
+
+</div>
+
+<h1 align="center">
+   Tab 19: Content Catalogue
 </h1>
 
 <div align="center">
@@ -641,26 +1029,14 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 
 #### Catalogue Usage
-- New feature allow the user to store 5 managed lists - Right click any item to manage them:
-  - Add/Remove from list 1, 2, 3, 4, 5
-  - Add to all Lists
-  - Remove from All lists 
-- These lists can be browsed like the other categories, this allows you to visualize your postinstall.sql items.
-- Right click on the list icons, 1, 2, 3, 4, 5 to show the new options:
-  - Push Direct to PS3: Push any list to your PS3 instantly. Requires you to have FTP running on your PS3 like webman mod, and your PS3 FTP IP must be set correctly in settings.
-  - Push Direct to RPCS3: Push any list to your RPCS3 client instantly. Make sure to set your RPCS3 dev_hdd0 path in settings first. 
-  - Save List as PKG: Create a custom PKG with one click. Install on either PS3 or RPCS3
-  - Save List as SQL: Like PostInstall Tool 2.0, this just lets you save a SQL.
-  - Upload SQL/XML/TXT: Use this option to upload and visualize, edit, resave a previously created SQL or any file containing UUIDs.
-    - You can even load a scene file here to see what minigames it uses. 
-  - Clear this List: Clear this list completely
-
-![image](https://github.com/DeViL303/MultiServer3-NuatilusFork/assets/24411577/30ab6577-bc39-447a-8de0-0f7c83ad675b)
-
+- This tab is a web browser for the online Home object catalogue (psho.me). Browse, search and view items as you would on the website.
+- Use Online Catalogue in Settings is on by default. Advanced users can turn it off to use a local copy in dependencies/psho.me/ instead.
+- Files you download from the catalogue are saved to Output/Catalogue/Downloads/ next to the exe, and the folder opens when the download finishes.
+- v1.10: The managed lists and their options (Push Direct to PS3 / RPCS3, Save List as PKG / SQL, Upload SQL/XML/TXT) have been removed, along with the PS3 / RPCS3 settings they used.
 
 
 <h1 align="center">
-   Tab 14: Media Tool
+   Tab 20: Media Tool
 </h1>
 
 <div align="center">
@@ -683,9 +1059,16 @@ Validate Files: This is a standalone version of the file validator used in the m
 - For situations where the input video has low audio levels, you can choose +3DB or +6DB audio boost. Toggle on both for a +9DB boost in extreme cases.
 
 
-### BNK Unpacker
-- Many Home assets used Sonys BNK format to store sound effects. This tool extracts them to WAV. 
-- Basic initial support only at this stage. MP3 mode WIP.
+### BNK Audio Packer / Unpacker
+- Many Home assets used Sonys SCREAM BNK format to store sound effects. This tool unpacks them to WAV and packs them back, natively (no external tools needed). PS-ADPCM and PCM16 are decoded / encoded in the app.
+- Drag in folders, BNK files or unpacked .bnk.json files.
+
+#### Buttons:
+- Unpack and Map: Each listed .BNK is unpacked to its own folder in Output/Media/Audio/, with one WAV per wave (named from the bank), a copy of the bank and NAME.bnk.json.
+- Repack: Each listed NAME.bnk.json (from Unpack) is rebuilt to NAME.BNK in Output/Media/Audio/Repacked/.
+  - Replace or edit any of the WAVs first. Any sample rate or channel count is accepted (a new rate changes the pitch to match).
+  - Everything you didn't change is kept byte for byte.
+- Inspect: List the waves of each bank: name, codec, rate, length, looping.
 
 <div align="center">
 
@@ -698,7 +1081,7 @@ Validate Files: This is a standalone version of the file validator used in the m
 </div>
 
 <h1 align="center">
-   Tab 15: Settings
+   Tab 21: Settings
 </h1>
 
 <div align="center">
@@ -710,15 +1093,27 @@ Validate Files: This is a standalone version of the file validator used in the m
 
 Set your output paths and various other options here. 
 
-At first boot, a settings.xml is created next to the exe. This also sets all output paths next to the exe in Outputs folder. 
+At first boot, a settings.xml is created next to the exe. This also sets all output paths next to the exe in Output folder. 
+
+Output Folders:
+- There is one output folder per tab, and each tool on that tab writes into its own folder inside it.
+- eg: Output/MDL_HKX/MDL/ for the Model Converter and Output/MDL_HKX/HKX/ for the Collision Converter.
+- Tabs that don't write files (SceneIDs, Path2Hash etc.) have no output folder.
+- Note: Output folders from older versions are not carried over, set them again here if you changed them.
+
+Interface Size:
+- Auto (default) makes the window smaller on high-DPI screens such as 4K at 200% or more, where Windows would otherwise show it very large.
+- Or choose a fixed size from 100% down to 50%.
 
 Debug Logs: If this is enabled you will find detailed logs of all operations performed in logs/debug.log next to the exe. 
 
+Log Boxes:
+- To keep big bulk tasks fast, the log box on each tab only keeps the last 500 lines. Everything is still written to the debug log.
+- When a task starts, the file list is taken from the text box so you can still add 100k+ files.
+
 For the catalogue:
-- If you want to be able to send POSTINSTALL.SQL files to your RPCS3 client instantly, Set your RPCS3 dev_hdd0 folder here.
-- If you want to be able to send POSTINSTALL.SQL files to your PS3 client instantly, Set your PS3 IP Address here.
-- If you are using a title ID other than the standard NPIA00005 change it here. Applys to both RPCS3 and PS3.
-- Use Online Catalogue: Advanced users can disable this to use offline files. 
+- Use Online Catalogue: On by default. Advanced users can disable this to use offline files. 
+- The RPCS3 dev_hdd0, PS3 IP and Title ID settings have been removed, as the catalogue no longer sends files anywhere.
 
 ### Integration between tabs 
 - v1.02 brings more advanced features to try reduce the steps involved in working on CDN files
@@ -727,4 +1122,15 @@ For the catalogue:
   - Create an SDC and its SHA1 gets auto added to scenelist editor and a new SceneID is created ready for the next step which is usually adding that item to the SceneList.xml
   - Edit the Scenelist or the HCDB and their SHA1s are auto added to TSS editor, with the files held in a temporary folder until ready to be deployed.
   - When ready all changed files and the new TSS files can be deployed to the live CDN with one click. This avoids timing issues in cases where someone is connecting just as you swap the files manually.
-     
+
+### New in v1.10
+- Six new tabs: MDL / HKX, ANI / SKN, ATMOS / CDATA, EFX / PROBE, AGF / RIG and CDN Audit.
+- 3D Preview window for models, collisions, skies, clouds, effects, probes and animations, with a play bar for anything that moves.
+- Native BNK packing and unpacking in the Media tab.
+- Popups and pickers now match the app theme (title bar and buttons take the theme colour).
+- One output folder per tab in Settings, with one folder per tool inside it.
+- Interface Size setting for 4K / high-DPI screens.
+- Log boxes are kept to 500 lines so bulk tasks don't slow down.
+- DB Editor fixes for delete / reorder, metadata editing and timestamps.
+- EBOOT tab is now information only (identifies decrypted ELFs). Patching and scetool have been removed.
+- Catalogue tab is now just a web browser. The list push / PKG / SQL features and the PS3 / RPCS3 settings have been removed (create_pkg is no longer included).

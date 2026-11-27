@@ -1,0 +1,86 @@
+<UserControl x:Class="Nautilus2027.AtmosEffectsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: sky / atmosphere -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="ATMOS Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="ATMOSToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="AtmosDragDropHandler" MouseLeftButtonUp="ClickToBrowseAtmosHandler">
+                    <TextBlock x:Name="ATMOSToolDragAreaText" Text="Drag Scene / Object Zips, Folders or ATMOS / PROBE / SCENE / JSON / GLB / FBX Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="ATMOS:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AtmosTargetATMOS" GroupName="AtmosTarget" Tag="ATMOS" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="AtmosTargetRadio_Checked"/>
+                    <TextBlock Text="JSON:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AtmosTargetJSON" GroupName="AtmosTarget" Tag="JSON" Style="{StaticResource ModernRadioButtonStyle}" Checked="AtmosTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AtmosTargetGLB" GroupName="AtmosTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="AtmosTargetRadio_Checked"/>
+                    <TextBlock Text="FBX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="AtmosTargetFBX" GroupName="AtmosTarget" Tag="FBX" Style="{StaticResource ModernRadioButtonStyle}" Checked="AtmosTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AtmosConvertButton_Click"
+                            ToolTip="ATMOS (+ its CDATA) -&gt; JSON (every setting, exact back) or GLB / FBX (sky dome, sun, wispy clouds, every cloud sprite; edit in Blender); JSON / GLB / FBX -&gt; ATMOS + CDATA. A .PROBE converts its lights the same way (ATMOS picked writes the .PROBE back); a .SCENE converts its sky and probe (ATMOS picked copies them out). Results go to the tab's output folder (Settings): ATMOS\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AtmosInspectButton_Click"
+                            ToolTip="Show the sky type, sun, fogs and clouds (or a probe's lights, or a scene's sky and probe) of each listed file"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="AtmosPreviewButton_Click"
+                            ToolTip="Open the 3D viewer on the sky (the file on the clicked line first)"/>
+                    <Button x:Name="ATMOSToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="ATMOSToolTextBox" local:FileDrop.Handler="AtmosDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+            <!-- Right Side: cloud sprite data -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="CDATA Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="CDATAToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="CdataDragDropHandler" MouseLeftButtonUp="ClickToBrowseCdataHandler">
+                    <TextBlock x:Name="CDATAToolDragAreaText" Text="Drag Scene / Object Zips, Folders or CDATA / ATMOS / JSON / CSV / PLY / OBJ Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="CDATA:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CdataTargetCDATA" GroupName="CdataTarget" Tag="CDATA" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="CdataTargetRadio_Checked"/>
+                    <TextBlock Text="JSON:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CdataTargetJSON" GroupName="CdataTarget" Tag="JSON" Style="{StaticResource ModernRadioButtonStyle}" Checked="CdataTargetRadio_Checked"/>
+                    <TextBlock Text="CSV:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CdataTargetCSV" GroupName="CdataTarget" Tag="CSV" Style="{StaticResource ModernRadioButtonStyle}" Checked="CdataTargetRadio_Checked"/>
+                    <TextBlock Text="PLY:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CdataTargetPLY" GroupName="CdataTarget" Tag="PLY" Style="{StaticResource ModernRadioButtonStyle}" Checked="CdataTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CdataConvertButton_Click"
+                            ToolTip="CDATA (read with the .ATMOS beside it) -&gt; JSON, CSV (spreadsheet) or PLY (point cloud for Blender / MeshLab / CloudCompare): one sprite per row / point, in world positions, with its cloud number and baked shading. JSON / CSV / PLY / OBJ (with the sky's .ATMOS beside it) -&gt; CDATA + ATMOS: move, add or delete sprites and the counts and addresses are rebuilt. Results go to the tab's output folder (Settings): CDATA\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CdataInspectButton_Click"
+                            ToolTip="Show the clouds of each listed file: sprite counts, centres, radius, and any sprites stuck at the edge or size mismatches"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CdataPreviewButton_Click"
+                            ToolTip="Open the 3D viewer on the cloud sprites (the file on the clicked line first)"/>
+                    <Button x:Name="CDATAToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="CDATAToolTextBox" local:FileDrop.Handler="CdataDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+        </Grid>
+    </StackPanel>
+</UserControl>

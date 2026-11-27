@@ -1,0 +1,287 @@
+﻿<UserControl x:Class="Nautilus2027.DbEditorTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <Border BorderBrush="White" BorderThickness="1" CornerRadius="3,3,0,0" Padding="5" Margin="0">
+            <StackPanel Margin="0,0,0,5">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <TextBlock Text="Index:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtObjectIndex" Width="55" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Object UUID:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtObjectId" Width="300" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="" MouseDoubleClick="txtObjectId_MouseDoubleClick"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Version:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtVersion" Width="50" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="31"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Location:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtLocation" Width="60" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="1"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Entry Type:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtEntryType" Width="55" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="TimeStamp:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtArchiveTimeStampHex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="FFFFFFFF"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="ODC SHA1 digest:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtOdcSha1Digest" Width="335" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text=""/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Entitlement Index:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtEntitlementIndex" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Reward Index:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtRewardIndex" Width="70" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="User Location:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtUserLocation" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="0"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Last Used Date:" FontSize="10" Margin="3,0" Foreground="White"/>
+                        <TextBox x:Name="txtLastUsed" Width="80" Margin="1,0" Style="{StaticResource SmallTextBoxStyle3}" Text="NULL"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5,6,5,2">
+                    <!-- KeyName 1 and Value 1 -->
+                    <TextBlock Text="KeyName 1:" FontSize="10" Margin="5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName1" MaxDropDownHeight="420" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName1_SelectionChanged" >
+                        <ComboBoxItem Content="CLOTHING"/>
+                        <ComboBoxItem Content="FURNITURE"/>
+                        <ComboBoxItem Content="PORTABLE"/>
+                        <ComboBoxItem Content="MINI_GAME"/>
+                        <ComboBoxItem Content="ARCADE_GAME"/>
+                        <ComboBoxItem Content="WORLD_MAP"/>
+                        <ComboBoxItem Content="SCENE_ENTITLEMENT"/>
+                        <ComboBoxItem Content="COMMUNICATION_ID"/>
+                        <ComboBoxItem Content="EMBEDDED_OBJECT"/>
+                        <ComboBoxItem Content="ENTITLEMENT_ID"/>
+                        <ComboBoxItem Content="ACTIVE"/>
+                        <ComboBoxItem Content="LPID"/>
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName1" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 1:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue1" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue1" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+
+                    <!-- KeyName 4 and Value 4 -->
+                    <TextBlock Text="KeyName 4:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName4" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName4_SelectionChanged">
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName4" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 4:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue4" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue4" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Add HEAT:" Width="55" FontSize="10" Margin="30,0,5,0" Foreground="White"/>
+                    <CheckBox x:Name="chkBox1" Width="20" Padding="5" Margin="1,0" Checked="chkBox1_Checked" Unchecked="chkBox1_Unchecked"/>
+                    <TextBlock Text="HOST_HEAT:" Width="55" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <TextBox x:Name="txtBox4" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                    <Button Content="Reset" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="ClearSQLButton_Click" Margin="15,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5,2">
+                    <!-- KeyName 2 and Value 2 -->
+                    <TextBlock Text="KeyName 2:" FontSize="10" Margin="5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName2" Height="20" MaxDropDownHeight="400" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName2_SelectionChanged">
+                        <ComboBoxItem Content="ENTITLEMENT_ID"/>
+                        <ComboBoxItem Content="RIGS"/>
+                        <ComboBoxItem Content="TARGETABLE"/>
+                        <ComboBoxItem Content="TITLE_ID"/>
+                        <ComboBoxItem Content="SCENE_TYPE"/>
+                        <ComboBoxItem Content="LPID"/>
+                        <ComboBoxItem Content="ACTIVE"/>
+                        <ComboBoxItem Content="PORTABLE"/>
+                        <ComboBoxItem Content="MINI_GAME"/>
+                        <ComboBoxItem Content="EMBEDDED_OBJECT"/>
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName2" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 2:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue2" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue2" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+
+                    <!-- KeyName 5 and Value 5 -->
+                    <TextBlock Text="KeyName 5:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName5" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName5_SelectionChanged">
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName5" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 5:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue5" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue5" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="MAIN_HEAT:" Width="55" FontSize="10" Margin="30,0,5,0" Foreground="White"/>
+                    <TextBox x:Name="txtBox1" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                    <TextBlock Text="NET_HEAT:" Width="55" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <TextBox x:Name="txtBox5" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                    <Button Content="Bulk Edit" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="BulkEditSQLButton_Click" Margin="15,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5,2">
+                    <!-- KeyName 3 and Value 3 -->
+                    <TextBlock Text="KeyName 3:" FontSize="10" Margin="5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName3" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName3_SelectionChanged">
+                        <ComboBoxItem Content="ENTITLEMENT_ID"/>
+                        <ComboBoxItem Content="TARGETABLE"/>
+                        <ComboBoxItem Content="RIGS"/>
+                        <ComboBoxItem Content="TITLE_ID"/>
+                        <ComboBoxItem Content="TAGS"/>
+                        <ComboBoxItem Content="LPID"/>
+                        <ComboBoxItem Content="ACTIVE"/>
+                        <ComboBoxItem Content="PORTABLE"/>
+                        <ComboBoxItem Content="MINI_GAME"/>
+                        <ComboBoxItem Content="EMBEDDED_OBJECT"/>
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName3" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 3:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue3" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue3" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+
+                    <!-- KeyName 6 and Value 6 -->
+                    <TextBlock Text="KeyName 6:" FontSize="10" Margin="20,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtKeyName6" Height="20" Padding="2" Width="115" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtKeyName6_SelectionChanged">
+                        <ComboBoxItem Content=""/>
+                        <ComboBoxItem Content="CUSTOM"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomKeyName6" Height="20" Width="115" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="Value 6:" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <ComboBox x:Name="txtValue6" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource DarkModeComboBoxStyle}" SelectionChanged="txtValue_SelectionChanged">
+
+                    </ComboBox>
+                    <TextBox x:Name="txtCustomValue6" Height="20" Width="250" Padding="2" FontSize="10" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" Visibility="Collapsed"/>
+                    <TextBlock Text="PPU_HEAT:" Width="55" FontSize="10" Margin="30,0,5,0" Foreground="White"/>
+                    <TextBox x:Name="txtBox2" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                    <TextBlock Text="VRAM_HEAT:" Width="55" FontSize="10" Margin="10,0,5,0" Foreground="White"/>
+                    <TextBox x:Name="txtBox6" Width="20" Margin="1,0" Style="{StaticResource SmallTextBoxStyle2}" IsReadOnly="True"/>
+                    <Button Content="Add Item" Width="60" Height="20" Padding="0" FontSize="9" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="15,0,0,0" VerticalAlignment="Center" Click="AddNewSQLItem_Button_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <Canvas>
+            <Border 
+Style="{StaticResource DragAreaStyle}"
+Width="85"
+Margin="0"
+Height="105"  
+Canvas.Right="10" 
+Canvas.Top="-115"
+AllowDrop="True"
+DragEnter="Border_DragEnter"
+Drop="Border_Drop"
+MouseLeftButtonUp="Border_ODCMouseLeftButtonUp">
+                <TextBlock Text="Drag ODC" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+            </Border>
+
+        </Canvas>
+        <Canvas>
+            <Border 
+Style="{StaticResource DragAreaStyle}"
+Width="85"
+Margin="0"
+Height="105"  
+Canvas.Right="105" 
+Canvas.Top="-115"
+AllowDrop="True"
+DragEnter="Border_DragSQLEnter"
+Drop="Border_SQLDrop"
+MouseLeftButtonUp="Border_SQLMouseLeftButtonUp">
+                <TextBlock Text="Drag SQL" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+            </Border>
+
+        </Canvas>
+
+        <Border BorderBrush="White" BorderThickness="1" Margin="0,-1,0,0" CornerRadius="0,0,3,3">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
+                <TextBlock Text="Index/Range:" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="5"/>
+                <TextBox x:Name="txtGoToIndex" Width="110" Margin="5" Style="{StaticResource SmallTextBoxStyle}" />
+                <Button Content="Load Index" Width="85" Height="26" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="5" Click="GoToIndexButton_Click"/>
+                <Button Content="Delete Index" Width="90" Height="26" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="5" Click="DeleteSQLIndexButton_Click"/>
+                <TextBlock Text="UUID:" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="20,5,5,5"/>
+                <TextBox x:Name="txtSearch" Width="320" Margin="1,0" Style="{StaticResource SmallTextBoxStyle}" Text=""/>
+                <Button Content="Search" Width="60" Height="26" FontSize="12" FontWeight="Bold" Margin="5,0,20,0" Style="{StaticResource DarkModeButtonStyle}" Click="SearchButton_Click"/>
+                <TextBlock x:Name="UnsavedChanges" Width="250" Text="Unsaved Changes - Press Enter!" Visibility="Hidden" FontSize="14" Foreground="yellow" VerticalAlignment="Center" Margin="5"/>
+                <Button Name="BrowseSQLButton" Content="Open SQL" FontSize="12" Style="{StaticResource DarkModeButtonStyle}" Click="BrowseSQLButton_Click" Width="80" Height="26" Margin="5,0"/>
+                <Button Content="Export XML/CSV" Width="115" Height="26" Padding="0" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Click="ExportToXMLButton_Click" Margin="5,0,5,0"/>
+                <Button Content="Export HCDB" Width="100" Height="26" FontSize="12" FontWeight="Bold" Style="{StaticResource DarkModeButtonStyle}" Margin="5,0" VerticalAlignment="Center" Click="ExportToHCDBButton_Click"/>
+            </StackPanel>
+        </Border>
+        <Grid>
+            <Grid Name="HeaderGrid" Background="Transparent" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="245"/>
+                    <ColumnDefinition Width="48"/>
+                    <ColumnDefinition Width="57"/>
+                    <ColumnDefinition Width="43"/>
+                    <ColumnDefinition Width="72"/>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="54"/>
+                    <ColumnDefinition Width="59"/>
+                    <ColumnDefinition Width="55"/>
+                    <ColumnDefinition Width="48"/>
+                    <ColumnDefinition Width="135"/>
+                    <ColumnDefinition Width="310"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Index" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0"/>
+                <Label Content="Object UUID" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="1"/>
+                <Label Content="Version" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="2"/>
+                <Label Content="Location" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="3"/>
+                <Label Content="Type" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="4"/>
+                <Label Content="Timestamp" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="5"/>
+                <Label Content="ODC SHA1 Digest" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="6"/>
+                <Label Content="Ent.Index" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="7"/>
+                <Label Content="Rew.Index" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="8"/>
+                <Label Content="User Lo." FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="9"/>
+                <Label Content="L.U.Date" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="10"/>
+                <Label Content="Key Name" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="11"/>
+                <Label Content="Value" FontSize="12" Foreground="White" Background="#484848" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="2,0" Margin="1,0" Grid.Column="12"/>
+            </Grid>
+            <ScrollViewer x:Name="sqlItemsScrollViewer" Height="547" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,25,0,0">
+                <Grid Name="SQLItemsGrid" Margin="0"/>
+            </ScrollViewer>
+
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2">
+
+            <Button Content="- 25" Width="40" Height="22" FontSize="10" Margin="15,0,15,0" Style="{StaticResource DarkModeButtonStyle}" Click="BackButton_Click"/>
+            <Button Content="+ 25" Width="40" Height="22" FontSize="10" Margin="15,0,15,0" Style="{StaticResource DarkModeButtonStyle}" Click="ForwardButton_Click"/>
+
+        </StackPanel>
+    </StackPanel>
+</UserControl>

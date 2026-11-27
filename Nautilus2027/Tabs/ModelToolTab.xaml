@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="Nautilus2027.ModelToolTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nautilus2027">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Nautilus2027;component/Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Background="#242424">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side: model conversion -->
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="Model Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="MDLToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="MdlDragDropHandler" MouseLeftButtonUp="ClickToBrowseMdlHandler">
+                    <TextBlock x:Name="MDLToolDragAreaText" Text="Drag Object Zips, Folders or MDL / GLB / FBX / OBJ Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="MDL:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ModelTargetMDL" GroupName="ModelTarget" Tag="MDL" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="ModelTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ModelTargetGLB" GroupName="ModelTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="ModelTargetRadio_Checked"/>
+                    <TextBlock Text="FBX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ModelTargetFBX" GroupName="ModelTarget" Tag="FBX" Style="{StaticResource ModernRadioButtonStyle}" Checked="ModelTargetRadio_Checked"/>
+                    <TextBlock Text="OBJ:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="ModelTargetOBJ" GroupName="ModelTarget" Tag="OBJ" Style="{StaticResource ModernRadioButtonStyle}" Checked="ModelTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Max texture size:" Style="{StaticResource Sha1TextBlockStyle}" Foreground="White" Margin="7,10" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="MaxTextureSizeComboBox" Width="100" Style="{StaticResource DarkModeComboBoxStyle}" VerticalAlignment="Center"
+                              ToolTip="Shrink textures larger than this when converting (keeps aspect ratio)"/>
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ModelConvertButton_Click"
+                            ToolTip="Convert the listed models; results go to the tab's output folder (Settings): MDL\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ModelInspectButton_Click"
+                            ToolTip="Show meshes, vertices, materials and textures for each listed file"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ModelPreviewButton_Click"
+                            ToolTip="Open a 3D viewer for the listed models (the file on the clicked line first). Left-drag orbit, right-drag pan, wheel zoom, WASD / arrows move the camera"/>
+                    <Button x:Name="MDLToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="MDLToolTextBox" local:FileDrop.Handler="MdlDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+
+            <!-- Right Side: collision conversion (collision files, or models to collision) -->
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="Collision Converter" Style="{StaticResource ToolTitleTextBlockStyle}"/>
+                <Border x:Name="HKXToolDragArea" Style="{StaticResource DragAreaStyle2}" Drop="HkxDragDropHandler" MouseLeftButtonUp="ClickToBrowseHkxHandler">
+                    <TextBlock x:Name="HKXToolDragAreaText" Text="Drag Object Zips, Folders, Collision or Model Files Here / Click to Browse" Style="{StaticResource DragAreaTextBlockStyle}"/>
+                </Border>
+
+                <!-- Output format -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,7,0,5">
+                    <TextBlock Text="HKX:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CollisionTargetHKX" GroupName="CollisionTarget" Tag="HKX" IsChecked="True" Style="{StaticResource ModernRadioButtonStyle}" Checked="CollisionTargetRadio_Checked"/>
+                    <TextBlock Text="OBJ:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CollisionTargetOBJ" GroupName="CollisionTarget" Tag="OBJ" Style="{StaticResource ModernRadioButtonStyle}" Checked="CollisionTargetRadio_Checked"/>
+                    <TextBlock Text="GLB:" Style="{StaticResource ArchiveFormatTextBlockStyle}" Margin="5,5,5,5" Foreground="White" VerticalAlignment="Center"/>
+                    <RadioButton x:Name="CollisionTargetGLB" GroupName="CollisionTarget" Tag="GLB" Style="{StaticResource ModernRadioButtonStyle}" Checked="CollisionTargetRadio_Checked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Complexity:" Style="{StaticResource Sha1TextBlockStyle}" Foreground="White" Margin="7,10" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="CollisionComplexityComboBox" Width="140" Style="{StaticResource DarkModeComboBoxStyle}" VerticalAlignment="Center"
+                              ToolTip="Collision detail for HKX output: 1 = fewest, biggest boxes (smallest file) ... 2 = verified in Home ... 5 = exact fit (slow, large file)"/>
+                    <Button Content="Convert" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CollisionConvertButton_Click"
+                            ToolTip="Convert collisions, or turn models into collision meshes; results go to the tab's output folder (Settings): HKX\&lt;format&gt;"/>
+                    <Button Content="Inspect" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CollisionInspectButton_Click"
+                            ToolTip="Show details for each listed collision or model file"/>
+                    <Button Content="Preview" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="CollisionPreviewButton_Click"
+                            ToolTip="Open a 3D viewer: collisions as shapes; models with the collision this converter would make at the chosen complexity (and the scene's original collision when found)"/>
+                    <Button x:Name="HKXToolClearButton" Content="Clear" Style="{StaticResource ResourceKey=DarkModeButtonStyle}" Click="ClearListHandler"/>
+                </StackPanel>
+
+                <!-- Text Area -->
+                <TextBox x:Name="HKXToolTextBox" local:FileDrop.Handler="HkxDragDropHandler" Style="{StaticResource FileListTextBoxStyle}" MouseDoubleClick="ToolTextBox_MouseDoubleClick"/>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>
